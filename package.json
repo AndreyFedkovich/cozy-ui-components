@@ -12,9 +12,9 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/ui-library.es.js",
-      "require": "./dist/ui-library.cjs.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/ui-library.cjs.js"
     },
     "./styles.css": "./dist/styles.css"
   },
