@@ -1,0 +1,105 @@
+@use "../../styles/mixinsNew";
+@use "../../styles/colorsNew";
+
+.tabs {
+  display: flex;
+  position: relative;
+  white-space: nowrap;
+
+  .tabItem {
+    @include mixinsNew.text-s();
+    font-weight: 500;
+    padding: 12px 0;
+    width: 180px;
+    height: 45px;
+    cursor: pointer;
+    position: relative;
+    color: colorsNew.$gray03;
+    background-color: colorsNew.$gray01;
+    border: 1px solid colorsNew.$gray07;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    text-align: center;
+    margin-left: -12px;
+    z-index: 2;
+    margin-bottom: -1px;
+
+    &:first-child {
+      margin-left: 0;
+      height: 64px;
+      margin-bottom: -20px;
+    }
+
+    &:last-child {
+      padding-right: 0;
+      margin-right: 0;
+    }
+
+    &.active {
+      background: colorsNew.$white01;
+      color: colorsNew.$blue03;
+      border-bottom: none;
+
+      &:first-child {
+        height: 45px;
+        margin-bottom: -1px;
+
+        &:after {
+          content: "";
+          position: absolute;
+          bottom: -20px;
+          left: -1px;
+          height: 20px;
+          width: 20px;
+          background: colorsNew.$white01;
+          border-left: 1px solid colorsNew.$gray07;
+        }
+      }
+    }
+
+    .before {
+      position: absolute;
+      bottom: 0;
+      left: -10px;
+      width: 10px;
+      height: 10px;
+      background: colorsNew.$white01;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        width: 10px;
+        height: 10px;
+        background: colorsNew.$gray01;
+        border-radius: 0 0 100% 0;
+        border-bottom: 1px solid colorsNew.$gray07;
+        border-right: 1px solid colorsNew.$gray07;
+      }
+    }
+
+    .after {
+      position: absolute;
+      background: colorsNew.$white01;
+      bottom: 0;
+      right: -10px;
+      width: 10px;
+      height: 10px;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 4.5px;
+        left: 5.5px;
+        width: 10px;
+        height: 10px;
+        background: colorsNew.$gray01;
+        border-radius: 0 0 100% 0;
+        transform: translate(-50%, -50%) rotate(90deg);
+        border-bottom: 1px solid colorsNew.$gray07;
+        border-right: 1px solid colorsNew.$gray07;
+      }
+    }
+  }
+}

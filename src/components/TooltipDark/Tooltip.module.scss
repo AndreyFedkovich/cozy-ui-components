@@ -1,0 +1,60 @@
+@use "../../styles/colorsNew";
+
+.overlay {
+  position: fixed;
+  padding: 0.8rem 1.2rem;
+  background: colorsNew.$gray05;
+  color: colorsNew.$white01;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  white-space: nowrap;
+  border-radius: 0.4rem;
+  pointer-events: none;
+  z-index: 20000;
+  animation: fadeIn 0.15s ease-out;
+  box-shadow: 0 2px 8px rgba(colorsNew.$black01, 0.15);
+}
+
+.arrow {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0.4rem solid transparent;
+
+  &.top {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: colorsNew.$gray05;
+  }
+
+  &.bottom {
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: colorsNew.$gray05;
+  }
+
+  &.left {
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: colorsNew.$gray05;
+  }
+
+  &.right {
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: colorsNew.$gray05;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

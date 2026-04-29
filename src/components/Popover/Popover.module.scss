@@ -1,0 +1,5 @@
+@use "../../styles/mixinsNew";
+
+.popover {
+  @include mixinsNew.popover();
+}

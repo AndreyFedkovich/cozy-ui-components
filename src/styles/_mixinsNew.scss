@@ -1,0 +1,59 @@
+@use "./colorsNew";
+@forward "./popover";
+@forward "./table";
+@forward "./placeholder";
+@forward "./text";
+
+@mixin blackTooltip() {
+  :global(.tooltip) {
+    padding: 0.8rem;
+
+    :global(.tooltip-inner) {
+      z-index: 1000;
+      background-color: colorsNew.$black01;
+      border: none;
+      color: colorsNew.$white01;
+      padding: 0.8rem 1.4rem;
+      border-radius: 1rem;
+    }
+
+    :global(.arrow::before) {
+      width: 1rem;
+      height: 1rem;
+      background-color: colorsNew.$black01;
+      border: none;
+    }
+  }
+}
+
+@mixin blackLeftTooltip() {
+  @include blackTooltip();
+
+  :global(.tooltip) {
+    :global(.arrow::before) {
+      left: 0.4rem;
+      top: 0;
+      transform: rotate(45deg) translate(100%, 100%);
+    }
+  }
+}
+
+@mixin link() {
+  color: colorsNew.$blue03;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: colorsNew.$blue04;
+  }
+}
+
+@mixin tooltipBorder($color) {
+  :global(.arrow)::before {
+    border-right-color: $color !important;
+    border-bottom-color: $color !important;
+  }
+
+  :global(.tooltip-inner) {
+    border-color: $color;
+  }
+}

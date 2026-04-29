@@ -1,0 +1,32 @@
+@use "../../styles/colorsNew";
+
+.errorCaption {
+  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 20px;
+  margin: 0;
+  color: colorsNew.$red02;
+  transition: 150ms;
+  animation-name: fadeIn;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 100ms;
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fullWidth {
+  white-space: nowrap;
+}

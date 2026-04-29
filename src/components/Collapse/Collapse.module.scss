@@ -1,0 +1,39 @@
+@use "../../styles/mixinsNew";
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    @include mixinsNew.text();
+
+    &_icon {
+      display: flex;
+      align-items: center;
+      padding-top: 0.4rem;
+      cursor: pointer;
+
+      .iconTransition {
+        transition: all 150ms;
+      }
+
+      .rotateIcon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .content {
+    overflow: hidden;
+    transition: height 300ms ease;
+
+    word-break: break-word;
+
+    &.padding {
+      padding-top: 0.8rem;
+    }
+  }
+}

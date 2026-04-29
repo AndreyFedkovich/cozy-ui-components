@@ -1,0 +1,17 @@
+@use "../../styles/mixinsNew";
+@use "../../styles/colorsNew";
+
+.block {
+  background-color: colorsNew.$white01;
+  border-radius: 2.4rem;
+  padding: 3.2rem;
+
+  .subtitle {
+    color: colorsNew.$gray04;
+    @include mixinsNew.text(1.2rem, 2.4rem);
+  }
+
+  .title {
+    @include mixinsNew.text-s-m(1.8rem, 2.4rem);
+  }
+}

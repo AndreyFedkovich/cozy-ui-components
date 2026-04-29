@@ -1,0 +1,75 @@
+@mixin fontLight {
+  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-weight: 300;
+}
+
+@mixin fontNormal {
+  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-weight: normal;
+}
+
+@mixin fontMedium {
+  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-weight: 500;
+}
+
+@mixin fontBold {
+  font-family: "Navigo", "RobotoBold", sans-serif;
+  font-weight: 900;
+}
+
+@mixin fontIcons {
+  font-family: "bks-icons";
+  font-weight: normal;
+}
+
+@mixin text($size: 1.4rem, $height: 2.4rem) {
+  @include fontNormal();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin text-b($size: 1.6rem, $height: 2.4rem) {
+  @include fontBold();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin text-s($size: 1.4rem, $height: 2rem) {
+  @include fontNormal();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin text-s-b($size: 1.4rem, $height: 2rem) {
+  @include fontBold();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin text-s-l($size: 1.4rem, $height: 2rem) {
+  @include fontLight();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin text-s-m($size: 1.4rem, $height: 2rem) {
+  @include fontMedium();
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin h1() {
+  font-size: 2.4rem;
+  line-height: 3.6rem;
+}
+
+@mixin h2() {
+  font-size: 2rem;
+  line-height: 2.4rem;
+}
+
+@mixin h3() {
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+}

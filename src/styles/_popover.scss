@@ -1,0 +1,74 @@
+@use "./colorsNew";
+
+@mixin popover {
+  background-color: colorsNew.$white01;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  min-width: 400px;
+  box-shadow: 0 4px 20px rgba(colorsNew.$black01, 0.3);
+  position: relative;
+  z-index: 10;
+
+  :global(.arrow) {
+    position: absolute;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 11px;
+      width: 100%;
+      height: 100%;
+      background: colorsNew.$white01;
+      transform: rotate(45deg);
+      box-shadow: 0 -4px 8px -4px rgba(colorsNew.$black01, 0.5);
+    }
+  }
+
+  &[x-placement^="top-start"] {
+    :global(.arrow) {
+      bottom: -1rem;
+
+      &::before {
+        content: "";
+
+        top: -5px;
+      }
+    }
+  }
+
+  &[x-placement^="bottom-start"] {
+    :global(.arrow) {
+      top: -1rem;
+
+      &::before {
+        bottom: -5px;
+      }
+    }
+  }
+
+  &[x-placement^="bottom-center"] {
+    :global(.arrow) {
+      top: -1rem;
+
+      &::before {
+        bottom: -5px;
+        left: 0;
+      }
+    }
+  }
+
+  &[x-placement^="right-start"] {
+    :global(.arrow) {
+      top: -1rem;
+
+      &::before {
+        bottom: -5px;
+        left: -28px;
+      }
+    }
+  }
+}

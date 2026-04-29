@@ -1,0 +1,191 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+$colors: (
+  primary: (
+    bg: colorsNew.$blue03,
+    hover: rgba(colorsNew.$blue03, 0.85),
+    active: darken(colorsNew.$blue03, 10%),
+    text: colorsNew.$white01,
+    border: colorsNew.$blue03,
+    bgDisabled: colorsNew.$gray02,
+    borderDisabled: rgba(colorsNew.$gray03, 0.5),
+    textDisabled: colorsNew.$gray03,
+  ),
+  default: (
+    bg: colorsNew.$white01,
+    border: rgba(colorsNew.$gray04, 0.3),
+    borderHover: colorsNew.$blue03,
+    borderActive: darken(colorsNew.$blue03, 10%),
+    text: colorsNew.$gray05,
+    textHover: colorsNew.$blue03,
+    textActive: darken(colorsNew.$blue03, 10%),
+    bgDisabled: colorsNew.$gray02,
+    borderDisabled: rgba(colorsNew.$gray03, 0.5),
+    textDisabled: colorsNew.$gray03,
+  ),
+  secondary: (
+    bg: colorsNew.$blue01,
+    hover: rgba(colorsNew.$blue01, 0.85),
+    active: darken(colorsNew.$blue01, 10%),
+    border: transparent,
+    borderHover: transparent,
+    borderActive: transparent,
+    text: colorsNew.$blue03,
+    textHover: darken(colorsNew.$blue03, 10%),
+    textActive: darken(colorsNew.$blue03, 10%),
+    bgDisabled: colorsNew.$gray02,
+    borderDisabled: transparent,
+    textDisabled: colorsNew.$gray03,
+  ),
+  text: (
+    bg: transparent,
+    hover: transparent,
+    active: transparent,
+    text: colorsNew.$gray05,
+    textHover: rgba(colorsNew.$gray05, 0.6),
+    textActive: darken(colorsNew.$gray05, 20%),
+    border: transparent,
+    borderHover: transparent,
+    borderActive: transparent,
+    bgDisabled: transparent,
+    borderDisabled: transparent,
+    textDisabled: colorsNew.$gray03,
+  ),
+  link: (
+    bg: transparent,
+    hover: transparent,
+    active: transparent,
+    text: colorsNew.$blue03,
+    textHover: colorsNew.$blue04,
+    textActive: darken(colorsNew.$blue04, 20%),
+    border: transparent,
+    borderHover: transparent,
+    borderActive: transparent,
+    bgDisabled: transparent,
+    borderDisabled: transparent,
+    textDisabled: colorsNew.$gray03,
+  ),
+  danger: (
+    bg: colorsNew.$red01,
+    hover: darken(colorsNew.$red01, 2%),
+    active: darken(colorsNew.$red01, 10%),
+    text: colorsNew.$red02,
+    bgDisabled: colorsNew.$gray02,
+    borderDisabled: rgba(colorsNew.$gray03, 0.5),
+    textDisabled: colorsNew.$gray03,
+  ),
+);
+
+$sizes: (
+  small: (
+    padding: 0.4rem 1.1rem,
+    border-radius: 0.8rem,
+  ),
+  medium: (
+    padding: 0.75rem 1.5rem,
+    border-radius: 1rem,
+  ),
+  large: (
+    padding: 1rem 2rem,
+    border-radius: 1.2rem,
+  ),
+);
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+  background-color: transparent;
+  margin: 0;
+
+  &:focus-visible {
+    outline: 2px solid colorsNew.$blue03;
+    outline-offset: 2px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  @each $variant, $colors-map in $colors {
+    &--variant-#{$variant} {
+      background-color: map-get($colors-map, bg);
+      color: map-get($colors-map, text);
+      border-color: map-get($colors-map, border);
+
+      @if $variant == text or $variant == link {
+        border: none;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: map-get($colors-map, hover);
+        border-color: map-get($colors-map, borderHover);
+        color: map-get($colors-map, textHover);
+      }
+
+      &:active:not(:disabled) {
+        background-color: map-get($colors-map, active);
+        border-color: map-get($colors-map, borderActive);
+        color: map-get($colors-map, textActive);
+      }
+
+      &--disabled,
+      &:disabled {
+        opacity: 0.65;
+        pointer-events: none;
+        cursor: not-allowed;
+        background-color: map-get($colors-map, bgDisabled);
+        color: map-get($colors-map, textDisabled);
+        border-color: map-get($colors-map, borderDisabled);
+      }
+    }
+  }
+
+  @each $size, $size-map in $sizes {
+    &--size-#{$size} {
+      padding: map-get($size-map, padding);
+      border-radius: map-get($size-map, border-radius);
+      @include mixinsNew.text();
+    }
+  }
+
+  &--variant-#{text},
+  &--variant-#{link} {
+    padding: 0;
+  }
+
+  &--loading {
+    position: relative;
+    pointer-events: none;
+
+    .button__loader {
+      margin-left: 1rem;
+
+      div {
+        div {
+          border-top-color: colorsNew.$gray03;
+          border-bottom-color: colorsNew.$gray03;
+        }
+      }
+    }
+  }
+
+  &__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+}

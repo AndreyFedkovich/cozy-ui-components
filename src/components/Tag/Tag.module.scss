@@ -1,0 +1,32 @@
+@use "../../styles/mixinsNew";
+@use "../../styles/colorsNew";
+
+.wrapper {
+  @include mixinsNew.text-s();
+  color: colorsNew.$gray05;
+  padding: 0.3rem 1.6rem 0.3rem 0.8rem;
+  background-color: colorsNew.$gray01;
+  border: 1px solid colorsNew.$gray06;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+
+  &_small {
+    padding: 0.4rem 1.6rem 0.4rem;
+  }
+
+  .iconCross {
+    margin-left: 1rem;
+    margin-right: -0.2rem;
+    cursor: pointer;
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+
+    &_small {
+      flex-shrink: 0;
+      width: 9px;
+      height: 9px;
+    }
+  }
+}

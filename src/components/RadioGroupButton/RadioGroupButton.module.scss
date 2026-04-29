@@ -1,0 +1,34 @@
+@use "../../styles/colorsNew";
+
+.container {
+  display: flex;
+  max-width: max-content;
+  background-color: colorsNew.$gray01;
+  border-radius: 50px;
+  position: relative;
+
+  button {
+    border: none;
+    background-color: transparent;
+    border-radius: 50px;
+    color: colorsNew.$gray05;
+    z-index: 1;
+    padding: 0.4rem 1.6rem;
+
+    &.activeButton {
+      color: colorsNew.$white01;
+
+      &:hover {
+        color: colorsNew.$white01;
+      }
+    }
+  }
+
+  .slider {
+    height: 100%;
+    position: absolute;
+    border-radius: 50px;
+    background-color: colorsNew.$blue03;
+    transition: transform 0.3s ease-in-out;
+  }
+}

@@ -1,0 +1,67 @@
+@use "../../styles/mixinsNew";
+@use "../../styles/colorsNew";
+
+.card {
+  display: block;
+  padding: 1.6rem;
+  white-space: pre;
+  border-radius: 1.6rem;
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: bottom right;
+
+  span {
+    @include mixinsNew.text-s-m(1.6rem);
+  }
+}
+
+.link {
+  cursor: pointer;
+
+  &:hover {
+    span {
+      display: inline-block;
+      transition: transform 0.5s ease;
+      transform: scale(1.03);
+    }
+  }
+}
+
+.mainBlue {
+  background-color: colorsNew.$blue03;
+  color: colorsNew.$white01 !important;
+
+  &__link {
+    transition: filter 0.3s ease;
+
+    &:hover {
+      filter: saturate(120%) brightness(1.05);
+    }
+  }
+}
+
+.lightBlue {
+  background-color: colorsNew.$blue01;
+  color: colorsNew.$gray05 !important;
+
+  &__link {
+    transition: filter 0.3s ease;
+
+    &:hover {
+      filter: saturate(150%);
+    }
+  }
+}
+
+.darkBlue {
+  background-color: colorsNew.$blue05;
+  color: colorsNew.$white01 !important;
+
+  &__link {
+    transition: filter 0.3s ease;
+
+    &:hover {
+      filter: saturate(120%) brightness(1.2);
+    }
+  }
+}

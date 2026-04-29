@@ -1,0 +1,27 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+.collapsableBlock {
+  background-color: colorsNew.$white01;
+  border-radius: 2.4rem;
+  padding: 3.2rem;
+
+  .header {
+    span {
+      @include mixinsNew.text-s-m(1.8rem, 2.4rem);
+    }
+  }
+
+  .headerWithInfoTooltip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    padding-right: 1.2rem;
+
+    .infoIcon {
+      padding-top: 0.4rem;
+    }
+  }
+}
