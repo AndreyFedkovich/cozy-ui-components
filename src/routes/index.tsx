@@ -89,7 +89,7 @@ function Index() {
           </p>
         </header>
 
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5">
           <DemoSection title="BaseBlock">
             <BaseBlock title="Базовый блок" subtitle="Подзаголовок компонента">
               <p className="text-sm text-muted-foreground">Контент внутри BaseBlock.</p>
