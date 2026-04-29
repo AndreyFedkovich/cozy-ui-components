@@ -98,8 +98,10 @@ const SelectedOptions = <T, S>({
   );
 };
 
-interface SearchProps<T, S>
-  extends Pick<CustomSelectProps<T, S>, "onSearch" | "searchClassName" | "isLoading"> {
+interface SearchProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  "onSearch" | "searchClassName" | "isLoading"
+> {
   searchValue: string;
   placeholder?: string;
 }
@@ -123,18 +125,17 @@ const Search = <T, S>({
   </div>
 );
 
-interface DropdownProps<T, S>
-  extends Pick<
-    CustomSelectProps<T, S>,
-    | "value"
-    | "options"
-    | "optionClassName"
-    | "optionRender"
-    | "onSearch"
-    | "searchClassName"
-    | "isLoading"
-    | "searchPlaceholder"
-  > {
+interface DropdownProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  | "value"
+  | "options"
+  | "optionClassName"
+  | "optionRender"
+  | "onSearch"
+  | "searchClassName"
+  | "isLoading"
+  | "searchPlaceholder"
+> {
   onChange: (value: CustomOption<T, S>) => void;
   searchValue: string;
 }
@@ -233,7 +234,8 @@ export const Select = <T, S extends string | number>({
   const inputRef = useRef<HTMLDivElement>(null);
 
   const [searchValue, setSearchValue] = useState("");
-  const resolvedPortalTarget = portalTarget ?? (typeof document !== "undefined" ? document.body : undefined);
+  const resolvedPortalTarget =
+    portalTarget ?? (typeof document !== "undefined" ? document.body : undefined);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -315,7 +317,7 @@ export const Select = <T, S extends string | number>({
         ref={dropDownRef}
         className={cn(css.dropdown, { [css.dropdown_visible]: isOpen }, dropDownClassName)}
         style={
-            resolvedPortalTarget
+          resolvedPortalTarget
             ? getDropdownPosition()
             : {
                 top: `calc(${inputHeight}px + ${DROPDOWN_MARGIN}px)`,
