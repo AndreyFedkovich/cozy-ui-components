@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig as defineLovableConfig } from "@lovable.dev/vite-tanstack-config";
 import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
 import { defineConfig as defineViteConfig, type ConfigEnv, type LibraryFormats } from "vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,6 +14,7 @@ export default async function config(env: ConfigEnv) {
     return defineViteConfig({
       plugins: [
         react(),
+        svgr(),
         dts({
           include: [resolve(__dirname, "src/lib/**/*")],
           exclude: ["**/*.test.*", "**/*.spec.*", "node_modules/**"],
@@ -51,5 +53,5 @@ export default async function config(env: ConfigEnv) {
     });
   }
 
-  return defineLovableConfig()(env);
+  return defineLovableConfig({ plugins: [svgr()] })(env);
 }
