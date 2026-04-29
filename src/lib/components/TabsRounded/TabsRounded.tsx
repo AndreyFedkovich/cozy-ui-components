@@ -31,9 +31,7 @@ export const TabsRounded: React.FC<Props> = React.memo(
                   onClick?.(index);
                 }}
               >
-                {activeTab === index && index !== 0 && <div className={css.before} />}
                 {item.title}
-                {activeTab === index && <div className={cn(css.after)} />}
               </div>
             ),
         )}
