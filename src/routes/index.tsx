@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   BaseBlock,
   Button,
@@ -8,6 +8,7 @@ import {
   Collapse,
   CollapsableBlock,
   CopyTextTrigger,
+  DialogSelect,
   EmptyComponent,
   InputCaption,
   Label,
@@ -47,6 +48,16 @@ const selectOptions: CustomOption<{ group: string }>[] = [
   { value: "forms", label: "Form controls", meta: { group: "Library" } },
   { value: "feedback", label: "Feedback", meta: { group: "Library" } },
 ];
+const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from({ length: 48 }, (_, index) => {
+  const id = index + 100;
+  const suffix = index % 3 === 0 ? "Иванович" : index % 3 === 1 ? "Петрович" : "Сергеевич";
+
+  return {
+    value: `employee-${id}`,
+    label: `Иванов${id} Иван ${suffix}`,
+    meta: { birthDate: index % 4 === 0 ? "03.02" : index % 4 === 1 ? "14.06" : index % 4 === 2 ? "21.09" : "30.11" },
+  };
+});
 
 function DemoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -67,8 +78,28 @@ function Index() {
     selectOptions[0],
     selectOptions[2],
   ]);
+  const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
   const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
+
+  const loadEmployees = useCallback(
+    async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
+      await new Promise((resolve) => window.setTimeout(resolve, 350));
+
+      const normalizedSearch = search.toLowerCase();
+      const filteredOptions = employeeOptions.filter((option) =>
+        option.label.toLowerCase().includes(normalizedSearch),
+      );
+      const start = (page - 1) * pageSize;
+      const options = filteredOptions.slice(start, start + pageSize);
+
+      return {
+        options,
+        total: filteredOptions.length,
+      };
+    },
+    [],
+  );
 
   const handleCopy = () => {
     setCopied(true);
@@ -216,6 +247,20 @@ function Index() {
                   setMultiSelected((current) => current.filter((item) => item.value !== option.value))
                 }
                 onClear={() => setMultiSelected([])}
+              />
+              <DialogSelect
+                label="Dialog select"
+                placeholder="Укажите или выберите ФИО кандидата"
+                value={employee}
+                loadOptions={loadEmployees}
+                onChange={setEmployee}
+                onClear={() => setEmployee(null)}
+                searchPlaceholder="Введите ФИО сотрудника"
+                columns={[
+                  { key: "name", title: "ФИО сотрудника", render: (option) => option.label },
+                  { key: "birthDate", title: "День рождения", render: (option) => option.meta?.birthDate },
+                ]}
+                onManualAdd={() => undefined}
               />
             </div>
           </DemoSection>
