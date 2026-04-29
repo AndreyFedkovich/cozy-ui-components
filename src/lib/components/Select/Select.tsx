@@ -223,7 +223,7 @@ export const Select = <T, S extends string | number>({
   isLoading,
   disabled,
   onClose,
-  portalTarget = document.body,
+  portalTarget,
   error,
   fixedHeight = true,
 }: CustomSelectProps<T, S>) => {
@@ -233,6 +233,7 @@ export const Select = <T, S extends string | number>({
   const inputRef = useRef<HTMLDivElement>(null);
 
   const [searchValue, setSearchValue] = useState("");
+  const resolvedPortalTarget = portalTarget ?? (typeof document !== "undefined" ? document.body : undefined);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -314,7 +315,7 @@ export const Select = <T, S extends string | number>({
         ref={dropDownRef}
         className={cn(css.dropdown, { [css.dropdown_visible]: isOpen }, dropDownClassName)}
         style={
-          portalTarget
+            resolvedPortalTarget
             ? getDropdownPosition()
             : {
                 top: `calc(${inputHeight}px + ${DROPDOWN_MARGIN}px)`,
@@ -361,8 +362,8 @@ export const Select = <T, S extends string | number>({
       </div>
     );
 
-    if (portalTarget) {
-      return ReactDOM.createPortal(dropdownContent, portalTarget);
+    if (resolvedPortalTarget) {
+      return ReactDOM.createPortal(dropdownContent, resolvedPortalTarget);
     }
 
     return dropdownContent;
@@ -381,8 +382,8 @@ export const Select = <T, S extends string | number>({
     optionClassName,
     optionRender,
     options,
-    portalTarget,
     position,
+    resolvedPortalTarget,
     searchClassName,
     searchPlaceholder,
     searchValue,
