@@ -64,7 +64,7 @@ export const Popover = ({
   return (
     <ReactstrapPopover
       placement={placement}
-      target={target}
+      target={target as React.RefObject<HTMLElement>}
       isOpen={isPopoverOpen}
       toggle={() => setIsPopoverOpen((value) => !value)}
       popperClassName={cn(css.popover, className)}
