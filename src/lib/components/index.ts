@@ -15,6 +15,7 @@ export { EmptyComponent } from "./EmptyComponent/EmptyComponent";
 export { CollapsableBlock } from "./CollapsibleBlock/CollapsableBlock";
 export { Collapse } from "./Collapse/Collapse";
 export { Select, type CustomOption } from "./Select/Select";
+export { DialogSelect, type DialogSelectColumn, type DialogSelectProps } from "./DialogSelect/DialogSelect";
 export { TabsRounded } from "./TabsRounded/TabsRounded";
 export { Tabs } from "./Tabs/Tabs";
 export { Tag } from "./Tag/Tag";
