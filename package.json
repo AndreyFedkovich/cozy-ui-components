@@ -19,7 +19,11 @@
     "./styles.css": "./dist/styles.css"
   },
   "files": [
-    "dist",
+    "dist/index.d.ts",
+    "dist/styles.css",
+    "dist/ui-library.es.js",
+    "dist/ui-library.cjs.js",
+    "dist/*.map",
     "README.md"
   ],
   "peerDependencies": {

@@ -1,6 +1,6 @@
 # @andreyfedkovich/ui-library-placeholder
 
-Starter React UI component library prepared for npm publishing.
+React UI component library prepared for npm publishing.
 
 ## Installation
 
@@ -11,18 +11,20 @@ npm install @andreyfedkovich/ui-library-placeholder
 ## Usage
 
 ```tsx
-import { UiLibraryPlaceholder } from "@andreyfedkovich/ui-library-placeholder";
+import { Button, Card, Select } from "@andreyfedkovich/ui-library-placeholder";
 import "@andreyfedkovich/ui-library-placeholder/styles.css";
 
 export function App() {
-  return <UiLibraryPlaceholder />;
+  return <Button variant="primary">Save</Button>;
 }
 ```
 
 ## Available exports
 
-- `UiLibraryPlaceholder` — temporary placeholder component for validating package installation and styling.
-- `UiLibraryPlaceholderProps` — TypeScript props for the placeholder component.
+- Components: `BaseBlock`, `RadioGroupButton`, `Card`, `Button`, `Carousel`, `CopyTextTrigger`, `TooltipDark`, `TooltipLight`, `Popover`, `Spinner`, `EmptyComponent`, `CollapsableBlock`, `Collapse`, `Select`, `TabsRounded`, `Tabs`, `Tag`, `InputCaption`, `Label`.
+- Icons from the package icon set.
+- Helpers: `useMeasureElement`, `useDropdownPosition`.
+- Styles and color tokens via `styles.css` and `styles/colors`.
 
 ## Development
 
@@ -45,4 +47,4 @@ The package is built into `dist` with ESM, CommonJS, TypeScript declarations, an
 npm publish --access public
 ```
 
-Before publishing, replace the package name, description, and README content with the final library branding.
+Before publishing, replace the package name and description with the final library branding.
