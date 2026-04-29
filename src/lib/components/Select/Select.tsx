@@ -229,13 +229,18 @@ export const Select = <T, S extends string | number>({
   fixedHeight = true,
 }: CustomSelectProps<T, S>) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropDownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const resolvedPortalTarget =
-    portalTarget ?? (typeof document !== "undefined" ? document.body : undefined);
+    portalTarget ?? (isMounted && typeof document !== "undefined" ? document.body : undefined);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -392,7 +397,7 @@ export const Select = <T, S extends string | number>({
     value,
   ]);
 
-  const dropdown = useMemo(() => renderDropdown(), [renderDropdown]);
+  const dropdown = useMemo(() => (isMounted ? renderDropdown() : null), [isMounted, renderDropdown]);
 
   const hasValue = Array.isArray(value) ? !!value.length : !!value;
 
