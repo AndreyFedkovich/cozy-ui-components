@@ -4,7 +4,6 @@ import {
   CarouselItem,
   CarouselControl,
   CarouselIndicators,
-  CarouselCaption,
   CarouselProps as ReactstrapCarouselProps,
 } from "reactstrap";
 import styles from "./Carousel.module.scss";
@@ -99,54 +98,46 @@ export const Carousel = <T extends { id: string | number; caption?: string }>(
   }
 
   return (
-    <div className={styles.stackWrapper}>
-      <div className={styles.carouselWrapper}>
-        {isMany ? (
-          <CarouselReactstrap
+    <div className={styles.carouselWrapper}>
+      {isMany ? (
+        <CarouselReactstrap
+          activeIndex={activeIndex}
+          next={next}
+          previous={previous}
+          className={styles.carousel}
+          {...carouselSharedProps}
+        >
+          <CarouselIndicators
+            items={indicatorItems}
             activeIndex={activeIndex}
-            next={next}
-            previous={previous}
-            className={styles.carousel}
-            {...carouselSharedProps}
-          >
-            <div className="carousel-custom-control">
-              <CarouselControl
-                className={styles.carouselControl}
-                direction="prev"
-                directionText=" "
-                onClickHandler={previous}
-              />
-              <CarouselIndicators
-                items={indicatorItems}
-                activeIndex={activeIndex}
-                onClickHandler={goToIndex}
-                className={styles.indicators}
-              />
-              <CarouselControl direction="next" directionText=" " onClickHandler={next} />
-            </div>
-
-            {slides.map((slide) => (
-              <CarouselItem
-                key={slide.key}
-                onExiting={() => setAnimating(true)}
-                onExited={() => setAnimating(false)}
-                className={styles.carouselItem}
-              >
-                <div className={styles.itemContent}>{slide.content}</div>
-                {slide.caption ? (
-                  <CarouselCaption
-                    captionText={slide.caption}
-                    captionHeader={slide.caption}
-                    className={styles.caption}
-                  />
-                ) : null}
-              </CarouselItem>
-            ))}
-          </CarouselReactstrap>
-        ) : (
-          slides[0].content
-        )}
-      </div>
+            onClickHandler={goToIndex}
+            className={styles.indicators}
+          />
+          {slides.map((slide) => (
+            <CarouselItem
+              key={slide.key}
+              onExiting={() => setAnimating(true)}
+              onExited={() => setAnimating(false)}
+            >
+              <div className={styles.itemContent}>{slide.content}</div>
+            </CarouselItem>
+          ))}
+          <CarouselControl
+            className={styles.carouselControl}
+            direction="prev"
+            directionText="Previous"
+            onClickHandler={previous}
+          />
+          <CarouselControl
+            className={styles.carouselControl}
+            direction="next"
+            directionText="Next"
+            onClickHandler={next}
+          />
+        </CarouselReactstrap>
+      ) : (
+        slides[0].content
+      )}
     </div>
   );
 };
