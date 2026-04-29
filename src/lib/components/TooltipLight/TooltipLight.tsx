@@ -36,7 +36,7 @@ const getTargetElement = (target: TooltipTarget) => {
 
 const getPlacement = (placement: TooltipPlacement = "top") => {
   const [side, align] = placement.split("-") as ["top" | "bottom" | "left" | "right", "start" | "end" | undefined];
-  return { side, align: align ?? "center" };
+  return { side, align: (align ?? "center") as "start" | "center" | "end" };
 };
 
 const getDelay = (delay: TooltipLightProps["delay"], key: "show" | "hide") =>
