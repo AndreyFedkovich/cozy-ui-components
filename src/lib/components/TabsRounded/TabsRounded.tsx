@@ -21,6 +21,8 @@ export const TabsRounded: React.FC<Props> = React.memo(
                 key={index}
                 className={cn(css.tabItem, item.className, {
                   [css.active]: activeTab === index,
+                  [css.first]: index === 0,
+                  [css.last]: index === items.length - 1,
                 })}
                 style={{
                   zIndex:
@@ -31,7 +33,9 @@ export const TabsRounded: React.FC<Props> = React.memo(
                   onClick?.(index);
                 }}
               >
+                {activeTab === index && index !== 0 && <span className={css.before} />}
                 {item.title}
+                {activeTab === index && index !== items.length - 1 && <span className={css.after} />}
               </div>
             ),
         )}
