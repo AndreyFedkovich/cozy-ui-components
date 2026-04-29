@@ -1,4 +1,4 @@
-import { FC, RefObject, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, RefObject, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import cn from "classnames";
 import {
   Tooltip,
@@ -12,7 +12,7 @@ type TooltipTarget = string | HTMLElement | RefObject<HTMLElement | null>;
 type TooltipPlacement = "top" | "bottom" | "left" | "right" | `${"top" | "bottom" | "left" | "right"}-${"start" | "end"}`;
 
 interface TooltipLightProps {
-  children?: React.ReactNode;
+  children?: ReactNode;
   target: TooltipTarget;
   placement?: TooltipPlacement;
   popperClassName?: string;
