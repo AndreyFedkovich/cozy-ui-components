@@ -44,6 +44,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <UiButton
         ref={ref}
+        variant={null}
+        size={null}
         className={buttonClasses}
         disabled={disabled || loading}
         type={type}
