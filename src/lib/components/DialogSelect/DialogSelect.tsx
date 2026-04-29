@@ -192,7 +192,9 @@ export const DialogSelect = <T, S extends string | number>({
           }
         }}
       >
-        <span className={cn(css.selectedOption, { [css.placeholder]: !value })}>{selectedContent}</span>
+        <span className={cn(css.selectedOption, { [css.placeholder]: !value })}>
+          {selectedContent}
+        </span>
         <span className={css.actions}>
           {onClear && value && (
             <Button
@@ -273,7 +275,10 @@ export const DialogSelect = <T, S extends string | number>({
 
             {!isLoading && !options.length && (
               <div className={css.emptyState}>
-                <EmptyComponent title="Ничего не найдено" subtitle="Попробуйте изменить поисковый запрос" />
+                <EmptyComponent
+                  title="Ничего не найдено"
+                  subtitle="Попробуйте изменить поисковый запрос"
+                />
               </div>
             )}
           </div>
@@ -289,7 +294,8 @@ export const DialogSelect = <T, S extends string | number>({
                 Назад
               </Button>
               <span className={css.pageInfo}>
-                Страница {page}{totalPages ? ` из ${totalPages}` : ""}
+                Страница {page}
+                {totalPages ? ` из ${totalPages}` : ""}
               </span>
               <Button
                 variant="secondary"

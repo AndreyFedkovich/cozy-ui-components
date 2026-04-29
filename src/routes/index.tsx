@@ -48,16 +48,28 @@ const selectOptions: CustomOption<{ group: string }>[] = [
   { value: "forms", label: "Form controls", meta: { group: "Library" } },
   { value: "feedback", label: "Feedback", meta: { group: "Library" } },
 ];
-const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from({ length: 48 }, (_, index) => {
-  const id = index + 100;
-  const suffix = index % 3 === 0 ? "Иванович" : index % 3 === 1 ? "Петрович" : "Сергеевич";
+const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
+  { length: 48 },
+  (_, index) => {
+    const id = index + 100;
+    const suffix = index % 3 === 0 ? "Иванович" : index % 3 === 1 ? "Петрович" : "Сергеевич";
 
-  return {
-    value: `employee-${id}`,
-    label: `Иванов${id} Иван ${suffix}`,
-    meta: { birthDate: index % 4 === 0 ? "03.02" : index % 4 === 1 ? "14.06" : index % 4 === 2 ? "21.09" : "30.11" },
-  };
-});
+    return {
+      value: `employee-${id}`,
+      label: `Иванов${id} Иван ${suffix}`,
+      meta: {
+        birthDate:
+          index % 4 === 0
+            ? "03.02"
+            : index % 4 === 1
+              ? "14.06"
+              : index % 4 === 2
+                ? "21.09"
+                : "30.11",
+      },
+    };
+  },
+);
 
 function DemoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -73,7 +85,9 @@ function Index() {
   const [tab, setTab] = useState(0);
   const [roundedTab, setRoundedTab] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [selected, setSelected] = useState<CustomOption<{ group: string }> | null>(selectOptions[0]);
+  const [selected, setSelected] = useState<CustomOption<{ group: string }> | null>(
+    selectOptions[0],
+  );
   const [multiSelected, setMultiSelected] = useState<CustomOption<{ group: string }>[]>([
     selectOptions[0],
     selectOptions[2],
@@ -153,7 +167,13 @@ function Index() {
           <DemoSection title="Card">
             <div className="flex flex-wrap gap-4">
               <Card text="Default card" width={180} height={110} />
-              <Card text="Colored card" width={180} height={110} backgroundColor="#eef6ff" textColor="#0f172a" />
+              <Card
+                text="Colored card"
+                width={180}
+                height={110}
+                backgroundColor="#eef6ff"
+                textColor="#0f172a"
+              />
             </div>
           </DemoSection>
 
@@ -165,7 +185,9 @@ function Index() {
                 { id: 3, caption: "Третий слайд", color: "bg-accent" },
               ]}
               renderItem={(item) => (
-                <div className={`flex h-40 w-full items-center justify-center rounded-md ${item.color}`}>
+                <div
+                  className={`flex h-40 w-full items-center justify-center rounded-md ${item.color}`}
+                >
                   <span className="text-sm font-medium text-foreground">{item.caption}</span>
                 </div>
               )}
@@ -185,9 +207,15 @@ function Index() {
 
           <DemoSection title="TooltipLight + Popover">
             <div className="flex flex-wrap items-center gap-4">
-              <Button id={tooltipTargetId} variant="secondary">Light tooltip target</Button>
-              <TooltipLight placement="top" target={tooltipTargetId}>Светлый tooltip</TooltipLight>
-              <Button ref={popoverTarget} variant="primary">Open popover</Button>
+              <Button id={tooltipTargetId} variant="secondary">
+                Light tooltip target
+              </Button>
+              <TooltipLight placement="top" target={tooltipTargetId}>
+                Светлый tooltip
+              </TooltipLight>
+              <Button ref={popoverTarget} variant="primary">
+                Open popover
+              </Button>
               <Popover target={popoverTarget} placement="bottom">
                 Контент popover-компонента.
               </Popover>
@@ -244,7 +272,9 @@ function Index() {
                   )
                 }
                 onDelete={(option) =>
-                  setMultiSelected((current) => current.filter((item) => item.value !== option.value))
+                  setMultiSelected((current) =>
+                    current.filter((item) => item.value !== option.value),
+                  )
                 }
                 onClear={() => setMultiSelected([])}
               />
@@ -258,7 +288,11 @@ function Index() {
                 searchPlaceholder="Введите ФИО сотрудника"
                 columns={[
                   { key: "name", title: "ФИО сотрудника", render: (option) => option.label },
-                  { key: "birthDate", title: "День рождения", render: (option) => option.meta?.birthDate },
+                  {
+                    key: "birthDate",
+                    title: "День рождения",
+                    render: (option) => option.meta?.birthDate,
+                  },
                 ]}
                 onManualAdd={() => undefined}
               />
@@ -276,13 +310,19 @@ function Index() {
           <DemoSection title="Tag">
             <div className="flex flex-wrap gap-3">
               <Tag>Readonly tag</Tag>
-              <Tag isSmall onClick={() => undefined}>Closable tag</Tag>
+              <Tag isSmall onClick={() => undefined}>
+                Closable tag
+              </Tag>
             </div>
           </DemoSection>
 
           <DemoSection title="InputCaption + Label">
             <Label htmlFor="demo-field">Demo label</Label>
-            <input id="demo-field" className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" defaultValue="Input value" />
+            <input
+              id="demo-field"
+              className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              defaultValue="Input value"
+            />
             <InputCaption>Caption or validation message</InputCaption>
           </DemoSection>
         </div>
