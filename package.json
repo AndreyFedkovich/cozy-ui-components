@@ -116,7 +116,6 @@
   },
   "dependencies": {
     "classnames": "^2.5.1",
-    "react-router-dom": "^7.14.2",
-    "reactstrap": "^9.2.3"
+    "react-router-dom": "^7.14.2"
   }
 }

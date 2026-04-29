@@ -1,5 +1,6 @@
 import { memo, useCallback, type ReactNode } from "react";
 import cn from "classnames";
+import { Button as UiButton } from "@/components/ui/button";
 import { CopyIcon } from "../../icons";
 import { TooltipDark } from "../TooltipDark/Tooltip";
 import css from "./CopyTextTrigger.module.scss";
@@ -31,8 +32,10 @@ export const CopyTextTrigger = memo(
     return (
       <span className={css.wrapper}>
         <TooltipDark open={copied} title={tooltipText} placement="top">
-          <button
+          <UiButton
             type="button"
+            variant={null}
+            size={null}
             className={cn(css.trigger, className)}
             onClick={handleClick}
             aria-label={ariaLabel}
@@ -40,7 +43,7 @@ export const CopyTextTrigger = memo(
           >
             {children}
             {showIcon && <CopyIcon className={css.icon} aria-hidden />}
-          </button>
+          </UiButton>
         </TooltipDark>
       </span>
     );

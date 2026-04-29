@@ -1,5 +1,6 @@
 import React, { ButtonHTMLAttributes, forwardRef } from "react";
 import classNames from "classnames";
+import { Button as UiButton } from "@/components/ui/button";
 import { Spinner } from "../Spinner/Spinner";
 import css from "./Button.module.scss";
 
@@ -41,8 +42,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
 
     return (
-      <button
+      <UiButton
         ref={ref}
+        variant={null}
+        size={null}
         className={buttonClasses}
         disabled={disabled || loading}
         type={type}
@@ -55,7 +58,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <Spinner size="extraSmall" />
           </span>
         )}
-      </button>
+      </UiButton>
     );
   },
 );

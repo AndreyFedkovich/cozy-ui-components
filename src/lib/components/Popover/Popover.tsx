@@ -1,48 +1,56 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  PopoverBody,
-  PopoverProps as ReactstrapPopoverProps,
-  Popover as ReactstrapPopover,
-} from "reactstrap";
+import { ReactNode, RefObject, useCallback, useEffect, useMemo, useState } from "react";
 import cn from "classnames";
+import {
+  Popover as UiPopover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import css from "./Popover.module.scss";
 
-interface PopoverProps extends Omit<ReactstrapPopoverProps, "target"> {
-  target: React.RefObject<HTMLElement | null>;
+type PopoverPlacement = "top" | "bottom" | "left" | "right" | `${"top" | "bottom" | "left" | "right"}-${"start" | "end"}`;
+
+interface PopoverProps {
+  children?: ReactNode;
+  target: RefObject<HTMLElement | null>;
+  placement?: PopoverPlacement;
+  className?: string;
+  isOpen?: boolean;
+  toggle?: () => void;
   onOpenChange?: (isOpen: boolean) => void;
 }
 
+const getPlacement = (placement: PopoverPlacement = "bottom") => {
+  const [side, align] = placement.split("-") as ["top" | "bottom" | "left" | "right", "start" | "end" | undefined];
+  return { side, align: (align ?? "center") as "start" | "center" | "end" };
+};
+
 export const Popover = ({
   children,
-  placement,
+  placement = "bottom",
   target,
   className,
+  isOpen,
+  toggle,
   onOpenChange,
-  ...props
 }: PopoverProps) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const open = isOpen ?? internalOpen;
+  const { side, align } = useMemo(() => getPlacement(placement), [placement]);
 
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const updateRect = useCallback(() => {
+    setRect(target.current?.getBoundingClientRect() ?? null);
+  }, [target]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node) &&
-        target.current &&
-        !target.current.contains(event.target as Node)
-      ) {
-        setIsPopoverOpen(false);
-        onOpenChange?.(false);
+  const setOpen = useCallback(
+    (value: boolean) => {
+      if (isOpen === undefined) {
+        setInternalOpen(value);
       }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onOpenChange, target]);
+      onOpenChange?.(value);
+    },
+    [isOpen, onOpenChange],
+  );
 
   useEffect(() => {
     const targetElement = target.current;
@@ -51,28 +59,33 @@ export const Popover = ({
     }
 
     const handleClick = () => {
-      setIsPopoverOpen(!isPopoverOpen);
-      onOpenChange?.(!isPopoverOpen);
+      updateRect();
+      setOpen(!open);
+      toggle?.();
     };
+
     targetElement.addEventListener("click", handleClick);
+    window.addEventListener("scroll", updateRect, true);
+    window.addEventListener("resize", updateRect);
 
     return () => {
       targetElement.removeEventListener("click", handleClick);
+      window.removeEventListener("scroll", updateRect, true);
+      window.removeEventListener("resize", updateRect);
     };
-  }, [isPopoverOpen, onOpenChange, target]);
+  }, [open, setOpen, target, toggle, updateRect]);
 
   return (
-    <ReactstrapPopover
-      placement={placement}
-      target={target as React.RefObject<HTMLElement>}
-      isOpen={isPopoverOpen}
-      toggle={() => setIsPopoverOpen((value) => !value)}
-      popperClassName={cn(css.popover, className)}
-      {...props}
-    >
-      <div ref={popoverRef}>
-        <PopoverBody>{children}</PopoverBody>
-      </div>
-    </ReactstrapPopover>
+    <UiPopover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <span
+          className={css.anchor}
+          style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
+        />
+      </PopoverTrigger>
+      <PopoverContent side={side} align={align} className={cn(css.popover, className)}>
+        {children}
+      </PopoverContent>
+    </UiPopover>
   );
 };

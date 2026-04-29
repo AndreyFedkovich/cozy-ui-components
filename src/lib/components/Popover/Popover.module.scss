@@ -1,5 +1,10 @@
 @use "../../styles/mixinsNew";
 
+.anchor {
+  position: fixed;
+  pointer-events: none;
+}
+
 .popover {
   @include mixinsNew.popover();
 }
