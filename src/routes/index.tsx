@@ -189,7 +189,7 @@ function Index() {
           </DemoSection>
 
           <DemoSection title="Select">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               <Select
                 mode="single"
                 label="Single select"
