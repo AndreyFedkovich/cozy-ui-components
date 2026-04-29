@@ -98,8 +98,10 @@ const SelectedOptions = <T, S>({
   );
 };
 
-interface SearchProps<T, S>
-  extends Pick<CustomSelectProps<T, S>, "onSearch" | "searchClassName" | "isLoading"> {
+interface SearchProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  "onSearch" | "searchClassName" | "isLoading"
+> {
   searchValue: string;
   placeholder?: string;
 }
@@ -123,18 +125,17 @@ const Search = <T, S>({
   </div>
 );
 
-interface DropdownProps<T, S>
-  extends Pick<
-    CustomSelectProps<T, S>,
-    | "value"
-    | "options"
-    | "optionClassName"
-    | "optionRender"
-    | "onSearch"
-    | "searchClassName"
-    | "isLoading"
-    | "searchPlaceholder"
-  > {
+interface DropdownProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  | "value"
+  | "options"
+  | "optionClassName"
+  | "optionRender"
+  | "onSearch"
+  | "searchClassName"
+  | "isLoading"
+  | "searchPlaceholder"
+> {
   onChange: (value: CustomOption<T, S>) => void;
   searchValue: string;
 }
@@ -223,16 +224,23 @@ export const Select = <T, S extends string | number>({
   isLoading,
   disabled,
   onClose,
-  portalTarget = document.body,
+  portalTarget,
   error,
   fixedHeight = true,
 }: CustomSelectProps<T, S>) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropDownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
 
   const [searchValue, setSearchValue] = useState("");
+  const resolvedPortalTarget =
+    portalTarget ?? (isMounted && typeof document !== "undefined" ? document.body : undefined);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -314,7 +322,7 @@ export const Select = <T, S extends string | number>({
         ref={dropDownRef}
         className={cn(css.dropdown, { [css.dropdown_visible]: isOpen }, dropDownClassName)}
         style={
-          portalTarget
+          resolvedPortalTarget
             ? getDropdownPosition()
             : {
                 top: `calc(${inputHeight}px + ${DROPDOWN_MARGIN}px)`,
@@ -361,8 +369,8 @@ export const Select = <T, S extends string | number>({
       </div>
     );
 
-    if (portalTarget) {
-      return ReactDOM.createPortal(dropdownContent, portalTarget);
+    if (resolvedPortalTarget) {
+      return ReactDOM.createPortal(dropdownContent, resolvedPortalTarget);
     }
 
     return dropdownContent;
@@ -381,15 +389,18 @@ export const Select = <T, S extends string | number>({
     optionClassName,
     optionRender,
     options,
-    portalTarget,
     position,
+    resolvedPortalTarget,
     searchClassName,
     searchPlaceholder,
     searchValue,
     value,
   ]);
 
-  const dropdown = useMemo(() => renderDropdown(), [renderDropdown]);
+  const dropdown = useMemo(
+    () => (isMounted ? renderDropdown() : null),
+    [isMounted, renderDropdown],
+  );
 
   const hasValue = Array.isArray(value) ? !!value.length : !!value;
 
