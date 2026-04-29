@@ -1,8 +1,8 @@
 export enum Colors {
   BLUE_01 = "#D3E8FA",
-  BLUE_02 = "#67A7F0",
-  BLUE_03 = "#006DF0",
-  BLUE_04 = "#0053B9",
+  BLUE_02 = "#4573D9",
+  BLUE_03 = "#4573D9",
+  BLUE_04 = "#4573D9",
   BLUE_05 = "#001A3D",
 
   GRAY_01 = "#F4F7FA",
