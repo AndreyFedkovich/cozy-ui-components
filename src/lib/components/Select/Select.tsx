@@ -64,7 +64,7 @@ const SelectedOptions = <T, S>({
 }: Pick<
   CustomSelectProps<T, S>,
   "value" | "selectedOptionRender" | "tagRender" | "onDelete"
->): JSX.Element | null => {
+>): React.ReactElement | null => {
   if (!value) {
     return null;
   }
@@ -150,7 +150,7 @@ const Dropdown = <T, S>({
   isLoading,
   searchValue,
   searchPlaceholder,
-}: DropdownProps<T, S>): JSX.Element | null => {
+}: DropdownProps<T, S>): React.ReactElement | null => {
   const checkIsActive = (option: CustomOption<T, S>) =>
     Array.isArray(value)
       ? value.some((item) => item.value === option.value)

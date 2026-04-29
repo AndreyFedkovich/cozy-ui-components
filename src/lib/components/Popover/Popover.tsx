@@ -8,7 +8,7 @@ import cn from "classnames";
 import css from "./Popover.module.scss";
 
 interface PopoverProps extends Omit<ReactstrapPopoverProps, "target"> {
-  target: React.RefObject<HTMLElement>;
+  target: React.RefObject<HTMLElement | null>;
   onOpenChange?: (isOpen: boolean) => void;
 }
 
@@ -64,7 +64,7 @@ export const Popover = ({
   return (
     <ReactstrapPopover
       placement={placement}
-      target={target}
+      target={target as React.RefObject<HTMLElement>}
       isOpen={isPopoverOpen}
       toggle={() => setIsPopoverOpen((value) => !value)}
       popperClassName={cn(css.popover, className)}

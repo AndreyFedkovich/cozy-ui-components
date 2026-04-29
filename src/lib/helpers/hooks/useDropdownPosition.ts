@@ -14,7 +14,7 @@ export const useDropdownPosition = ({
   offset = 8,
 }: UseDropdownPositionProps) => {
   const [position, setPosition] = useState<DropdownPosition>("bottom");
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) {

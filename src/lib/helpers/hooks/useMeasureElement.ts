@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 export const useMeasureElement = (element?: HTMLElement | null) => {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!element) {
