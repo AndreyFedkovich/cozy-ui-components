@@ -397,7 +397,10 @@ export const Select = <T, S extends string | number>({
     value,
   ]);
 
-  const dropdown = useMemo(() => (isMounted ? renderDropdown() : null), [isMounted, renderDropdown]);
+  const dropdown = useMemo(
+    () => (isMounted ? renderDropdown() : null),
+    [isMounted, renderDropdown],
+  );
 
   const hasValue = Array.isArray(value) ? !!value.length : !!value;
 
