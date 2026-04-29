@@ -8,7 +8,7 @@ import cn from "classnames";
 import css from "./Popover.module.scss";
 
 interface PopoverProps extends Omit<ReactstrapPopoverProps, "target"> {
-  target: React.RefObject<HTMLElement>;
+  target: React.RefObject<HTMLElement | null>;
   onOpenChange?: (isOpen: boolean) => void;
 }
 
