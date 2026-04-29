@@ -6,7 +6,8 @@
   position: relative;
   white-space: nowrap;
   align-items: flex-end;
-  overflow: hidden;
+  overflow: visible;
+  padding-bottom: 20px;
 
   .tabItem {
     @include mixinsNew.text-s();
@@ -27,7 +28,7 @@
     text-align: center;
     margin-left: -12px;
     z-index: 2;
-    margin-bottom: -1px;
+    margin-bottom: -20px;
 
     &:first-child {
       margin-left: 0;
@@ -42,9 +43,62 @@
       background: colorsNew.$white01;
       color: colorsNew.$blue03;
       border-bottom: none;
+      z-index: 10;
 
       &:first-child {
-        margin-bottom: -1px;
+        &::before {
+          content: "";
+          position: absolute;
+          bottom: -20px;
+          left: -1px;
+          width: 1px;
+          height: 20px;
+          background: colorsNew.$gray07;
+        }
+      }
+    }
+
+    .before,
+    .after {
+      position: absolute;
+      bottom: -20px;
+      width: 20px;
+      height: 20px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .before {
+      left: -20px;
+
+      &::before {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 40px;
+        height: 40px;
+        border-right: 1px solid colorsNew.$gray07;
+        border-bottom: 1px solid colorsNew.$gray07;
+        border-bottom-right-radius: 20px;
+        box-shadow: 20px 20px 0 20px colorsNew.$white01;
+      }
+    }
+
+    .after {
+      right: -20px;
+
+      &::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border-left: 1px solid colorsNew.$gray07;
+        border-bottom: 1px solid colorsNew.$gray07;
+        border-bottom-left-radius: 20px;
+        box-shadow: -20px 20px 0 20px colorsNew.$white01;
       }
     }
   }
