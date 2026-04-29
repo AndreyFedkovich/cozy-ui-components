@@ -1,0 +1,254 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+.wrapper {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid colorsNew.$gray06;
+  background: colorsNew.$white01;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:focus,
+  &:focus-visible,
+  &:hover {
+    outline: none;
+    border-color: colorsNew.$blue03;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$blue03, 0.08);
+  }
+}
+
+.error {
+  border-color: colorsNew.$red02;
+
+  &:focus,
+  &:focus-visible,
+  &:hover {
+    border-color: colorsNew.$red02;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$red02, 0.08);
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  background-color: rgba(colorsNew.$gray02, 0.3);
+  color: colorsNew.$gray04;
+}
+
+.selectedOption {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: colorsNew.$gray05;
+  @include mixinsNew.text();
+}
+
+.placeholder {
+  color: colorsNew.$gray04;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.clearButton {
+  width: 24px;
+  height: 24px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.selectButton {
+  color: colorsNew.$blue04;
+  white-space: nowrap;
+}
+
+.dialogContent {
+  width: calc(100vw - 32px);
+  max-width: 780px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: none;
+  border-radius: 18px;
+  background: colorsNew.$white01;
+  padding: 32px;
+  box-shadow: 0 24px 70px rgba(colorsNew.$black01, 0.24);
+  overflow: hidden;
+}
+
+.dialogHeader {
+  display: block;
+  text-align: left;
+}
+
+.dialogTitle {
+  color: colorsNew.$blue05;
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.search {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid colorsNew.$gray06;
+  border-radius: 999px;
+  background: colorsNew.$gray01;
+  padding: 6px 12px 6px 28px;
+  position: relative;
+
+  &:focus-within {
+    border-color: colorsNew.$blue03;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$blue03, 0.08);
+  }
+}
+
+.searchIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: colorsNew.$blue05;
+  font-weight: 600;
+  @include mixinsNew.text();
+  @include mixinsNew.placeholder(colorsNew.$gray04);
+}
+
+.searchSpinner {
+  flex-shrink: 0;
+}
+
+.tableContainer {
+  min-height: 320px;
+  max-height: min(50vh, 430px);
+  overflow: auto;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 10px;
+  background: colorsNew.$white01;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 14px 24px;
+    text-align: left;
+    color: colorsNew.$gray04;
+    background: colorsNew.$white01;
+    border-bottom: 1px solid colorsNew.$gray07;
+    font-weight: 500;
+    @include mixinsNew.text(1.4rem);
+  }
+
+  td {
+    padding: 16px 24px;
+    color: colorsNew.$blue05;
+    @include mixinsNew.text();
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:nth-child(odd) {
+      background: rgba(colorsNew.$gray01, 0.72);
+    }
+
+    &:hover {
+      background: colorsNew.$blue01;
+    }
+  }
+}
+
+.activeRow {
+  background: colorsNew.$blue01 !important;
+
+  td {
+    font-weight: 700;
+  }
+}
+
+.emptyState {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.pagination,
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageInfo {
+  color: colorsNew.$gray04;
+  white-space: nowrap;
+  @include mixinsNew.text(1.4rem);
+}
+
+@media (max-width: 680px) {
+  .dialogContent {
+    padding: 24px 16px;
+    border-radius: 14px;
+  }
+
+  .dialogFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination,
+  .footerActions {
+    justify-content: space-between;
+  }
+
+  .table {
+    th,
+    td {
+      padding: 12px 14px;
+    }
+  }
+}
