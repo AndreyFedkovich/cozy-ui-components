@@ -1,4 +1,6 @@
 import "./styles.css";
 
-export { UiLibraryPlaceholder } from "./UiLibraryPlaceholder";
-export type { UiLibraryPlaceholderProps } from "./UiLibraryPlaceholder";
+export * from "./icons";
+export * from "./styles/colors";
+export * from "./components";
+export * from "./helpers";

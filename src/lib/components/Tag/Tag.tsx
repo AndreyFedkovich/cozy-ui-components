@@ -1,6 +1,6 @@
 import cn from "classnames";
-import { FC, memo } from "react";
-import { ReactComponent as CrossIcon } from "shared/icons/cross.svg";
+import { FC, MouseEvent, PropsWithChildren, memo } from "react";
+import { CrossIcon } from "../../icons";
 import css from "./Tag.module.scss";
 
 interface Props {
@@ -10,13 +10,13 @@ interface Props {
   isSmall?: boolean;
 }
 
-export const Tag: FC<Props> = memo(({ className, children, onClick, isSmall }) => (
+export const Tag: FC<PropsWithChildren<Props>> = memo(({ className, children, onClick, isSmall }) => (
   <div className={cn(css.wrapper, className, isSmall && css.wrapper_small)}>
     <span>{children}</span>
     {onClick && (
       <CrossIcon
         className={cn(css.iconCross, { [css.iconCross_small]: isSmall })}
-        onClick={(e) => {
+        onClick={(e: MouseEvent<SVGSVGElement>) => {
           e.stopPropagation();
           onClick();
         }}
