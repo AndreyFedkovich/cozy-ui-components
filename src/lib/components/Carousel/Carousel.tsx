@@ -7,7 +7,7 @@ import {
   CarouselCaption,
   CarouselProps as ReactstrapCarouselProps,
 } from "reactstrap";
-import styles from "./Carousel.scss";
+import styles from "./Carousel.module.scss";
 
 type CarouselSharedProps = Omit<ReactstrapCarouselProps, "next" | "previous" | "activeIndex">;
 
