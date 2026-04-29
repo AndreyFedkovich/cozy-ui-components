@@ -1,14 +1,24 @@
-import { Children, ReactNode, isValidElement, useMemo, useState } from "react";
 import {
-  Carousel as CarouselReactstrap,
-  CarouselItem,
-  CarouselControl,
-  CarouselIndicators,
-  CarouselProps as ReactstrapCarouselProps,
-} from "reactstrap";
+  Children,
+  ReactNode,
+  isValidElement,
+  useMemo,
+  useState,
+  type HTMLAttributes,
+  type KeyboardEvent,
+} from "react";
 import styles from "./Carousel.module.scss";
 
-type CarouselSharedProps = Omit<ReactstrapCarouselProps, "next" | "previous" | "activeIndex">;
+type CarouselSharedProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
+  dark?: boolean;
+  enableTouch?: boolean;
+  fade?: boolean;
+  interval?: number | string | boolean;
+  keyboard?: boolean;
+  pause?: "hover" | false;
+  ride?: "carousel";
+  slide?: boolean;
+};
 
 export type CarouselProps<T extends { id: string | number; caption?: string }> =
   | (CarouselSharedProps & { items: T[]; renderItem: (item: T) => ReactNode })
@@ -64,80 +74,116 @@ export const Carousel = <T extends { id: string | number; caption?: string }>(
   const slides = buildSlides(props);
   const slideCount = slides.length;
   const carouselSharedProps = pickCarouselSharedProps(props);
+  const {
+    className,
+    dark: _dark,
+    enableTouch: _enableTouch,
+    fade: _fade,
+    interval: _interval,
+    keyboard = true,
+    pause: _pause,
+    ride: _ride,
+    slide: _slide,
+    ...domProps
+  } = carouselSharedProps;
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [animating, setAnimating] = useState(false);
 
   const next = () => {
-    if (animating) {
-      return;
-    }
     setActiveIndex((prev) => (prev === slideCount - 1 ? 0 : prev + 1));
   };
 
   const previous = () => {
-    if (animating) {
-      return;
-    }
     setActiveIndex((prev) => (prev === 0 ? slideCount - 1 : prev - 1));
   };
 
   const goToIndex = (newIndex: number) => {
-    if (animating) {
-      return;
-    }
     setActiveIndex(newIndex);
   };
 
   const isMany = slideCount > 1;
-
   const indicatorItems = useMemo(() => slides.map((slide) => ({ key: slide.key })), [slides]);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    domProps.onKeyDown?.(event);
+
+    if (event.defaultPrevented || !keyboard || !isMany) {
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      previous();
+    }
+
+    if (event.key === "ArrowRight") {
+      next();
+    }
+  };
 
   if (!slideCount) {
     return null;
   }
 
+  if (!isMany) {
+    return <div className={styles.carouselWrapper}>{slides[0].content}</div>;
+  }
+
   return (
     <div className={styles.carouselWrapper}>
-      {isMany ? (
-        <CarouselReactstrap
-          activeIndex={activeIndex}
-          next={next}
-          previous={previous}
-          className={styles.carousel}
-          {...carouselSharedProps}
-        >
-          <CarouselIndicators
-            items={indicatorItems}
-            activeIndex={activeIndex}
-            onClickHandler={goToIndex}
-            className={styles.indicators}
-          />
-          {slides.map((slide) => (
-            <CarouselItem
+      <div
+        {...domProps}
+        className={[styles.carousel, className].filter(Boolean).join(" ")}
+        onKeyDown={handleKeyDown}
+        role="region"
+        aria-roledescription="carousel"
+      >
+        <div className={styles.viewport}>
+          {slides.map((slide, index) => (
+            <div
               key={slide.key}
-              onExiting={() => setAnimating(true)}
-              onExited={() => setAnimating(false)}
+              className={[styles.slide, index === activeIndex ? styles.activeSlide : ""]
+                .filter(Boolean)
+                .join(" ")}
+              aria-hidden={index !== activeIndex}
             >
               <div className={styles.itemContent}>{slide.content}</div>
-            </CarouselItem>
+            </div>
           ))}
-          <CarouselControl
+        </div>
+
+        <div className={styles.controls}>
+          <button
             className={styles.carouselControl}
-            direction="prev"
-            directionText="Previous"
-            onClickHandler={previous}
-          />
-          <CarouselControl
+            type="button"
+            onClick={previous}
+            aria-label="Previous slide"
+          >
+            <span className={styles.prevIcon} aria-hidden="true" />
+          </button>
+
+          <div className={styles.indicators}>
+            {indicatorItems.map((item, index) => (
+              <button
+                key={item.key}
+                className={index === activeIndex ? styles.activeIndicator : undefined}
+                type="button"
+                onClick={() => goToIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                aria-current={index === activeIndex}
+              />
+            ))}
+          </div>
+
+          <button
             className={styles.carouselControl}
-            direction="next"
-            directionText="Next"
-            onClickHandler={next}
-          />
-        </CarouselReactstrap>
-      ) : (
-        slides[0].content
-      )}
+            type="button"
+            onClick={next}
+            aria-label="Next slide"
+          >
+            <span className={styles.nextIcon} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
