@@ -459,35 +459,39 @@ export const Select = <T, S extends string | number>({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={css.dropdownContent} style={{ height: fixedHeight ? "300px" : "none" }}>
-          {dropdownRender ? (
-            dropdownRender(
-              <Dropdown
-                value={value}
-                options={options}
-                optionClassName={optionClassName}
-                optionRender={optionRender}
-                onChange={handleChange}
-                {...(onSearch && { onSearch: handleSearch })}
-                searchClassName={searchClassName}
-                isLoading={isLoading}
-                searchValue={searchValue}
-                searchPlaceholder={searchPlaceholder}
-              />,
-            )
-          ) : (
-            <Dropdown
-              value={value}
-              options={options}
-              optionClassName={optionClassName}
-              optionRender={optionRender}
-              onChange={handleChange}
-              {...(onSearch && { onSearch: handleSearch })}
-              searchClassName={searchClassName}
-              isLoading={isLoading}
-              searchValue={searchValue}
-              searchPlaceholder={searchPlaceholder}
-            />
-          )}
+          {(() => {
+            const menu =
+              template === "table" ? (
+                <TableDropdown
+                  value={value}
+                  options={options}
+                  onChange={handleChange}
+                  onDelete={onDelete}
+                  {...(onSearch && { onSearch: handleSearch })}
+                  searchClassName={searchClassName}
+                  isLoading={isLoading}
+                  searchValue={searchValue}
+                  searchPlaceholder={searchPlaceholder}
+                  columns={columns}
+                  total={total}
+                  mode={mode}
+                />
+              ) : (
+                <Dropdown
+                  value={value}
+                  options={options}
+                  optionClassName={optionClassName}
+                  optionRender={optionRender}
+                  onChange={handleChange}
+                  {...(onSearch && { onSearch: handleSearch })}
+                  searchClassName={searchClassName}
+                  isLoading={isLoading}
+                  searchValue={searchValue}
+                  searchPlaceholder={searchPlaceholder}
+                />
+              );
+            return dropdownRender ? dropdownRender(menu) : menu;
+          })()}
         </div>
       </div>
     );
