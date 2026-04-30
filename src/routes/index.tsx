@@ -539,7 +539,7 @@ function Index() {
                     className="mt-2 h-10 w-full rounded-md border border-[#d72d40] bg-background px-3 text-base"
                     defaultValue="123"
                   />
-                  <InputCaption isError>Минимум 8 символов.</InputCaption>
+                  <InputCaption>Минимум 8 символов.</InputCaption>
                 </div>
               </div>
             </DemoSection>
