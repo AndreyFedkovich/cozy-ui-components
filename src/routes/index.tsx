@@ -991,7 +991,7 @@ function Index() {
                     { value: "edit", label: "Редактирование" },
                   ]}
                   value={routeEditable}
-                  onChange={setRouteEditable}
+                  onChange={(v) => setRouteEditable(String(v))}
                 />
               </div>
               <ApprovalRoute
