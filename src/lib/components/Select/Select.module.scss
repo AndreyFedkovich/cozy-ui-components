@@ -242,3 +242,87 @@ $buttonHeight: 48px;
     @include mixinsNew.text(1.4rem);
   }
 }
+
+.tableTemplate {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+}
+
+.tableContainer {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 8px;
+  background: colorsNew.$white01;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 10px 16px;
+    text-align: center;
+    color: colorsNew.$gray04;
+    background: colorsNew.$white01;
+    border-bottom: 1px solid colorsNew.$gray07;
+    font-weight: 500;
+  }
+
+  td {
+    padding: 10px 16px;
+    color: colorsNew.$blue05;
+    text-align: center;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:nth-child(odd) {
+      background: rgba(colorsNew.$gray01, 0.6);
+    }
+
+    &:hover {
+      background: colorsNew.$blue01;
+    }
+  }
+}
+
+.activeRow {
+  background: colorsNew.$blue01 !important;
+
+  td {
+    font-weight: 600;
+  }
+}
+
+.checkboxCell {
+  width: 44px;
+  text-align: center;
+  padding-left: 12px !important;
+  padding-right: 8px !important;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: colorsNew.$blue03;
+  margin: 0;
+}
+
+.footerTotal {
+  color: colorsNew.$gray04;
+  font-size: 13px;
+  line-height: 18px;
+  padding: 0 4px 4px;
+}

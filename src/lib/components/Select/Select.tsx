@@ -19,6 +19,13 @@ export interface CustomOption<T, S = string> {
   meta?: T;
 }
 
+export type SelectColumn<T, S> = {
+  key: string;
+  title: ReactNode;
+  className?: string;
+  render: (option: CustomOption<T, S>) => ReactNode;
+};
+
 type ModeProps<T, S> =
   | {
       mode: "single";
@@ -54,6 +61,9 @@ type CustomSelectProps<T, S> = {
   portalTarget?: Element;
   error?: string | null;
   fixedHeight?: boolean;
+  template?: "list" | "table";
+  columns?: SelectColumn<T, S>[];
+  total?: number;
 } & ModeProps<T, S>;
 
 const SelectedOptions = <T, S>({
@@ -200,6 +210,116 @@ const Dropdown = <T, S>({
   );
 };
 
+interface TableDropdownProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  | "value"
+  | "options"
+  | "onSearch"
+  | "searchClassName"
+  | "isLoading"
+  | "searchPlaceholder"
+  | "columns"
+  | "total"
+  | "onDelete"
+> {
+  mode: "single" | "multiple";
+  onChange: (value: CustomOption<T, S>) => void;
+  searchValue: string;
+}
+
+const TableDropdown = <T, S>({
+  value,
+  options,
+  onChange,
+  onDelete,
+  onSearch,
+  searchClassName,
+  isLoading,
+  searchValue,
+  searchPlaceholder,
+  columns,
+  total,
+  mode,
+}: TableDropdownProps<T, S>): React.ReactElement | null => {
+  const checkIsActive = (option: CustomOption<T, S>) =>
+    Array.isArray(value)
+      ? value.some((item) => item.value === option.value)
+      : value?.value === option.value;
+
+  const handleRowToggle = (option: CustomOption<T, S>, isActive: boolean) => {
+    if (mode === "multiple" && isActive && onDelete) {
+      onDelete(option);
+      return;
+    }
+    onChange(option);
+  };
+
+  const totalLabel = total ?? options?.length ?? 0;
+  const safeColumns = columns ?? [];
+
+  return (
+    <div className={css.tableTemplate}>
+      {onSearch && (
+        <Search
+          onSearch={onSearch}
+          searchValue={searchValue}
+          searchClassName={searchClassName}
+          isLoading={isLoading}
+          placeholder={searchPlaceholder}
+        />
+      )}
+      <div className={css.tableContainer}>
+        {options && options.length ? (
+          <table className={css.table}>
+            <thead>
+              <tr>
+                <th className={css.checkboxCell} aria-label="" />
+                {safeColumns.map((column) => (
+                  <th key={column.key} className={column.className}>
+                    {column.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {options.map((option, index) => {
+                const isActive = checkIsActive(option);
+                return (
+                  <tr
+                    key={`${String(option.value)}${index}`}
+                    className={cn({ [css.activeRow]: isActive })}
+                    onClick={() => handleRowToggle(option, isActive)}
+                  >
+                    <td className={css.checkboxCell}>
+                      <input
+                        type="checkbox"
+                        className={css.checkbox}
+                        checked={isActive}
+                        readOnly
+                        tabIndex={-1}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => handleRowToggle(option, isActive)}
+                      />
+                    </td>
+                    {safeColumns.map((column) => (
+                      <td key={column.key} className={column.className}>
+                        {column.render(option)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          !isLoading && <EmptyComponent />
+        )}
+      </div>
+      <div className={css.footerTotal}>Всего {totalLabel}</div>
+    </div>
+  );
+};
+
 export const Select = <T, S extends string | number>({
   options,
   value,
@@ -227,6 +347,9 @@ export const Select = <T, S extends string | number>({
   portalTarget,
   error,
   fixedHeight = true,
+  template = "list",
+  columns,
+  total,
 }: CustomSelectProps<T, S>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -336,35 +459,39 @@ export const Select = <T, S extends string | number>({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={css.dropdownContent} style={{ height: fixedHeight ? "300px" : "none" }}>
-          {dropdownRender ? (
-            dropdownRender(
-              <Dropdown
-                value={value}
-                options={options}
-                optionClassName={optionClassName}
-                optionRender={optionRender}
-                onChange={handleChange}
-                {...(onSearch && { onSearch: handleSearch })}
-                searchClassName={searchClassName}
-                isLoading={isLoading}
-                searchValue={searchValue}
-                searchPlaceholder={searchPlaceholder}
-              />,
-            )
-          ) : (
-            <Dropdown
-              value={value}
-              options={options}
-              optionClassName={optionClassName}
-              optionRender={optionRender}
-              onChange={handleChange}
-              {...(onSearch && { onSearch: handleSearch })}
-              searchClassName={searchClassName}
-              isLoading={isLoading}
-              searchValue={searchValue}
-              searchPlaceholder={searchPlaceholder}
-            />
-          )}
+          {(() => {
+            const menu =
+              template === "table" ? (
+                <TableDropdown
+                  value={value}
+                  options={options}
+                  onChange={handleChange}
+                  onDelete={onDelete}
+                  {...(onSearch && { onSearch: handleSearch })}
+                  searchClassName={searchClassName}
+                  isLoading={isLoading}
+                  searchValue={searchValue}
+                  searchPlaceholder={searchPlaceholder}
+                  columns={columns}
+                  total={total}
+                  mode={mode}
+                />
+              ) : (
+                <Dropdown
+                  value={value}
+                  options={options}
+                  optionClassName={optionClassName}
+                  optionRender={optionRender}
+                  onChange={handleChange}
+                  {...(onSearch && { onSearch: handleSearch })}
+                  searchClassName={searchClassName}
+                  isLoading={isLoading}
+                  searchValue={searchValue}
+                  searchPlaceholder={searchPlaceholder}
+                />
+              );
+            return dropdownRender ? dropdownRender(menu) : menu;
+          })()}
         </div>
       </div>
     );
@@ -391,6 +518,11 @@ export const Select = <T, S extends string | number>({
     options,
     position,
     resolvedPortalTarget,
+    template,
+    columns,
+    total,
+    mode,
+    onDelete,
     searchClassName,
     searchPlaceholder,
     searchValue,
