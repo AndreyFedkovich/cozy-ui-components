@@ -48,6 +48,15 @@ const selectOptions: CustomOption<{ group: string }>[] = [
   { value: "forms", label: "Form controls", meta: { group: "Library" } },
   { value: "feedback", label: "Feedback", meta: { group: "Library" } },
 ];
+const cfoOptions: CustomOption<{ code: string }>[] = Array.from({ length: 12 }, (_, index) => {
+  const num = 907 + index;
+  const codes = ["0201RP", "0201SN", "0201SP", "0203SN", "0204SN", "0205SN", "0206RP", "0207SP"];
+  return {
+    value: `cfo-${num}`,
+    label: `обзл_ЦФО${num}`,
+    meta: { code: codes[index % codes.length] },
+  };
+});
 const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   { length: 48 },
   (_, index) => {
@@ -92,6 +101,8 @@ function Index() {
     selectOptions[0],
     selectOptions[2],
   ]);
+  const [cfoSelected, setCfoSelected] = useState<CustomOption<{ code: string }>[]>([]);
+  const [cfoSearch, setCfoSearch] = useState("");
   const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
   const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
