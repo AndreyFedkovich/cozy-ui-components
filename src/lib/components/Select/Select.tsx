@@ -210,6 +210,116 @@ const Dropdown = <T, S>({
   );
 };
 
+interface TableDropdownProps<T, S> extends Pick<
+  CustomSelectProps<T, S>,
+  | "value"
+  | "options"
+  | "onSearch"
+  | "searchClassName"
+  | "isLoading"
+  | "searchPlaceholder"
+  | "columns"
+  | "total"
+  | "onDelete"
+> {
+  mode: "single" | "multiple";
+  onChange: (value: CustomOption<T, S>) => void;
+  searchValue: string;
+}
+
+const TableDropdown = <T, S>({
+  value,
+  options,
+  onChange,
+  onDelete,
+  onSearch,
+  searchClassName,
+  isLoading,
+  searchValue,
+  searchPlaceholder,
+  columns,
+  total,
+  mode,
+}: TableDropdownProps<T, S>): React.ReactElement | null => {
+  const checkIsActive = (option: CustomOption<T, S>) =>
+    Array.isArray(value)
+      ? value.some((item) => item.value === option.value)
+      : value?.value === option.value;
+
+  const handleRowToggle = (option: CustomOption<T, S>, isActive: boolean) => {
+    if (mode === "multiple" && isActive && onDelete) {
+      onDelete(option);
+      return;
+    }
+    onChange(option);
+  };
+
+  const totalLabel = total ?? options?.length ?? 0;
+  const safeColumns = columns ?? [];
+
+  return (
+    <div className={css.tableTemplate}>
+      {onSearch && (
+        <Search
+          onSearch={onSearch}
+          searchValue={searchValue}
+          searchClassName={searchClassName}
+          isLoading={isLoading}
+          placeholder={searchPlaceholder}
+        />
+      )}
+      <div className={css.tableContainer}>
+        {options && options.length ? (
+          <table className={css.table}>
+            <thead>
+              <tr>
+                <th className={css.checkboxCell} aria-label="" />
+                {safeColumns.map((column) => (
+                  <th key={column.key} className={column.className}>
+                    {column.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {options.map((option, index) => {
+                const isActive = checkIsActive(option);
+                return (
+                  <tr
+                    key={`${String(option.value)}${index}`}
+                    className={cn({ [css.activeRow]: isActive })}
+                    onClick={() => handleRowToggle(option, isActive)}
+                  >
+                    <td className={css.checkboxCell}>
+                      <input
+                        type="checkbox"
+                        className={css.checkbox}
+                        checked={isActive}
+                        readOnly
+                        tabIndex={-1}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => handleRowToggle(option, isActive)}
+                      />
+                    </td>
+                    {safeColumns.map((column) => (
+                      <td key={column.key} className={column.className}>
+                        {column.render(option)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          !isLoading && <EmptyComponent />
+        )}
+      </div>
+      <div className={css.footerTotal}>Всего {totalLabel}</div>
+    </div>
+  );
+};
+
 export const Select = <T, S extends string | number>({
   options,
   value,
