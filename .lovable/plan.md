@@ -1,68 +1,129 @@
 ## Цель
 
-Добавить в `Select` встроенный стандартный шаблон дропдауна в виде таблицы с чекбоксами, поиском сверху и счётчиком «Всего N» снизу — как на скриншоте. Шаблон выбирается через новый prop `template="table"`, при этом старый `dropdownRender` продолжает работать для полностью кастомных случаев.
+Добавить новый компонент `TreeDialogSelect` — Select c диалогом, в котором отображается раскрываемая иерархия узлов с ленивой подгрузкой детей через сервер и поиском. Стилистика — как у существующего `DialogSelect`.
 
-## Что меняется в API `Select`
+## Новый компонент: `src/lib/components/TreeDialogSelect/`
 
-Добавляются новые опциональные пропсы:
+Файлы:
+- `TreeDialogSelect.tsx`
+- `TreeDialogSelect.module.scss`
 
-- `template?: "list" | "table"` — по умолчанию `"list"` (текущее поведение списка `<ul>`).
-- `columns?: SelectColumn<T, S>[]` — описание колонок таблицы (используется только при `template="table"`).
-- `total?: number` — общее число записей для футера «Всего N» (опционально; если не задано — берётся `options.length`).
+Архитектурно повторяет `DialogSelect`: триггер-инпут с placeholder/value/clear/кнопкой "Выбрать", открывает `Dialog` (тот же `@/components/ui/dialog`) с теми же `dialogContent`, `search`, скроллируемым контейнером и футером (Закрыть / Выбрать).
 
-Тип колонки:
+### Публичный API
+
 ```ts
-export type SelectColumn<T, S> = {
-  key: string;
-  title: ReactNode;
-  className?: string;
-  render: (option: CustomOption<T, S>) => ReactNode;
+export type TreeNode<T, S extends string | number> = {
+  value: S;
+  label: string;
+  hasChildren?: boolean;   // если true — у узла есть дети, подгружаются по требованию
+  meta?: T;
 };
+
+export type TreeLoadParams<S> = {
+  parentId: S | null;      // null для корня
+  search: string;          // текущий поисковый запрос
+};
+
+export type TreeLoadResult<T, S extends string | number> = {
+  nodes: TreeNode<T, S>[];
+};
+
+export type TreeSearchResult<T, S extends string | number> = {
+  // плоский список найденных узлов с путём от корня (для раскрытия)
+  matches: Array<{ node: TreeNode<T, S>; path: TreeNode<T, S>[] }>;
+};
+
+export interface TreeDialogSelectProps<T, S extends string | number> {
+  value?: TreeNode<T, S> | null;
+  placeholder: string;
+  loadChildren: (params: TreeLoadParams<S>) => Promise<TreeLoadResult<T, S>>;
+  searchNodes?: (search: string) => Promise<TreeSearchResult<T, S>>;
+  onChange?: (node: TreeNode<T, S>) => void;
+  onClear?: () => void;
+  label?: ReactNode;
+  title?: ReactNode;
+  searchPlaceholder?: string;
+  selectButtonText?: string;
+  closeButtonText?: string;
+  confirmButtonText?: string;          // "Выбрать" в футере
+  debounceMs?: number;                 // дефолт 350
+  disabled?: boolean;
+  error?: string | null;
+  className?: string;
+  inputClassName?: string;
+  selectedOptionRender?: (node: TreeNode<T, S>) => ReactNode;
+  nodeRender?: (node: TreeNode<T, S>) => ReactNode;
+}
 ```
 
-Поведение:
-- Если `template="table"` и есть `columns` — рендерится встроенная таблица вместо `<ul>`.
-- Слева автоматически добавляется колонка с чекбоксом.
-  - В `mode="multiple"` чекбокс отражает выбор из массива `value`; клик по строке/чекбоксу добавляет/удаляет опцию (через существующие `onChange`/`onDelete`).
-  - В `mode="single"` чекбокс показывает текущий выбранный элемент (radio-подобно); клик выбирает строку и закрывает дропдаун, как сейчас.
-- Сверху используется существующий блок поиска (`onSearch` + `searchPlaceholder`), как сейчас.
-- Снизу — статичный футер «Всего N» (N = `total ?? options.length`).
-- Если задан кастомный `dropdownRender`, он по-прежнему имеет приоритет и получает уже готовый `<TableDropdown />` как `menu`.
+### Поведение
 
-## Файлы
+1. **Открытие диалога**: при первом open вызывается `loadChildren({ parentId: null, search: "" })` для корневых узлов.
+2. **Раскрытие узла**: клик по chevron (▸/▾). Если дети ещё не загружены — `loadChildren({ parentId: node.value, search: "" })`, во время загрузки рядом с узлом — `Spinner size="extraSmall"`. После загрузки результат кэшируется в `Map<S, TreeNode[]>` внутри компонента.
+3. **Выбор узла**: клик по тексту узла подсвечивает строку (черновой выбор, `pendingSelection`). Подтверждение — кнопкой "Выбрать" в футере, которая вызывает `onChange(pendingSelection)` и закрывает диалог. Закрытие без подтверждения — `pendingSelection` сбрасывается.
+4. **Поиск**:
+   - Если передан `searchNodes` — при debounced изменении строки поиска вызывается серверный поиск; возвращённые `path[]` используются для авто-раскрытия предков, чтобы найденные узлы были видны; найденные узлы подсвечиваются (mark) в дереве.
+   - Если `searchNodes` не передан — клиентская фильтрация по уже загруженным узлам (label includes, case-insensitive), без догрузки.
+   - Пустая строка — обычный режим дерева.
+5. **Закрытие**: сбрасываем `search`, `pendingSelection`. Кэш загруженных детей сохраняем на время жизни компонента (можно опционально сбрасывать, но дефолт — сохраняем для UX).
 
-1. **`src/lib/components/Select/Select.tsx`**
-   - Расширить `CustomSelectProps<T, S>` новыми пропсами `template`, `columns`, `total`.
-   - Экспортировать тип `SelectColumn<T, S>`.
-   - Добавить внутренний компонент `TableDropdown<T, S>` (рядом с существующим `Dropdown`), который рендерит:
-     - `Search` (тот же, что и сейчас, если есть `onSearch`);
-     - `<table>` с колонкой чекбокса + переданными `columns`;
-     - футер «Всего N».
-   - В `renderDropdown` выбирать `TableDropdown` либо `Dropdown` по `template`.
-   - Обработка клика по строке/чекбоксу: использовать существующий `handleChange` для multiple (toggle через `onChange`/`onDelete`) и для single (выбор + закрытие).
+### Рендер дерева
 
-2. **`src/lib/components/Select/Select.module.scss`**
-   - Добавить стили для нового шаблона: `.tableContainer`, `.table` (sticky-`th`, паддинги, hover, активная строка), `.checkboxCell`, `.footerTotal`.
-   - Переиспользовать палитру из `_colorsNew.scss` (как в `DialogSelect.module.scss`), чтобы визуально шаблон совпадал со скриншотом.
-   - Чекбокс: использовать `<input type="checkbox">` со стандартным акцентом `accent-color: colorsNew.$blue03`, либо иконку `done.svg` в квадратной рамке — выбрать input + accent-color (минимум кода, доступность из коробки).
+Рекурсивный компонент `TreeNodeRow`:
+- отступ слева = `level * 20px`;
+- chevron-кнопка (только если `hasChildren`) — раскрывает/сворачивает;
+- чекмарк/подсветка для `value === pendingSelection?.value` и `value === currentValue?.value`;
+- ховер-фон как у строк таблицы в `DialogSelect` (`colorsNew.$blue01`).
 
-3. **`src/routes/index.tsx`**
-   - В демо-секции `Select` добавить третий пример: `Select` в режиме `multiple` с `template="table"`, поиском, колонками «Наименование» и «Управленческий код» и `total`. Использовать новый список опций (`cfoOptions`) с полями `name` и `code`, чтобы соответствовать скриншоту.
+Контейнер дерева повторяет `tableContainer` из `DialogSelect.module.scss` (рамка, скролл, max-height ~48vh).
+
+### Стили (`TreeDialogSelect.module.scss`)
+
+- Переиспользуем визуально те же токены: `colorsNew.$gray06`, `$blue03`, `$blue05`, `$gray01`, `$gray04`, `$gray07`, `$blue01`.
+- Классы: `.wrapper`, `.input`, `.selectedOption`, `.placeholder`, `.actions`, `.clearButton`, `.selectButton`, `.dialogContent`, `.dialogHeader`, `.dialogTitle`, `.search`, `.searchInput`, `.searchIcon`, `.searchSpinner`, `.treeContainer`, `.row`, `.row_active`, `.row_match`, `.chevron`, `.chevronExpanded`, `.nodeLabel`, `.spacer`, `.dialogFooter`, `.footerActions`, `.emptyState`.
+- Адаптив (≤680px) — как в `DialogSelect`.
+
+### Экспорт
+
+В `src/lib/components/index.ts`:
+
+```ts
+export {
+  TreeDialogSelect,
+  type TreeDialogSelectProps,
+  type TreeNode,
+  type TreeLoadParams,
+  type TreeLoadResult,
+  type TreeSearchResult,
+} from "./TreeDialogSelect/TreeDialogSelect";
+```
+
+## Демо в `src/routes/index.tsx`
+
+Добавить секцию "Tree dialog select" с фейковым иерархическим источником:
+
+- Локальная мок-структура (Подразделение → Отдел → Сотрудник, 3 уровня).
+- `loadChildren` возвращает Promise с `setTimeout(400ms)` для имитации сервера.
+- `searchNodes` — фильтрует все узлы по label, восстанавливает `path` от корня.
+- В `<DemoSection>` показать `TreeDialogSelect` с `value`, `onChange`, `onClear`, `placeholder="Выберите подразделение"`, `title="Выбор подразделения"`.
 
 ## Технические детали
 
-- Никаких изменений в `DialogSelect` — он остаётся отдельным компонентом для модального сценария.
-- Позиционирование/портал/клик-аутсайд/`fixedHeight` существующего дропдауна работают без изменений: таблица рендерится внутри того же `.dropdownContent`-контейнера.
-- При `template="table"` `fixedHeight` остаётся актуальным; внутренняя `.tableContainer` скроллится по высоте, `<thead>` — `position: sticky`.
-- Чекбокс-колонка ширины ~40px, не имеет заголовка (`<th aria-label="" />`).
-- Клик по `<input type="checkbox">` не должен дважды триггерить выбор: остановка `stopPropagation` на чекбоксе либо обработка только на уровне `<tr onClick>`.
+- React, типизация-дженерики `<T, S extends string | number>` — как в `DialogSelect`/`Select`.
+- Внутренние state-структуры:
+  - `childrenCache: Map<S | "__root__", TreeNode[]>`
+  - `loadingNodes: Set<S | "__root__">`
+  - `expanded: Set<S>`
+  - `pendingSelection: TreeNode | null`
+  - `search`, `debouncedSearch`
+  - `searchMatches: Set<S>` и `forcedExpanded: Set<S>` (предки матчей)
+- Race-condition защита: `requestIdRef` как в `DialogSelect`.
+- Без новых зависимостей. Использует уже существующие `Dialog`, `Button`, `Spinner`, `EmptyComponent`, `Label`, `InputCaption`, иконки `SearchIcon`, `CrossIcon`, `ArrowDownIcon` (chevron, поворот через CSS transform).
 
-## Что НЕ меняется
+## Файлы к изменению/созданию
 
-- Текущее поведение `template="list"` (по умолчанию) — без изменений; обратная совместимость сохраняется.
-- `dropdownRender`, `optionRender`, `tagRender`, `selectedOptionRender` — без изменений.
-- `DialogSelect` — без изменений.
-
-## Демо
-
-После реализации демо-страница будет показывать три варианта Select: single-list, multiple-list и новый multiple-table с колонками «Наименование»/«Управленческий код», поиском «Поиск по управленческому коду» и футером «Всего N» — как на референсе.
+- create `src/lib/components/TreeDialogSelect/TreeDialogSelect.tsx`
+- create `src/lib/components/TreeDialogSelect/TreeDialogSelect.module.scss`
+- edit `src/lib/components/index.ts` — добавить экспорт
+- edit `src/routes/index.tsx` — добавить демо-секцию с моком иерархии и отложенной загрузкой
