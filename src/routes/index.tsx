@@ -21,6 +21,8 @@ import {
   Tag,
   TooltipDark,
   TooltipLight,
+  TreeDialogSelect,
+  type TreeNode,
   type CustomOption,
 } from "../lib";
 
@@ -80,6 +82,94 @@ const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   },
 );
 
+type DeptMeta = { kind: "company" | "department" | "team" };
+type DeptNode = TreeNode<DeptMeta, string> & { children?: DeptNode[] };
+
+const deptTree: DeptNode[] = [
+  {
+    value: "co-1",
+    label: "ООО «Лютик»",
+    hasChildren: true,
+    meta: { kind: "company" },
+    children: [
+      {
+        value: "dep-1",
+        label: "Департамент разработки",
+        hasChildren: true,
+        meta: { kind: "department" },
+        children: [
+          { value: "team-1", label: "Команда фронтенда", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-2", label: "Команда бэкенда", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-3", label: "QA", hasChildren: false, meta: { kind: "team" } },
+        ],
+      },
+      {
+        value: "dep-2",
+        label: "Департамент продаж",
+        hasChildren: true,
+        meta: { kind: "department" },
+        children: [
+          { value: "team-4", label: "B2B продажи", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-5", label: "B2C продажи", hasChildren: false, meta: { kind: "team" } },
+        ],
+      },
+    ],
+  },
+  {
+    value: "co-2",
+    label: "ООО «Ромашка»",
+    hasChildren: true,
+    meta: { kind: "company" },
+    children: [
+      {
+        value: "dep-3",
+        label: "Финансовый отдел",
+        hasChildren: true,
+        meta: { kind: "department" },
+        children: [
+          { value: "team-6", label: "Бухгалтерия", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-7", label: "Казначейство", hasChildren: false, meta: { kind: "team" } },
+        ],
+      },
+    ],
+  },
+];
+
+const findNode = (
+  nodes: DeptNode[],
+  id: string,
+): DeptNode | null => {
+  for (const n of nodes) {
+    if (n.value === id) return n;
+    if (n.children) {
+      const found = findNode(n.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+const stripChildren = (n: DeptNode): TreeNode<DeptMeta, string> => ({
+  value: n.value,
+  label: n.label,
+  hasChildren: n.hasChildren,
+  meta: n.meta,
+});
+
+const collectAllWithPaths = (
+  nodes: DeptNode[],
+  path: DeptNode[] = [],
+): Array<{ node: DeptNode; path: DeptNode[] }> => {
+  const result: Array<{ node: DeptNode; path: DeptNode[] }> = [];
+  for (const n of nodes) {
+    result.push({ node: n, path });
+    if (n.children) {
+      result.push(...collectAllWithPaths(n.children, [...path, n]));
+    }
+  }
+  return result;
+};
+
 function DemoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
@@ -104,6 +194,7 @@ function Index() {
   const [cfoSelected, setCfoSelected] = useState<CustomOption<{ code: string }>[]>([]);
   const [cfoSearch, setCfoSearch] = useState("");
   const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
+  const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>(null);
   const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
 
@@ -125,6 +216,31 @@ function Index() {
     },
     [],
   );
+
+  const loadDeptChildren = useCallback(
+    async ({ parentId }: { parentId: string | null; search: string }) => {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      if (parentId === null) {
+        return { nodes: deptTree.map(stripChildren) };
+      }
+      const parent = findNode(deptTree, parentId);
+      return { nodes: (parent?.children ?? []).map(stripChildren) };
+    },
+    [],
+  );
+
+  const searchDepartments = useCallback(async (search: string) => {
+    await new Promise((resolve) => window.setTimeout(resolve, 300));
+    const q = search.toLowerCase();
+    const all = collectAllWithPaths(deptTree);
+    const matches = all
+      .filter(({ node }) => node.label.toLowerCase().includes(q))
+      .map(({ node, path }) => ({
+        node: stripChildren(node),
+        path: path.map(stripChildren),
+      }));
+    return { matches };
+  }, []);
 
   const handleCopy = () => {
     setCopied(true);
@@ -340,6 +456,17 @@ function Index() {
                   },
                 ]}
                 onManualAdd={() => undefined}
+              />
+              <TreeDialogSelect
+                label="Tree dialog select"
+                placeholder="Выберите подразделение"
+                title="Выбор подразделения"
+                searchPlaceholder="Поиск по названию"
+                value={department}
+                loadChildren={loadDeptChildren}
+                searchNodes={searchDepartments}
+                onChange={setDepartment}
+                onClear={() => setDepartment(null)}
               />
             </div>
           </DemoSection>

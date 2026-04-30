@@ -16,6 +16,14 @@ export { CollapsableBlock } from "./CollapsibleBlock/CollapsableBlock";
 export { Collapse } from "./Collapse/Collapse";
 export { Select, type CustomOption, type SelectColumn } from "./Select/Select";
 export { DialogSelect, type DialogSelectColumn, type DialogSelectProps } from "./DialogSelect/DialogSelect";
+export {
+  TreeDialogSelect,
+  type TreeDialogSelectProps,
+  type TreeNode,
+  type TreeLoadParams,
+  type TreeLoadResult,
+  type TreeSearchResult,
+} from "./TreeDialogSelect/TreeDialogSelect";
 export { TabsRounded } from "./TabsRounded/TabsRounded";
 export { Tabs } from "./Tabs/Tabs";
 export { Tag } from "./Tag/Tag";
