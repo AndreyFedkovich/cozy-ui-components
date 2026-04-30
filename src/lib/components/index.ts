@@ -30,3 +30,11 @@ export { Tabs } from "./Tabs/Tabs";
 export { Tag } from "./Tag/Tag";
 export { InputCaption } from "./InputCaption/InputCaption";
 export { Label } from "./Label/Label";
+export {
+  ApprovalRoute,
+  type ApprovalRouteProps,
+  type ApprovalLevel,
+  type ApprovalStage,
+  type Approver,
+  type ApprovalStatus,
+} from "./ApprovalRoute/ApprovalRoute";
