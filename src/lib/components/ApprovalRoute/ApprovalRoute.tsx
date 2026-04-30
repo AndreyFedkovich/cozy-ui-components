@@ -137,10 +137,6 @@ export const ApprovalRoute: React.FC<ApprovalRouteProps> = ({
 }) => {
   const [addLevelOpen, setAddLevelOpen] = useState(false);
   const [addStageFor, setAddStageFor] = useState<string | null>(null);
-  const [addApproverFor, setAddApproverFor] = useState<{
-    levelId: string;
-    stageId: string;
-  } | null>(null);
 
   return (
     <div className={cn(css.root, className)}>
@@ -222,17 +218,21 @@ export const ApprovalRoute: React.FC<ApprovalRouteProps> = ({
                           <div className={css.stageActions}>
                             {editable && (
                               <>
-                                <button
-                                  type="button"
-                                  className={css.iconButton}
-                                  onClick={() =>
-                                    setAddApproverFor({ levelId: level.id, stageId: stage.id })
-                                  }
-                                  aria-label="Добавить согласующего"
-                                  title="Добавить согласующего"
-                                >
-                                  <PlusIcon />
-                                </button>
+                                {loadApprovers ? (
+                                  <DialogSelect<unknown, string>
+                                    value={null}
+                                    placeholder=""
+                                    title="Добавить согласующего"
+                                    searchPlaceholder="Поиск сотрудника"
+                                    loadOptions={loadApprovers}
+                                    onChange={(person) =>
+                                      onAddApprover?.(level.id, stage.id, person)
+                                    }
+                                    className={css.approverPickerWrap}
+                                    inputClassName={css.approverPickerInput}
+                                    selectedOptionRender={() => <PlusIcon />}
+                                  />
+                                ) : null}
                                 <button
                                   type="button"
                                   className={cn(css.iconButton, css.iconButton_danger)}
@@ -345,22 +345,6 @@ export const ApprovalRoute: React.FC<ApprovalRouteProps> = ({
         onClose={() => setAddStageFor(null)}
         onSubmit={(name) => addStageFor && onAddStage?.(addStageFor, name)}
       />
-
-      {addApproverFor && loadApprovers && (
-        <DialogSelect<unknown, string>
-          value={null}
-          placeholder=""
-          title="Добавить согласующего"
-          searchPlaceholder="Поиск сотрудника"
-          loadOptions={loadApprovers}
-          onChange={(person) => {
-            onAddApprover?.(addApproverFor.levelId, addApproverFor.stageId, person);
-            setAddApproverFor(null);
-          }}
-          onClear={() => setAddApproverFor(null)}
-          inputClassName="hidden"
-        />
-      )}
     </div>
   );
 };
