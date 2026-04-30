@@ -26,6 +26,8 @@ import {
   TreeDialogSelect,
   type TreeNode,
   type CustomOption,
+  ApprovalRoute,
+  type ApprovalLevel,
 } from "../lib";
 
 export const Route = createFileRoute("/")({
@@ -277,6 +279,59 @@ function Index() {
   const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
 
+  const [routeEditable, setRouteEditable] = useState("view");
+  const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>([
+    {
+      id: "lvl-1",
+      name: "Согласование",
+      status: "completed",
+      stages: [
+        {
+          id: "stg-1",
+          name: "УОР",
+          approvers: [
+            { id: "a1", fullName: "Мелконян С.Б.", status: "approved", actedAt: "02.03.26 12:05" },
+          ],
+        },
+        {
+          id: "stg-2",
+          name: "УМП",
+          approvers: [
+            { id: "a2", fullName: "Мелконян С.Б.", status: "approved", actedAt: "02.03.26 12:05" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "lvl-2",
+      name: "Утверждение",
+      status: "current",
+      stages: [
+        { id: "stg-3", name: "Руководитель L1", approvers: [] },
+      ],
+    },
+    {
+      id: "lvl-3",
+      name: "Исполнение",
+      status: "pending",
+      stages: [
+        {
+          id: "stg-4",
+          name: "УОР",
+          approvers: [
+            { id: "a3", fullName: "Мелконян С.Б." },
+            { id: "a4", fullName: "Андрианова И.П." },
+            { id: "a5", fullName: "Пашкова Т.М." },
+            { id: "a6", fullName: "Атаманова Т.А." },
+            { id: "a7", fullName: "Данилина А.С." },
+            { id: "a8", fullName: "Середа Ю.Н." },
+          ],
+        },
+      ],
+    },
+    { id: "lvl-4", name: "Завершено", status: "pending", stages: [] },
+  ]);
+
   const loadEmployees = useCallback(
     async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
       await new Promise((resolve) => window.setTimeout(resolve, 350));
@@ -320,6 +375,20 @@ function Index() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
+
+  const loadApproversForRoute = useCallback(
+    async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
+      await new Promise((r) => window.setTimeout(r, 250));
+      const q = search.toLowerCase();
+      const filtered = employeeOptions.filter((o) => o.label.toLowerCase().includes(q));
+      const start = (page - 1) * pageSize;
+      return {
+        options: filtered.slice(start, start + pageSize) as unknown as CustomOption<unknown, string>[],
+        total: filtered.length,
+      };
+    },
+    [],
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#f4f7fa] via-white to-[#eef3fb] px-6 py-16 text-foreground md:px-10">
