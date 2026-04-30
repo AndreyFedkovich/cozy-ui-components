@@ -373,7 +373,6 @@ export const TreeDialogSelect = <T, S extends string | number>({
         tabIndex={disabled ? -1 : 0}
         className={cn(
           css.input,
-          "rounded-lg",
           { [css.disabled]: disabled, [css.error]: error },
           inputClassName,
         )}

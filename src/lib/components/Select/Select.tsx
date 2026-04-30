@@ -547,7 +547,6 @@ export const Select = <T, S extends string | number>({
           ref={inputRef}
           className={cn(
             css.input,
-            "rounded-lg",
             { [css.input_fixedHeight]: mode === "single", [css.disabled]: disabled },
             error && css.error,
             inputClassName,
