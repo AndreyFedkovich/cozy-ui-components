@@ -289,6 +289,40 @@ function Index() {
                 }
                 onClear={() => setMultiSelected([])}
               />
+              <Select
+                mode="multiple"
+                label="Table template select"
+                placeholder="Выберите ЦФО"
+                template="table"
+                options={cfoOptions.filter((option) =>
+                  option.meta?.code.toLowerCase().includes(cfoSearch.toLowerCase()),
+                )}
+                value={cfoSelected}
+                total={cfoOptions.length}
+                onSearch={setCfoSearch}
+                searchPlaceholder="Поиск по управленческому коду"
+                columns={[
+                  { key: "name", title: "Наименование", render: (option) => option.label },
+                  {
+                    key: "code",
+                    title: "Управленческий код",
+                    render: (option) => option.meta?.code,
+                  },
+                ]}
+                onChange={(option) =>
+                  setCfoSelected((current) =>
+                    current.some((item) => item.value === option.value)
+                      ? current
+                      : [...current, option],
+                  )
+                }
+                onDelete={(option) =>
+                  setCfoSelected((current) =>
+                    current.filter((item) => item.value !== option.value),
+                  )
+                }
+                onClear={() => setCfoSelected([])}
+              />
               <DialogSelect
                 label="Dialog select"
                 placeholder="Укажите или выберите ФИО кандидата"
