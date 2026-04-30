@@ -1,38 +1,124 @@
-## Goal
+## Новый компонент: `ApprovalRoute` (Маршрут согласования)
 
-Replace `src/assets/demo/card-cover.png` (797×272) with a premium image that fits the library's brand and reads well as a "Cover image" Card with white "Cover image" text overlaid.
+Премиальный вертикальный таймлайн с двухуровневой иерархией: **Уровни → Этапы → Согласующие**. В стилях библиотеки (`colorsNew`, SCSS modules, тонкие тени, скругления как у других компонентов).
 
-## Brand context
+### Структура файлов
 
-- Primary blue palette: `#4573d9` (brand), `#001a3d` (deep navy), `#d3e8fa` (light blue), `#001a3d → #4573d9` gradient feel
-- Style of the demo page: clean, premium, gradient hero, soft shadows, modern UI library showcase
-- The image sits next to a solid `#4573d9` "Brand card" and a `#eef6ff` "Light surface" card — should harmonize, not clash
-- White overlay text "Cover image" must remain readable → image needs darker / lower-contrast left side
+```text
+src/lib/components/ApprovalRoute/
+  ApprovalRoute.tsx                  // главный компонент + типы + экспорт
+  ApprovalRoute.module.scss          // стили
+  parts/
+    LevelNode.tsx                    // кружок-маркер уровня + соединитель
+    StageRow.tsx                     // строка этапа (название + кнопка добавить согласующего)
+    ApproverItem.tsx                 // ФИО + дата + статус + причина отклонения
+    EditNameDialog.tsx               // мини-диалог ввода названия (через ui/dialog)
+```
 
-## Approach
+Экспорт из `src/lib/components/index.ts`:
+```ts
+export { ApprovalRoute, type ApprovalRouteProps, type ApprovalLevel,
+         type ApprovalStage, type Approver, type ApprovalStatus } from "./ApprovalRoute/ApprovalRoute";
+```
 
-Generate a new image via Lovable AI Gateway (`google/gemini-3-pro-image-preview` for highest quality) and save it as `src/assets/demo/card-cover.png` with the same dimensions (797×272), overwriting the old one. No code changes needed — `index.tsx` already imports it.
+### Модель данных
 
-### Image prompt direction
+```ts
+type ApprovalStatus = "pending" | "approved" | "rejected";
 
-Premium abstract composition aligned with the brand:
-- Deep navy → royal blue gradient background (`#001a3d` → `#4573d9`) with subtle light-blue (`#d3e8fa`) highlights
-- Soft glassmorphism / aurora light streaks, faint geometric grid or flowing lines suggesting a design system
-- Slight darker gradient on the left third so white "Cover image" text stays legible
-- No text, no logos, no people — purely abstract premium tech aesthetic
-- Cinematic, high-end SaaS landing-page feel; matches Apple/Linear/Vercel polish
+type Approver = {
+  id: string;
+  fullName: string;            // "Мелконян С.Б."
+  status?: ApprovalStatus;     // undefined = ещё не действовал
+  actedAt?: string;            // дата согласования/отклонения (форматированная)
+  rejectReason?: string;       // показывается, если status="rejected"
+};
 
-### Steps
+type ApprovalStage = {
+  id: string;
+  name: string;                // "УОР", "УМП", "Руководитель L1"
+  approvers: Approver[];       // если пустой — иконка "согласующий не назначен"
+};
 
-1. Run a short Node script that calls `https://ai.gateway.lovable.dev/v1/chat/completions` with `google/gemini-3-pro-image-preview`, `modalities: ["image","text"]`, and the prompt above
-2. Decode the returned base64 PNG, resize/crop to exactly 797×272 with `sharp` is unavailable in worker but fine here (we run via `code--exec` with Python PIL which is preinstalled)
-3. Write to `src/assets/demo/card-cover.png` (overwrite)
-4. QA: open the saved image, verify dimensions and that the left side is dark enough for white text; if not, regenerate with adjusted prompt
-5. Confirm `index.tsx` import still resolves (no edits needed)
+type ApprovalLevel = {
+  id: string;
+  name: string;                // "Согласование", "Утверждение", ...
+  stages: ApprovalStage[];
+  status: "completed" | "current" | "pending"; // текущий выделяется
+};
+```
 
-### Technical notes
+### Поведение
 
-- Use `LOVABLE_API_KEY` from env (verify via `compgen -e` first)
-- Save the base64 to a temp file, then PIL `Image.open(...).convert("RGB").resize((797,272), Image.LANCZOS)` and save as PNG
-- If Gemini returns a non-matching aspect ratio, do a center-crop to 797×272 ratio (≈2.93:1) before resize
-- Keep file under ~50KB if possible (current is 28KB) — PIL `optimize=True`
+- **Статус уровня**:
+  - `completed` — зелёный закрашенный круг с галочкой (`DoneIcon` / `CheckGreen`).
+  - `current` — синий контурный круг с пульсирующим кольцом (как `Stepper.step_current`), название уровня жирное + подчеркнутое.
+  - `pending` — серый контурный круг.
+- **Этапы текущего уровня** все одинаково активны (без выделения «активного из них»).
+- **Согласующие**:
+  - approved → синий/тёмный текст + дата.
+  - rejected → красный текст + дата + причина курсивом.
+  - pending → серый текст.
+  - если `approvers` пуст — строка-плейсхолдер с `WarnIcon` оранжевого цвета и текстом «Согласующий не назначен».
+- **Соединительная линия**: вертикальная 1px полоса слева, окрашенная в `blue03` для пройденных уровней, `gray07` для будущих, плавный градиент на границе текущего уровня.
+
+### Режим редактирования (`editable?: boolean`)
+
+Когда `editable=true`:
+- У заголовка каждого уровня — кнопка-иконка `×` для удаления (с подтверждением через `window.confirm` или встроенный мини-диалог).
+- В конце списка уровней — кнопка `+ Добавить уровень` (открывает `EditNameDialog` для ввода названия).
+- У каждого этапа — `+` для добавления согласующего и `×` для удаления этапа.
+- В конце этапов уровня — кнопка `+ Добавить этап`.
+- У каждого согласующего — `×` для удаления.
+
+Колбэки наружу (контролируемый компонент):
+```ts
+type ApprovalRouteProps = {
+  levels: ApprovalLevel[];
+  editable?: boolean;
+  // приближённый список сотрудников для добавления согласующего
+  loadApprovers?: DialogSelectProps<...>["loadOptions"];
+  onAddLevel?: (name: string) => void;
+  onRemoveLevel?: (levelId: string) => void;
+  onAddStage?: (levelId: string, name: string) => void;
+  onRemoveStage?: (levelId: string, stageId: string) => void;
+  onAddApprover?: (levelId: string, stageId: string, person: CustomOption<...>) => void;
+  onRemoveApprover?: (levelId: string, stageId: string, approverId: string) => void;
+  className?: string;
+  title?: string; // по умолчанию "Маршрут согласования"
+};
+```
+
+Для добавления согласующего переиспользуем существующий `DialogSelect` (вызываем его в режиме «открыть и выбрать»). Чтобы не дублировать UX, добавление инициируется кнопкой `+`, которая монтирует скрытый `DialogSelect` с автооткрытием — реализуем через локальное состояние `addingTo: { levelId, stageId } | null` и один общий `<DialogSelect>` внизу компонента.
+
+### Премиальные визуальные акценты
+
+- Корневой контейнер: `border-radius: 16px`, `background: white`, мягкая тень `0 1px 2px rgba(15,23,42,0.04), 0 12px 32px -18px rgba(69,115,217,0.25)` — как `DemoSection` на демо-странице.
+- Заголовок «Маршрут согласования» с лёгким `eyebrow`-капс-текстом сверху.
+- Маркеры уровней: 20px круги, у текущего — пульсирующее кольцо `box-shadow: 0 0 0 4px rgba(blue03, 0.18)`.
+- Этап: «карточка-чип» с тонкой границей `gray07`, фон `gray01` при ховере, скругление 12px.
+- Имена согласующих: моноширинный отступ, дата — `gray03`, причина отклонения — `red02` курсивом в скруглённом блоке `red01`.
+- Анимации: `transition: 0.2s ease` на статусные изменения и появление новых элементов (`opacity` + `translateY`).
+
+### Демо-секция в `src/routes/index.tsx`
+
+Добавить новую категорию **«05 — Workflow»** (после Feedback) с одним `DemoSection` шириной во всю сетку:
+- Заголовок: "ApprovalRoute · Маршрут согласования".
+- Описание: «Многоуровневый маршрут с параллельными этапами и режимом редактирования».
+- Включает realistic данные с 4 уровнями («Согласование» — completed с двумя этапами УОР/УМП и подписантами; «Утверждение» — current с пустым согласующим; «Исполнение» — pending с шестью параллельными подписантами; «Завершено» — pending пустой).
+- Под маршрутом — переключатель `Режим редактирования` (через существующий `RadioGroupButton` или `Tabs`), который переключает `editable` и показывает все кнопки `+`/`×`.
+- Состояние данных хранится в `useState`, колбэки мутируют состояние локально (полноценная интерактивная демонстрация).
+
+### Технические детали
+
+- Использовать `cn` из `classnames` (как в Stepper).
+- Цвета только из `colorsNew.scss` (без хардкода).
+- Иконки: `DoneIcon`, `WarnIcon`, `CrossIcon`, `EditIcon`, `ProfileIcon`, `CloseRed`, `CheckGreen` — все уже есть.
+- Для кнопки `+` — либо `Button variant="text"` с inline-svg «плюс» (SVG вставляем как inline JSX, без нового asset-файла), либо переиспользуем `Button` со слотом контента.
+- `EditNameDialog`: тонкая обёртка над shadcn `Dialog` (как в `DialogSelect`) с одним `<input>` + 2 кнопки `Button` (primary/secondary).
+
+### Что НЕ делаем
+
+- Не вводим drag-and-drop переупорядочивания (вне ТЗ).
+- Не делаем горизонтальный лейаут/мобильную перестройку (вертикальный таймлайн как на референсе).
+- Не трогаем серверную часть — компонент чисто клиентский, контролируемый.
