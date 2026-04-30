@@ -971,6 +971,114 @@ function Index() {
           </div>
         </section>
 
+        {/* CATEGORY 5: Workflow */}
+        <section>
+          <CategoryHeader
+            eyebrow="05 — Workflow"
+            title="Workflow & approvals"
+            description="Многоуровневый маршрут с параллельными этапами и режимом редактирования."
+          />
+          <div className="grid gap-6">
+            <DemoSection
+              title="ApprovalRoute · Маршрут согласования"
+              description="Уровни и параллельные этапы со статусами, согласующими, причинами отклонения и редактированием."
+            >
+              <div className="mb-5 flex items-center gap-4">
+                <span className="text-base font-medium text-foreground">Режим:</span>
+                <RadioGroupButton
+                  options={[
+                    { value: "view", label: "Просмотр" },
+                    { value: "edit", label: "Редактирование" },
+                  ]}
+                  value={routeEditable}
+                  onChange={setRouteEditable}
+                />
+              </div>
+              <ApprovalRoute
+                levels={approvalLevels}
+                editable={routeEditable === "edit"}
+                loadApprovers={loadApproversForRoute}
+                onAddLevel={(name) =>
+                  setApprovalLevels((prev) => [
+                    ...prev,
+                    {
+                      id: `lvl-${Date.now()}`,
+                      name,
+                      status: "pending",
+                      stages: [],
+                    },
+                  ])
+                }
+                onRemoveLevel={(levelId) =>
+                  setApprovalLevels((prev) => prev.filter((l) => l.id !== levelId))
+                }
+                onAddStage={(levelId, name) =>
+                  setApprovalLevels((prev) =>
+                    prev.map((l) =>
+                      l.id === levelId
+                        ? {
+                            ...l,
+                            stages: [
+                              ...l.stages,
+                              { id: `stg-${Date.now()}`, name, approvers: [] },
+                            ],
+                          }
+                        : l,
+                    ),
+                  )
+                }
+                onRemoveStage={(levelId, stageId) =>
+                  setApprovalLevels((prev) =>
+                    prev.map((l) =>
+                      l.id === levelId
+                        ? { ...l, stages: l.stages.filter((s) => s.id !== stageId) }
+                        : l,
+                    ),
+                  )
+                }
+                onAddApprover={(levelId, stageId, person) =>
+                  setApprovalLevels((prev) =>
+                    prev.map((l) =>
+                      l.id === levelId
+                        ? {
+                            ...l,
+                            stages: l.stages.map((s) =>
+                              s.id === stageId
+                                ? {
+                                    ...s,
+                                    approvers: [
+                                      ...s.approvers,
+                                      { id: `app-${Date.now()}`, fullName: person.label },
+                                    ],
+                                  }
+                                : s,
+                            ),
+                          }
+                        : l,
+                    ),
+                  )
+                }
+                onRemoveApprover={(levelId, stageId, approverId) =>
+                  setApprovalLevels((prev) =>
+                    prev.map((l) =>
+                      l.id === levelId
+                        ? {
+                            ...l,
+                            stages: l.stages.map((s) =>
+                              s.id === stageId
+                                ? { ...s, approvers: s.approvers.filter((a) => a.id !== approverId) }
+                                : s,
+                            ),
+                          }
+                        : l,
+                    ),
+                  )
+                }
+              />
+            </DemoSection>
+          </div>
+        </section>
+
         {/* FOOTER */}
         <footer className="flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-8 md:flex-row md:items-center">
           <div className="text-base text-muted-foreground">© 2026 · UI Library</div>
