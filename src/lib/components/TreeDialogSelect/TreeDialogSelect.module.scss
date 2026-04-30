@@ -1,0 +1,281 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+.wrapper {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid colorsNew.$gray06;
+  background: colorsNew.$white01;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:focus,
+  &:focus-visible,
+  &:hover {
+    outline: none;
+    border-color: colorsNew.$blue03;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$blue03, 0.08);
+  }
+}
+
+.error {
+  border-color: colorsNew.$red02;
+
+  &:focus,
+  &:focus-visible,
+  &:hover {
+    border-color: colorsNew.$red02;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$red02, 0.08);
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  background-color: rgba(colorsNew.$gray02, 0.3);
+  color: colorsNew.$gray04;
+}
+
+.selectedOption {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: colorsNew.$gray05;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.placeholder {
+  color: colorsNew.$gray04;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.clearButton {
+  width: 24px;
+  height: 24px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.selectButton {
+  color: colorsNew.$blue04;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.dialogContent {
+  width: calc(100vw - 32px);
+  max-width: 720px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: none;
+  border-radius: 18px;
+  background: colorsNew.$white01;
+  padding: 28px 32px 24px;
+  box-shadow: 0 24px 70px rgba(colorsNew.$black01, 0.24);
+  overflow: hidden;
+}
+
+.dialogHeader {
+  display: block;
+  text-align: left;
+}
+
+.dialogTitle {
+  color: colorsNew.$blue05;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+}
+
+.search {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid colorsNew.$gray06;
+  border-radius: 999px;
+  background: colorsNew.$gray01;
+  padding: 5px 12px 5px 24px;
+  position: relative;
+
+  &:focus-within {
+    border-color: colorsNew.$blue03;
+    box-shadow: 0 0 0 2px rgba(colorsNew.$blue03, 0.08);
+  }
+}
+
+.searchIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: colorsNew.$blue05;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  @include mixinsNew.placeholder(colorsNew.$gray04);
+}
+
+.searchSpinner {
+  flex-shrink: 0;
+}
+
+.treeContainer {
+  min-height: 280px;
+  max-height: min(48vh, 420px);
+  overflow: auto;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 10px;
+  background: colorsNew.$white01;
+  padding: 6px 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: colorsNew.$blue05;
+  font-size: 15px;
+  line-height: 22px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: colorsNew.$blue01;
+  }
+}
+
+.row_active {
+  background: colorsNew.$blue01;
+
+  .nodeLabel {
+    font-weight: 700;
+  }
+}
+
+.row_match .nodeLabel {
+  color: colorsNew.$blue04;
+}
+
+.chevron {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: colorsNew.$gray04;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    background: rgba(colorsNew.$blue03, 0.1);
+    color: colorsNew.$blue04;
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease;
+  }
+}
+
+.chevronExpanded svg {
+  transform: rotate(0deg);
+}
+
+.chevronPlaceholder {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.nodeSpinner {
+  margin-left: 4px;
+}
+
+.nodeLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emptyState {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingState {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 0;
+}
+
+.dialogFooter button {
+  min-height: 36px;
+  padding: 7px 14px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 10px;
+}
+
+@media (max-width: 680px) {
+  .dialogContent {
+    padding: 22px 16px 18px;
+    border-radius: 14px;
+  }
+
+  .dialogFooter {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
