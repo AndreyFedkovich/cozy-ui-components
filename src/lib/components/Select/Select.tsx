@@ -19,6 +19,13 @@ export interface CustomOption<T, S = string> {
   meta?: T;
 }
 
+export type SelectColumn<T, S> = {
+  key: string;
+  title: ReactNode;
+  className?: string;
+  render: (option: CustomOption<T, S>) => ReactNode;
+};
+
 type ModeProps<T, S> =
   | {
       mode: "single";
@@ -54,6 +61,9 @@ type CustomSelectProps<T, S> = {
   portalTarget?: Element;
   error?: string | null;
   fixedHeight?: boolean;
+  template?: "list" | "table";
+  columns?: SelectColumn<T, S>[];
+  total?: number;
 } & ModeProps<T, S>;
 
 const SelectedOptions = <T, S>({
