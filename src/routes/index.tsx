@@ -16,6 +16,7 @@ import {
   RadioGroupButton,
   Select,
   Spinner,
+  Stepper,
   Tabs,
   TabsRounded,
   Tag,
@@ -195,6 +196,7 @@ function Index() {
   const [cfoSearch, setCfoSearch] = useState("");
   const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
   const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>(null);
+  const [stepperStep, setStepperStep] = useState(2);
   const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
 
@@ -467,6 +469,27 @@ function Index() {
                 searchNodes={searchDepartments}
                 onChange={setDepartment}
                 onClear={() => setDepartment(null)}
+              />
+            </div>
+          </DemoSection>
+
+          <DemoSection title="Stepper">
+            <div className="grid gap-6">
+              <Stepper
+                items={[{}, {}, {}, {}, {}, {}]}
+                current={stepperStep}
+                onChange={setStepperStep}
+              />
+              <Stepper
+                items={[
+                  { label: "Контакты" },
+                  { label: "Документы" },
+                  { label: "Подтверждение" },
+                  { label: "Готово" },
+                ]}
+                current={stepperStep > 3 ? 3 : stepperStep}
+                onChange={setStepperStep}
+                showCheckOnCompleted
               />
             </div>
           </DemoSection>
