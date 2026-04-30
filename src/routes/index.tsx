@@ -16,6 +16,7 @@ import {
   RadioGroupButton,
   Select,
   Spinner,
+  Stepper,
   Tabs,
   TabsRounded,
   Tag,
