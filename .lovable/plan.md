@@ -1,112 +1,38 @@
-## Цель
+## Goal
 
-Сделать `src/routes/index.tsx` презентабельной витриной библиотеки: премиальный визуал, крупная читаемая типографика, и наполнить «пустые» демо-блоки реальным контентом, чтобы каждый компонент выглядел в контексте, а не «как болванка».
+Replace `src/assets/demo/card-cover.png` (797×272) with a premium image that fits the library's brand and reads well as a "Cover image" Card with white "Cover image" text overlaid.
 
-Изменяется только страница демо (`src/routes/index.tsx`) и её локальные стили. Сами компоненты библиотеки **не трогаем** — только то, как они показаны.
+## Brand context
 
----
+- Primary blue palette: `#4573d9` (brand), `#001a3d` (deep navy), `#d3e8fa` (light blue), `#001a3d → #4573d9` gradient feel
+- Style of the demo page: clean, premium, gradient hero, soft shadows, modern UI library showcase
+- The image sits next to a solid `#4573d9` "Brand card" and a `#eef6ff` "Light surface" card — should harmonize, not clash
+- White overlay text "Cover image" must remain readable → image needs darker / lower-contrast left side
 
-## 1. Глобальный визуал страницы
+## Approach
 
-- **Фон**: мягкий градиент вместо белого (`bg-background` → лёгкий радиальный/линейный градиент в синих тонах фирменной палитры `#4573d9` / `#d3e8fa`), плюс декоративные размытые «blob»-пятна сверху, чтобы появилась глубина.
-- **Контейнер**: `max-w-7xl` оставляем, увеличиваем вертикальные отступы (`py-16`), между секциями — `space-y-12`.
-- **Заголовок страницы (hero)**:
-  - Бейдж сверху («v1.0 · npm-ready») в виде пилюли с тонкой границей и backdrop-blur.
-  - H1 крупнее: `text-5xl md:text-6xl`, градиентный текст (от `#001a3d` к `#4573d9`).
-  - Подзаголовок — `text-lg md:text-xl`, `max-w-2xl`.
-  - Под заголовком — компактный ряд статистик («20+ компонентов», «TypeScript», «Tree-shakable», «SCSS modules») в виде стеклянных карточек.
+Generate a new image via Lovable AI Gateway (`google/gemini-3-pro-image-preview` for highest quality) and save it as `src/assets/demo/card-cover.png` with the same dimensions (797×272), overwriting the old one. No code changes needed — `index.tsx` already imports it.
 
-## 2. Типографика страницы (фикс «маленьких шрифтов»)
+### Image prompt direction
 
-Так как `1rem = 10px`, классы Tailwind типа `text-sm` дают 14px — мелко на лендинге.
-- Заголовки секций (`DemoSection h2`): `text-2xl font-semibold` (24px).
-- Подписи под секциями (новое поле `description`): `text-base text-muted-foreground` (16px), `leading-relaxed`.
-- Мелкие подписи внутри блоков-примеров (`Контент внутри BaseBlock`, `Раскрываемый контент` и т. п.) — `text-base` вместо `text-sm`.
-- Хедер страницы — см. выше.
+Premium abstract composition aligned with the brand:
+- Deep navy → royal blue gradient background (`#001a3d` → `#4573d9`) with subtle light-blue (`#d3e8fa`) highlights
+- Soft glassmorphism / aurora light streaks, faint geometric grid or flowing lines suggesting a design system
+- Slight darker gradient on the left third so white "Cover image" text stays legible
+- No text, no logos, no people — purely abstract premium tech aesthetic
+- Cinematic, high-end SaaS landing-page feel; matches Apple/Linear/Vercel polish
 
-## 3. Структура секций
+### Steps
 
-Заменяем плоский список из 18 `DemoSection` на сгруппированные категории с подзаголовками-разделителями:
+1. Run a short Node script that calls `https://ai.gateway.lovable.dev/v1/chat/completions` with `google/gemini-3-pro-image-preview`, `modalities: ["image","text"]`, and the prompt above
+2. Decode the returned base64 PNG, resize/crop to exactly 797×272 with `sharp` is unavailable in worker but fine here (we run via `code--exec` with Python PIL which is preinstalled)
+3. Write to `src/assets/demo/card-cover.png` (overwrite)
+4. QA: open the saved image, verify dimensions and that the left side is dark enough for white text; if not, regenerate with adjusted prompt
+5. Confirm `index.tsx` import still resolves (no edits needed)
 
-1. **Layout & containers** — BaseBlock, Card, CollapsableBlock, Collapse, EmptyComponent
-2. **Inputs & selection** — Select, DialogSelect, TreeDialogSelect, RadioGroupButton, InputCaption + Label
-3. **Navigation & flow** — Tabs, TabsRounded, Stepper, Carousel
-4. **Feedback & overlays** — Button, Tag, TooltipDark, TooltipLight, Popover, Spinner, CopyTextTrigger
+### Technical notes
 
-Каждая категория — заголовок `text-sm uppercase tracking-wider` + крупный `text-3xl`, тонкий `<hr>`, далее grid секций (`grid-cols-1 lg:grid-cols-2` для коротких блоков, `lg:col-span-2` для крупных вроде Select/Carousel).
-
-Новый `DemoSection` принимает `title`, `description?`, `colSpan?`, рендерит:
-- мягкая карточка: `rounded-2xl border border-border/60 bg-card/80 backdrop-blur p-8 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(69,115,217,0.18)]`,
-- крупный заголовок + описание,
-- сам пример на «сцене»: внутренний контейнер с лёгким фоном (`bg-gradient-to-b from-slate-50 to-white`, тонкая dashed-граница), чтобы было видно границы компонента.
-
-## 4. Конкретные блоки, которые «выглядят пусто»
-
-### BaseBlock
-Сейчас: один `<p>` внутри. Делаем реалистичный кейс — карточка профиля библиотеки:
-```
-title: "UI Library v1.0"
-subtitle: "@company/ui-kit"
-content: ряд из 3 мини-метрик (компонентов, иконок, размер бандла) + кнопка "View on npm"
-```
-
-### Card
-Сейчас: 2 пустые карточки с текстом. Меняем на 3 карточки в ряд: первая — `imageUrl` (используем градиентный SVG data-url), вторая — coloured (фирменный синий), третья — с длинным текстом-описанием. Размеры крупнее (240×160). Добавляем подпись «Hover/click ready» под рядом.
-
-### CopyTextTrigger + TooltipDark
-Сейчас: оторванные элементы. Делаем командную строку установки:
-- Превью «строки терминала»: `<div>` с моноширинным шрифтом, чёрным фоном, `npm install @company/ui-kit`, и `CopyTextTrigger` внутри иконкой/текстом «Copy».
-- Рядом — кнопка с `TooltipDark` («Скопировать SSH-ссылку»), плюс одна-две `Tag` снизу для контекста.
-
-### Spinner
-Сейчас: 3 одинаковых спинера в ряд, без центрирования. Делаем:
-- Три карточки-плейсхолдера разной семантики: «Loading data…», «Saving…», «Synchronizing…».
-- В каждой — Spinner соответствующего размера, **по центру** карточки (`flex items-center justify-center min-h-[120px]`), с подписью под ним.
-- Карточки разных размеров, чтобы big/small/extraSmall ощущались уместно.
-
-### Collapse
-Кладём 2–3 идущих подряд `Collapse` (FAQ-вид):
-- «Как установить пакет?» → ответ с code-snippet
-- «Поддерживает ли SSR?» → пара абзацев
-- «Как кастомизировать темы?» → ссылка/инструкция
-Каждый — внутри тонкой обводки + разделители между ними.
-
-### CollapsableBlock
-Один развёрнутый блок «Список изменений v1.0» с реальным контентом: маркированный список из 4–5 пунктов changelog, info-tooltip с пояснением «Дата релиза: …». Внутри — `Tag`-и для категорий (Feature/Fix/Breaking).
-
-### EmptyComponent
-Оборачиваем в карточку «Список задач» с заголовком и кнопкой «Создать», чтобы было видно как компонент работает в реальном UI.
-
-## 5. Полировка остальных блоков
-
-- **Button**: добавить подпись «Variants», расположить в 2 ряда (обычные + loading/disabled).
-- **Tag**: добавить статусные теги в цвет (Success/Warning/Danger), показать осмысленный набор.
-- **Tabs / TabsRounded**: под табами рендерить плейсхолдер-контент текущей вкладки (1–2 строки), чтобы было видно поведение.
-- **Stepper**: для второго степпера добавить кнопки «Назад/Далее» под ним.
-- **Carousel**: увеличить высоту слайдов (h-56), сделать слайды с реальными «обложками» (градиент + заголовок + подзаголовок).
-- **Select-секция**: сейчас 6 селектов в одной DemoSection — разнести на 2 секции «Basic selects» и «Advanced selects (dialog/tree/table)», иначе блок гигантский.
-- **InputCaption + Label**: показать состояние ошибки (красная подпись) и нормальное — два примера рядом.
-- **TooltipLight + Popover**: расположить как «toolbar» с несколькими действиями.
-
-## 6. Футер
-
-В конце страницы — простая полоса:
-- слева: «© 2026 · UI Library»,
-- справа: ссылки-плейсхолдеры (GitHub, npm, Docs) — `text-base text-muted-foreground hover:text-foreground`.
-
----
-
-## Технические детали
-
-- Файлы: только `src/routes/index.tsx`. Опционально — никаких новых scss-файлов; всё через Tailwind utility-классы (страница демо уже на Tailwind).
-- Помним про `1rem = 10px`: для страничных шрифтов используем Tailwind-классы (px-based), а не rem, чтобы не путаться.
-- Не меняем сигнатуры компонентов и их стили — только использование.
-- Сохраняем все текущие стейты (`radio`, `tab`, `selected`, `loadEmployees`, `loadDeptChildren`, `searchDepartments` и т. д.).
-- Импорт `Stepper`, `TreeDialogSelect`, `DialogSelect` и пр. остаётся прежним из `../lib`.
-- Никаких новых зависимостей.
-
-## Что не входит
-
-- Не редактируем стили самих компонентов (`Spinner.module.scss`, `BaseBlock.module.scss` и т. п.) — только оборачиваем их в более выразительные демо-сцены. Если после реализации центрирование Spinner всё равно будет сбоить из-за `width:100%; text-align:center` контейнера — поправим точечно отдельным шагом.
-- Не добавляем тёмную тему/переключатель.
-- Не трогаем роутинг и SSR-обвязку.
+- Use `LOVABLE_API_KEY` from env (verify via `compgen -e` first)
+- Save the base64 to a temp file, then PIL `Image.open(...).convert("RGB").resize((797,272), Image.LANCZOS)` and save as PNG
+- If Gemini returns a non-matching aspect ratio, do a center-crop to 797×272 ratio (≈2.93:1) before resize
+- Keep file under ~50KB if possible (current is 28KB) — PIL `optimize=True`
