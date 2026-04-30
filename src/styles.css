@@ -5,6 +5,20 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+ * Legacy rem base for the UI library: миксины в src/lib/styles/_text.scss
+ * рассчитаны на 1rem = 10px (например, 1.4rem = 14px). Без этого правила
+ * шрифты во всех компонентах библиотеки рендерятся в 1.6 раза крупнее.
+ */
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+/*
  * Design system definition.
  *
  * The @theme inline block maps CSS custom properties to Tailwind utility
