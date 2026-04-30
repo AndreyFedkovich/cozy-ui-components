@@ -183,7 +183,12 @@ export const DialogSelect = <T, S extends string | number>({
         id="DialogSelectInput"
         role="button"
         tabIndex={disabled ? -1 : 0}
-        className={cn(css.input, { [css.disabled]: disabled, [css.error]: error }, inputClassName)}
+        className={cn(
+          css.input,
+          "rounded-sm",
+          { [css.disabled]: disabled, [css.error]: error },
+          inputClassName,
+        )}
         onClick={() => !disabled && handleOpenChange(true)}
         onKeyDown={(event) => {
           if (!disabled && (event.key === "Enter" || event.key === " ")) {
