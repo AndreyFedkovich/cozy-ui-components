@@ -347,6 +347,9 @@ export const Select = <T, S extends string | number>({
   portalTarget,
   error,
   fixedHeight = true,
+  template = "list",
+  columns,
+  total,
 }: CustomSelectProps<T, S>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
