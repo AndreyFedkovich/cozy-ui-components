@@ -985,13 +985,13 @@ function Index() {
             >
               <div className="mb-5 flex items-center gap-4">
                 <span className="text-base font-medium text-foreground">Режим:</span>
-                <RadioGroupButton
-                  options={[
-                    { value: "view", label: "Просмотр" },
-                    { value: "edit", label: "Редактирование" },
+                <RadioGroupButton<string>
+                  data={[
+                    { id: "view", label: "Просмотр" },
+                    { id: "edit", label: "Редактирование" },
                   ]}
-                  value={routeEditable}
-                  onChange={(v) => setRouteEditable(String(v))}
+                  activeButton={routeEditable}
+                  onChange={(v) => setRouteEditable(v)}
                 />
               </div>
               <ApprovalRoute
