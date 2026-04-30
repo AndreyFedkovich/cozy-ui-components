@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
+import cardCoverUrl from "@/assets/demo/card-cover.png";
 import {
   BaseBlock,
   Button,
@@ -66,15 +67,36 @@ const cfoOptions: CustomOption<{ code: string }>[] = Array.from({ length: 12 }, 
     meta: { code: codes[index % codes.length] },
   };
 });
+const employeeSurnames = [
+  "Иванов",
+  "Петров",
+  "Смирнов",
+  "Кузнецов",
+  "Попов",
+  "Васильев",
+  "Соколов",
+  "Михайлов",
+  "Новиков",
+  "Федоров",
+  "Морозов",
+  "Волков",
+];
+const employeeNamePatronymics = [
+  { name: "Александр", patronymic: "Александрович" },
+  { name: "Дмитрий", patronymic: "Дмитриевич" },
+  { name: "Сергей", patronymic: "Сергеевич" },
+  { name: "Иван", patronymic: "Иванович" },
+];
 const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   { length: 48 },
   (_, index) => {
     const id = index + 100;
-    const suffix = index % 3 === 0 ? "Иванович" : index % 3 === 1 ? "Петрович" : "Сергеевич";
+    const surname = employeeSurnames[Math.floor(index / employeeNamePatronymics.length) % employeeSurnames.length];
+    const { name, patronymic } = employeeNamePatronymics[index % employeeNamePatronymics.length];
 
     return {
       value: `employee-${id}`,
-      label: `Иванов${id} Иван ${suffix}`,
+      label: `${surname} ${name} ${patronymic}`,
       meta: {
         birthDate:
           index % 4 === 0
@@ -234,12 +256,6 @@ function DemoSection({
   );
 }
 
-const cardImageA =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 160'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%234573d9'/><stop offset='100%' stop-color='%23001a3d'/></linearGradient></defs><rect width='240' height='160' fill='url(%23g)'/></svg>`,
-  );
-
 function Index() {
   const [radio, setRadio] = useState("first");
   const [tab, setTab] = useState(0);
@@ -388,22 +404,34 @@ function Index() {
               description="Простые карточки с фоном, цветом или изображением."
               className="lg:col-span-2"
             >
-              <div className="flex flex-wrap gap-5">
-                <Card text="Cover image" width={240} height={160} imageUrl={cardImageA} textColor="#fff" />
-                <Card
-                  text="Brand card"
-                  width={240}
-                  height={160}
-                  backgroundColor="#4573d9"
-                  textColor="#ffffff"
-                />
-                <Card
-                  text="Light surface"
-                  width={240}
-                  height={160}
-                  backgroundColor="#eef6ff"
-                  textColor="#0f172a"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="min-w-0">
+                  <Card
+                    text="Cover image"
+                    height={160}
+                    imageUrl={cardCoverUrl}
+                    textColor="#fff"
+                    className="w-full drop-shadow-sm"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <Card
+                    text="Brand card"
+                    height={160}
+                    backgroundColor="#4573d9"
+                    textColor="#ffffff"
+                    className="w-full"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <Card
+                    text="Light surface"
+                    height={160}
+                    backgroundColor="#eef6ff"
+                    textColor="#0f172a"
+                    className="w-full"
+                  />
+                </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
                 Поддерживают `link`, `imageUrl`, кастомные размеры и цвета.
@@ -549,7 +577,7 @@ function Index() {
               description="Однозначный и множественный выбор."
               className="lg:col-span-2"
             >
-              <div className="grid gap-5 lg:grid-cols-2">
+              <div className="grid gap-5">
                 <Select
                   mode="single"
                   label="Single select"
@@ -665,7 +693,13 @@ function Index() {
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection title="Tabs" description="Классические табы с подчёркиванием активного.">
-              <Tabs items={tabsItems} activeTab={tab} changesIndex={2} onClick={setTab} />
+              <Tabs
+                items={tabsItems}
+                activeTab={tab}
+                changesIndex={2}
+                badgeValue={3}
+                onClick={setTab}
+              />
               <p className="mt-4 text-base text-muted-foreground">{tabContent[tab]}</p>
             </DemoSection>
 
@@ -767,20 +801,16 @@ function Index() {
               description="Все варианты кнопок и состояние загрузки."
               className="lg:col-span-2"
             >
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button variant="default">Default</Button>
-                  <Button variant="primary">Primary</Button>
-                  <Button variant="secondary">Secondary</Button>
-                  <Button variant="danger">Danger</Button>
-                  <Button variant="text">Text</Button>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button loading>Loading</Button>
-                  <Button variant="primary" disabled>
-                    Disabled
-                  </Button>
-                </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button variant="default">Default</Button>
+                <Button variant="primary">Primary</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="danger">Danger</Button>
+                <Button variant="text">Text</Button>
+                <Button loading>Loading</Button>
+                <Button variant="primary" disabled>
+                  Disabled
+                </Button>
               </div>
             </DemoSection>
 

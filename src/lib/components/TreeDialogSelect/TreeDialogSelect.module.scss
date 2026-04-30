@@ -132,6 +132,12 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  color: colorsNew.$gray04;
+
+  path {
+    stroke: colorsNew.$gray04;
+    stroke-width: 1.4;
+  }
 }
 
 .searchInput {

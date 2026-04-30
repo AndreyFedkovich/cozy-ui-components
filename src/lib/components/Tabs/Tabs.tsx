@@ -7,6 +7,8 @@ interface TabsProps {
   items: { title: string; className?: string; header?: string }[];
   activeTab: number;
   changesIndex?: number;
+  /** Arbitrary numeric label for the tab at `changesIndex` (semantics defined by the consumer). */
+  badgeValue?: number;
   className?: string;
   tabsClassName?: string;
   sliderClassName?: string;
@@ -20,6 +22,7 @@ export const Tabs = React.memo(
     className,
     tabsClassName,
     changesIndex,
+    badgeValue,
     sliderClassName,
     onClick,
   }: TabsProps) => {
@@ -94,7 +97,15 @@ export const Tabs = React.memo(
                 >
                   {item.header && <div className={css.header}>{item.header}</div>}
                   {item.title}
-                  {changesIndex === index && <div className={css.notificationChanges} />}
+                  {changesIndex === index && (
+                    <div className={css.notificationChanges}>
+                      {badgeValue != null
+                        ? badgeValue > 99
+                          ? "99+"
+                          : String(badgeValue)
+                        : null}
+                    </div>
+                  )}
                 </div>
               ),
           )}

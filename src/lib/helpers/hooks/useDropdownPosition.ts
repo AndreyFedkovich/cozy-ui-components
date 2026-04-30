@@ -6,12 +6,19 @@ interface UseDropdownPositionProps {
   triggerRef: React.RefObject<HTMLElement | null>;
   dropdownHeight: number;
   offset?: number;
+  /** When false, skips scroll/layout listeners (e.g. closed dropdown). Defaults to true. */
+  enabled?: boolean;
+  onAnchorFrame?: (placement: DropdownPosition) => void;
 }
+
+const WINDOW_SCROLL_OPTIONS: AddEventListenerOptions = { capture: true, passive: true };
 
 export const useDropdownPosition = ({
   triggerRef,
   dropdownHeight,
   offset = 8,
+  enabled = true,
+  onAnchorFrame,
 }: UseDropdownPositionProps) => {
   const [position, setPosition] = useState<DropdownPosition>("bottom");
   const rafRef = useRef<number | null>(null);
@@ -43,11 +50,17 @@ export const useDropdownPosition = ({
     }
 
     rafRef.current = requestAnimationFrame(() => {
-      setPosition(calculatePosition());
+      const nextPosition = calculatePosition();
+      setPosition(nextPosition);
+      onAnchorFrame?.(nextPosition);
     });
-  }, [calculatePosition]);
+  }, [calculatePosition, onAnchorFrame]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const trigger = triggerRef.current;
     if (!trigger) {
       return;
@@ -86,6 +99,7 @@ export const useDropdownPosition = ({
       parent = parent.parentElement;
     }
 
+    window.addEventListener("scroll", updatePosition, WINDOW_SCROLL_OPTIONS);
     window.addEventListener("resize", updatePosition);
     window.addEventListener("transitionend", updatePosition);
     window.addEventListener("animationend", updatePosition);
@@ -98,15 +112,16 @@ export const useDropdownPosition = ({
       resizeObserver.disconnect();
       mutationObserver.disconnect();
 
+      window.removeEventListener("scroll", updatePosition, WINDOW_SCROLL_OPTIONS);
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("transitionend", updatePosition);
       window.removeEventListener("animationend", updatePosition);
 
-      scrollableParents.forEach((parent) => {
-        parent.removeEventListener("scroll", updatePosition);
+      scrollableParents.forEach((p) => {
+        p.removeEventListener("scroll", updatePosition);
       });
     };
-  }, [triggerRef, updatePosition]);
+  }, [enabled, triggerRef, updatePosition]);
 
   return position;
 };

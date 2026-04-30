@@ -6,9 +6,9 @@
   padding: 1.6rem;
   white-space: pre;
   border-radius: 1.6rem;
-  background-size: 50%;
+  background-size: cover;
   background-repeat: no-repeat;
-  background-position: bottom right;
+  background-position: center;
 
   span {
     @include mixinsNew.text-s-m(1.6rem);

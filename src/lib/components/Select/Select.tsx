@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom";
+import { autoUpdate, flip, offset as floatingOffset, size, useFloating } from "@floating-ui/react";
 import cn from "classnames";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InputCaption } from "../InputCaption/InputCaption";
@@ -7,7 +8,6 @@ import { Spinner } from "../Spinner/Spinner";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
 import { ArrowDownIcon, SearchIcon, CrossIcon } from "../../icons";
 import { Button } from "../Button/Button";
-import { useDropdownPosition, useMeasureElement } from "../../helpers";
 import { Tag } from "../Tag/Tag";
 import css from "./Select.module.scss";
 
@@ -397,33 +397,56 @@ export const Select = <T, S extends string | number>({
     };
   }, [handleSearch, isOpen, onClose]);
 
-  const { height: dropdownHeight } = useMeasureElement(dropDownRef.current);
-  const { height: inputHeight } = useMeasureElement(inputRef.current);
-
-  const position = useDropdownPosition({
-    triggerRef: inputRef,
-    dropdownHeight,
-    offset: DROPDOWN_MARGIN,
+  const { refs, floatingStyles, update } = useFloating({
+    strategy: "absolute",
+    placement: "bottom-start",
+    open: isOpen,
+    whileElementsMounted: (reference, floating, updatePosition) =>
+      autoUpdate(reference, floating, updatePosition, {
+        ancestorScroll: false,
+        elementResize: true,
+        ancestorResize: true,
+        layoutShift: true,
+      }),
+    middleware: [
+      floatingOffset(DROPDOWN_MARGIN),
+      flip({
+        fallbackPlacements: ["top-start", "bottom-start"],
+      }),
+      size({
+        apply({ rects, elements }) {
+          const nextWidth = `${Math.round(rects.reference.width)}px`;
+          if (elements.floating.style.width !== nextWidth) {
+            elements.floating.style.width = nextWidth;
+          }
+        },
+      }),
+    ],
   });
 
-  const getDropdownPosition = useCallback(() => {
-    if (!inputRef.current) {
-      return {};
+  const setReference = useCallback(
+    (node: HTMLDivElement | null) => {
+      inputRef.current = node;
+      refs.setReference(node);
+    },
+    [refs],
+  );
+
+  const setFloating = useCallback(
+    (node: HTMLDivElement | null) => {
+      dropDownRef.current = node;
+      refs.setFloating(node);
+    },
+    [refs],
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
     }
 
-    const rect = inputRef.current.getBoundingClientRect();
-    const top =
-      position === "top"
-        ? rect.top - dropdownHeight - DROPDOWN_MARGIN
-        : rect.bottom + DROPDOWN_MARGIN;
-
-    return {
-      position: "fixed" as const,
-      top: `${top}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
-    };
-  }, [dropdownHeight, position]);
+    update();
+  }, [isOpen, update]);
 
   const handleChange = useCallback(
     (newValue: CustomOption<T, S>) => {
@@ -442,20 +465,9 @@ export const Select = <T, S extends string | number>({
   const renderDropdown = useCallback(() => {
     const dropdownContent = (
       <div
-        ref={dropDownRef}
+        ref={setFloating}
         className={cn(css.dropdown, { [css.dropdown_visible]: isOpen }, dropDownClassName)}
-        style={
-          resolvedPortalTarget
-            ? getDropdownPosition()
-            : {
-                top: `calc(${inputHeight}px + ${DROPDOWN_MARGIN}px)`,
-                ...(position === "top" && {
-                  transform: `translateY(calc(-${dropdownHeight}px - ${inputHeight}px - ${
-                    DROPDOWN_MARGIN + DROPDOWN_MARGIN
-                  }px))`,
-                }),
-              }
-        }
+        style={floatingStyles}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={css.dropdownContent} style={{ height: fixedHeight ? "300px" : "none" }}>
@@ -503,20 +515,17 @@ export const Select = <T, S extends string | number>({
     return dropdownContent;
   }, [
     dropDownClassName,
-    dropdownHeight,
     dropdownRender,
     fixedHeight,
-    getDropdownPosition,
+    floatingStyles,
     handleChange,
     handleSearch,
-    inputHeight,
     isLoading,
     isOpen,
     onSearch,
     optionClassName,
     optionRender,
     options,
-    position,
     resolvedPortalTarget,
     template,
     columns,
@@ -526,6 +535,7 @@ export const Select = <T, S extends string | number>({
     searchClassName,
     searchPlaceholder,
     searchValue,
+    setFloating,
     value,
   ]);
 
@@ -544,7 +554,7 @@ export const Select = <T, S extends string | number>({
           role="button"
           id="CustomSelectInput"
           tabIndex={0}
-          ref={inputRef}
+          ref={setReference}
           className={cn(
             css.input,
             { [css.input_fixedHeight]: mode === "single", [css.disabled]: disabled },
