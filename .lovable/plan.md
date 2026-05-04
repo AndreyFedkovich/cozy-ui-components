@@ -1,78 +1,60 @@
-
 ## Проблема
 
-Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
+В `src/styles.css` стоит `html { font-size: 62.5% }` (т.е. `1rem = 10px`). Это нужно SCSS-миксинам библиотеки в `src/lib/styles/_text.scss`, где размеры записаны как `1.4rem = 14px`, `1.6rem = 16px` и т.д.
 
-- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
-- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
-- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
+Но Tailwind v4 тоже использует `rem` для всех текстовых утилит:
+- `text-sm` = 0.875rem → **8.75px** вместо 14px
+- `text-base` = 1rem → **10px** вместо 16px
+- `text-lg` = 1.125rem → **11.25px** вместо 18px
+- `text-xl` = 1.25rem → **12.5px** вместо 20px
 
-Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
+Поэтому витрина (на Tailwind) выглядит мелкой, а компоненты библиотеки (на SCSS) — нормально.
 
-## Решение: две сборки из одного репо
+## Решение
 
-### 1. Демо-витрина → SPA для Vercel
+Переопределить базовый размер шрифта Tailwind через CSS-переменные темы, чтобы Tailwind пересчитывал свои `rem`-размеры от 16px независимо от `html { font-size: 62.5% }`.
 
-Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
+В Tailwind v4 это делается одной строкой — добавить в `@theme` блок в `src/styles.css`:
 
-- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
-- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
-- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
-- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
-
-### 2. npm-пакет → отдельная команда
-
-- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
-- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
-- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
-
-### 3. Конфигурация Vercel
-
-Добавить `vercel.json` в корень:
-
-```json
-{
-  "buildCommand": "npm run build:site",
-  "outputDirectory": "dist-site",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+```css
+@theme inline {
+  /* Tailwind v4: пересчитываем rem от 16px, чтобы compensate html{font-size:62.5%} */
+  --text-xs: 0.75rem * 1.6;     /* и так далее */
 }
 ```
 
-`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
+Но более чистый и поддерживаемый подход — использовать **CSS-каскад с em-единицами на body** для текста витрины, либо изолировать legacy-правило только на контейнер библиотеки.
 
-### 4. Правки `vite.config.ts`
+### Рекомендуемый вариант (минимальные правки, максимальная совместимость)
 
-- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
-- В SPA-ветке выставить `build.outDir = "dist-site"`.
+**Перенести `font-size: 62.5%` с `html` на оборачивающий контейнер компонентов библиотеки.**
 
-### 5. Точка входа SPA
+1. В `src/styles.css`:
+   - Удалить `html { font-size: 62.5% }`.
+   - Удалить `body { font-size: 1.4rem }` (заменить на нормальный `font-size: 1rem` или удалить — Tailwind задаёт сам).
 
-Создать:
+2. В `src/routes/index.tsx`:
+   - На каждом блоке-обёртке, внутри которого рендерятся компоненты из `@/lib` (т.е. демо-карточки `BaseBlock`, `Button`, `Card`, `Tabs`, `Tag` и т.д.), добавить класс `legacy-rem` (или style `fontSize: '62.5%'`).
 
-- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
-- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
+3. Добавить в `src/styles.css` правило:
+   ```css
+   .legacy-rem {
+     font-size: 62.5%;
+   }
+   ```
 
-### 6. Чистка зависимостей (без удаления)
+   Это даёт scope: внутри `.legacy-rem` дочерние элементы наследуют `1em = 10px`, и SCSS-миксины с `1.4rem` корректно отрабатывают через каскад родительского `font-size`. Заголовки и описания самой витрины (вне `.legacy-rem`) получают нормальный Tailwind-масштаб (16px база).
 
-- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
-- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
+### Файлы для правки
 
-## Что увидит пользователь после применения
+- `src/styles.css` — убрать `html { font-size: 62.5% }` и `body { font-size: 1.4rem }`, добавить `.legacy-rem { font-size: 62.5% }`.
+- `src/routes/index.tsx` — обернуть каждый демо-preview компонента в `<div className="legacy-rem">…</div>` (или добавить класс на существующий контейнер демо).
 
-- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
-- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
-- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
+### Проверка
 
-## Технические детали (файлы)
+- Заголовок «Cozy UI», описание, статистика (20+/100%/Yes/SCSS), бейджи секций («01 — LAYOUT») — должны быть нормального размера.
+- Внутри демо-блоков (BaseBlock, Card, Button и т.д.) шрифты остаются как сейчас (компоненты выглядят корректно).
 
-- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
-- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
-- ➕ `index.html` — корневой HTML для SPA.
-- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
-- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
-- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
-- ➖ `react-router-dom` из `dependencies`.
+## Альтернатива (если не хочется трогать разметку)
 
-## Альтернатива (если хотите сохранить SSR)
-
-Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.
+Оставить `html { font-size: 62.5% }`, но в showcase-странице явно проставлять размеры в `px` или с множителем `1.6` (`text-[1.6rem]` вместо `text-base`). Менее чисто и легко забыть в будущих компонентах.
