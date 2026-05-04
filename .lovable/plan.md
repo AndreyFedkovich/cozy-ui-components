@@ -1,86 +1,46 @@
-## Проблема
+## Problem
 
-В Lovable preview стили не применяются, потому что dev-режим использует TanStack Start SSR (через `@lovable.dev/vite-tanstack-config`), а не SPA-вход `index.html` + `src/main.tsx`.
+`src/routes/index.tsx` (~1100 lines) eagerly mounts 20+ interactive components from `src/lib` on a single page: 2x Tabs, 2x Stepper, Carousel, 3 advanced Selects (one with 12 CFO options, one with 48 employees, TreeDialogSelect), Popover, Tooltips, ApprovalRoute (4 уровня + DialogSelect внутри в режиме «Редактирование»), 3 Spinner cards, etc. Каждый такой компонент тянет SCSS-модуль, ResizeObserver и эффекты. На первый рендер браузер делает огромную синхронную работу — отсюда «зависание» и долгий отклик при клике.
 
-Текущая ситуация:
-- SPA-сборка для Vercel (`build:site`): использует `index.html` → `src/main.tsx` → импорт `./styles.css` → **работает**.
-- Lovable dev preview (TanStack Start SSR): рендерит через `src/routes/__root.tsx`, который НЕ импортирует `styles.css` и НЕ объявляет shell с `<head>`/`<body>` → **CSS не загружается**.
+Попутно есть лишняя работа на каждый кадр в нескольких компонентах:
+- `Popover.tsx` — `useEffect` зависит от `open`, поэтому при каждом тогле listener click + scroll + resize пересоздаётся.
+- `RadioGroupButton.tsx` — `useMeasureElement(buttonRefs.current.get(...))` читает ref в render-фазе; элемент в первом рендере отсутствует, измерение не запускается до следующего ре-рендера, а каждый scroll/resize страницы дёргает `setRect` без сравнения значений.
+- На странице `index.tsx` массивы `cfoOptions`/`employeeOptions` и `deptTree` создаются на верхнем уровне модуля — это норм, но `cfoOptions.filter(...)` и `collectAllWithPaths(...)` пересчитываются на каждый рендер.
 
-В TanStack Start v1 root-route обязан задавать `head` (для тегов `<link>`/`<title>`) и `shellComponent` (html/head/body), либо явно импортировать CSS как side-effect, чтобы Vite вставил его в SSR-документ.
+## Plan
 
-## Решение
+### 1. Разбить страницу на секции с ленивой подгрузкой
+- Вынести каждую категорию (Layout, Inputs, Navigation, Feedback, Workflow) в отдельный компонент `src/routes/_sections/<Name>Section.tsx`.
+- В `src/routes/index.tsx` импортировать секции через `React.lazy` + `Suspense` с лёгким fallback (Spinner / skeleton).
+- Hero и первая секция (Layout) остаются eager, остальные грузятся по мере прокрутки через `IntersectionObserver` (компонент-обёртка `<LazySection>`), чтобы первый paint был быстрым и страница не «вешалась».
 
-Привести `src/routes/__root.tsx` к канонической форме TanStack Start:
+### 2. Убрать лишние ре-рендеры в lib-компонентах
+- `Popover.tsx`: разделить эффекты — отдельно `click` listener (deps: `[target, open, setOpen, toggle]` без переподписки на каждый toggle, использовать ref на `open`), отдельно `scroll`/`resize` (deps: `[target, updateRect]`). Сравнивать `rect` перед `setRect`, чтобы не плодить ре-рендеры.
+- `useMeasureElement.ts`: добавить equality-check перед `setHeight`/`setWidth`.
+- `RadioGroupButton.tsx`: хранить активный элемент в state через `useEffect`, чтобы `useMeasureElement` стабильно получал HTMLElement.
 
-1. Импортировать `../styles.css` как side-effect — это заставит Vite/TanStack Start включить CSS в документ как при SSR (preview), так и в клиентском бандле.
-2. Добавить `head()` с `<title>`, `<meta>` (description, og-теги Cozy UI) и canonical link на `https://cozy-ui-components.vercel.app` — сейчас они есть только в `index.html`, а это файл для SPA, который dev-режимом не используется.
-3. Добавить `shellComponent` (html/head/body + `HeadContent`/`Scripts`) — стандартный shell TanStack Start.
+### 3. Снизить вес демо-данных
+- В `src/routes/index.tsx` обернуть тяжёлые вычисления в `useMemo` (`cfoOptions.filter`, `collectAllWithPaths`).
+- Сократить `employeeOptions` с 48 до 24 (для демо достаточно, lazy-load в `loadEmployees` остаётся).
+- ApprovalRoute: «Редактирование» инициализировать выключенным (как сейчас) и не монтировать `DialogSelect` внутри стадий, пока режим = «Просмотр» — это срежет десятки компонентов в первичном рендере.
 
-Это даст единый источник истины: одни и те же стили и метаданные будут работать и в Lovable preview (SSR), и в SPA-сборке для Vercel.
+### 4. Проверка
+- Локальная сборка `bun run build` + ручной прогон страницы.
+- Profile через `browser--performance_profile` до/после.
+- Убедиться, что все интерактивные компоненты по-прежнему работают (табы, степпер, селекты, попап, аппрувы).
 
-## Технические детали
+## Файлы, которые изменятся
 
-Файл `src/routes/__root.tsx`:
+- `src/routes/index.tsx` — разбить на секции, lazy-импорты, useMemo.
+- `src/routes/_sections/LayoutSection.tsx` (new)
+- `src/routes/_sections/InputsSection.tsx` (new)
+- `src/routes/_sections/NavigationSection.tsx` (new)
+- `src/routes/_sections/FeedbackSection.tsx` (new)
+- `src/routes/_sections/WorkflowSection.tsx` (new)
+- `src/routes/_sections/LazySection.tsx` (new — IntersectionObserver wrapper)
+- `src/lib/components/Popover/Popover.tsx` — раздельные эффекты, equality check для rect.
+- `src/lib/components/TooltipLight/TooltipLight.tsx` — equality check для rect.
+- `src/lib/helpers/hooks/useMeasureElement.ts` — equality check для height/width.
+- `src/lib/components/RadioGroupButton/RadioGroupButton.tsx` — стабилизировать ref активной кнопки через state.
 
-```tsx
-import {
-  Outlet,
-  Link,
-  HeadContent,
-  Scripts,
-  createRootRoute,
-} from "@tanstack/react-router";
-import "../styles.css";
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Cozy UI — Premium React Component Library" },
-      {
-        name: "description",
-        content:
-          "Cozy UI — premium, themeable React component library. Live showcase, API reference and design tokens.",
-      },
-      { property: "og:title", content: "Cozy UI — Premium React Component Library" },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://cozy-ui-components.vercel.app" },
-    ],
-    links: [
-      { rel: "canonical", href: "https://cozy-ui-components.vercel.app" },
-    ],
-  }),
-  component: RootComponent,
-  shellComponent: RootShell,
-  notFoundComponent: NotFoundComponent,
-});
-
-function RootComponent() {
-  return <Outlet />;
-}
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function NotFoundComponent() { /* без изменений */ }
-```
-
-Важно: `import "../styles.css"` в route-файле обязателен — это единственный надёжный способ подцепить Tailwind CSS в TanStack Start dev-сервере. Сейчас CSS импортируется только из `src/main.tsx`, который не выполняется в SSR-режиме Lovable.
-
-## Затронутые файлы
-
-- `src/routes/__root.tsx` — добавить shellComponent, head(), импорт styles.css.
-
-SPA-сборка для Vercel продолжит работать как раньше (там CSS дополнительно импортируется через `src/main.tsx` — двойной импорт безопасен, Vite дедуплицирует).
+После одобрения переключусь в build-режим и сделаю изменения.

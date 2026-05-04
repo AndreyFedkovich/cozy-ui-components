@@ -27,10 +27,13 @@ export const RadioGroupButton = <T extends string | number>({
   const [sliderPosition, setSliderPosition] = useState({ transform: "translateX(0)", width: 0 });
   const buttonRefs = useRef<Map<string | number, HTMLDivElement | null>>(new Map());
   const resolvedActiveButton = activeButton || _activeButton;
+  const [activeEl, setActiveEl] = useState<HTMLDivElement | null>(null);
 
-  const { width: activeButtonWidth } = useMeasureElement(
-    buttonRefs.current.get(resolvedActiveButton as string),
-  );
+  useEffect(() => {
+    setActiveEl(buttonRefs.current.get(resolvedActiveButton as string) ?? null);
+  }, [resolvedActiveButton, data]);
+
+  const { width: activeButtonWidth } = useMeasureElement(activeEl);
 
   const _onChange = (option: RadioGroupButtonOption<T>) => {
     if (option.id === resolvedActiveButton) {
