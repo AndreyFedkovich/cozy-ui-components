@@ -102,6 +102,8 @@
     "@tanstack/react-router": "^1.168.0",
     "@tanstack/react-start": "^1.167.14",
     "@tanstack/router-plugin": "^1.167.10",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -138,8 +140,8 @@
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.24.2",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod": "^3.24.2"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
