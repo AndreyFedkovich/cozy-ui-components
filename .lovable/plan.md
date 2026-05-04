@@ -1,78 +1,86 @@
-
 ## Проблема
 
-Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
+В Lovable preview стили не применяются, потому что dev-режим использует TanStack Start SSR (через `@lovable.dev/vite-tanstack-config`), а не SPA-вход `index.html` + `src/main.tsx`.
 
-- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
-- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
-- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
+Текущая ситуация:
+- SPA-сборка для Vercel (`build:site`): использует `index.html` → `src/main.tsx` → импорт `./styles.css` → **работает**.
+- Lovable dev preview (TanStack Start SSR): рендерит через `src/routes/__root.tsx`, который НЕ импортирует `styles.css` и НЕ объявляет shell с `<head>`/`<body>` → **CSS не загружается**.
 
-Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
+В TanStack Start v1 root-route обязан задавать `head` (для тегов `<link>`/`<title>`) и `shellComponent` (html/head/body), либо явно импортировать CSS как side-effect, чтобы Vite вставил его в SSR-документ.
 
-## Решение: две сборки из одного репо
+## Решение
 
-### 1. Демо-витрина → SPA для Vercel
+Привести `src/routes/__root.tsx` к канонической форме TanStack Start:
 
-Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
+1. Импортировать `../styles.css` как side-effect — это заставит Vite/TanStack Start включить CSS в документ как при SSR (preview), так и в клиентском бандле.
+2. Добавить `head()` с `<title>`, `<meta>` (description, og-теги Cozy UI) и canonical link на `https://cozy-ui-components.vercel.app` — сейчас они есть только в `index.html`, а это файл для SPA, который dev-режимом не используется.
+3. Добавить `shellComponent` (html/head/body + `HeadContent`/`Scripts`) — стандартный shell TanStack Start.
 
-- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
-- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
-- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
-- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
+Это даст единый источник истины: одни и те же стили и метаданные будут работать и в Lovable preview (SSR), и в SPA-сборке для Vercel.
 
-### 2. npm-пакет → отдельная команда
+## Технические детали
 
-- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
-- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
-- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
+Файл `src/routes/__root.tsx`:
 
-### 3. Конфигурация Vercel
+```tsx
+import {
+  Outlet,
+  Link,
+  HeadContent,
+  Scripts,
+  createRootRoute,
+} from "@tanstack/react-router";
+import "../styles.css";
 
-Добавить `vercel.json` в корень:
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "Cozy UI — Premium React Component Library" },
+      {
+        name: "description",
+        content:
+          "Cozy UI — premium, themeable React component library. Live showcase, API reference and design tokens.",
+      },
+      { property: "og:title", content: "Cozy UI — Premium React Component Library" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://cozy-ui-components.vercel.app" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://cozy-ui-components.vercel.app" },
+    ],
+  }),
+  component: RootComponent,
+  shellComponent: RootShell,
+  notFoundComponent: NotFoundComponent,
+});
 
-```json
-{
-  "buildCommand": "npm run build:site",
-  "outputDirectory": "dist-site",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+function RootComponent() {
+  return <Outlet />;
 }
+
+function RootShell({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function NotFoundComponent() { /* без изменений */ }
 ```
 
-`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
+Важно: `import "../styles.css"` в route-файле обязателен — это единственный надёжный способ подцепить Tailwind CSS в TanStack Start dev-сервере. Сейчас CSS импортируется только из `src/main.tsx`, который не выполняется в SSR-режиме Lovable.
 
-### 4. Правки `vite.config.ts`
+## Затронутые файлы
 
-- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
-- В SPA-ветке выставить `build.outDir = "dist-site"`.
+- `src/routes/__root.tsx` — добавить shellComponent, head(), импорт styles.css.
 
-### 5. Точка входа SPA
-
-Создать:
-
-- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
-- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
-
-### 6. Чистка зависимостей (без удаления)
-
-- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
-- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
-
-## Что увидит пользователь после применения
-
-- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
-- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
-- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
-
-## Технические детали (файлы)
-
-- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
-- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
-- ➕ `index.html` — корневой HTML для SPA.
-- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
-- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
-- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
-- ➖ `react-router-dom` из `dependencies`.
-
-## Альтернатива (если хотите сохранить SSR)
-
-Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.
+SPA-сборка для Vercel продолжит работать как раньше (там CSS дополнительно импортируется через `src/main.tsx` — двойной импорт безопасен, Vite дедуплицирует).
