@@ -74,17 +74,6 @@ export const useDropdownPosition = ({
 
     resizeObserver.observe(trigger);
 
-    const mutationObserver = new MutationObserver(() => {
-      updatePosition();
-    });
-
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["style", "class"],
-    });
-
     const scrollableParents: HTMLElement[] = [];
     let parent = trigger.parentElement;
 
@@ -101,8 +90,8 @@ export const useDropdownPosition = ({
 
     window.addEventListener("scroll", updatePosition, WINDOW_SCROLL_OPTIONS);
     window.addEventListener("resize", updatePosition);
-    window.addEventListener("transitionend", updatePosition);
-    window.addEventListener("animationend", updatePosition);
+    trigger.addEventListener("transitionend", updatePosition);
+    trigger.addEventListener("animationend", updatePosition);
 
     return () => {
       if (rafRef.current) {
@@ -110,12 +99,11 @@ export const useDropdownPosition = ({
       }
 
       resizeObserver.disconnect();
-      mutationObserver.disconnect();
 
       window.removeEventListener("scroll", updatePosition, WINDOW_SCROLL_OPTIONS);
       window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("transitionend", updatePosition);
-      window.removeEventListener("animationend", updatePosition);
+      trigger.removeEventListener("transitionend", updatePosition);
+      trigger.removeEventListener("animationend", updatePosition);
 
       scrollableParents.forEach((p) => {
         p.removeEventListener("scroll", updatePosition);
