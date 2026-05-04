@@ -1,55 +1,78 @@
-## Симптом
 
-На `https://cozy-ui-components.vercel.app` страница зависает после блока **Stepper**. Профайлинг подтверждает проблему: `Script Duration: 73 секунды` при 986 DOM-узлах и 532 слушателях событий — JavaScript-движок занят постоянными перерисовками. CPU-профайлер не успевает запуститься (`context deadline exceeded`).
+## Проблема
 
-В Lovable preview та же страница работает, потому что preview рендерится в SSR-режиме и часть «тяжёлых» компонентов сначала отдаётся как HTML — клиентская сторона догоняет постепенно. SPA-сборка на Vercel запускает все эффекты синхронно при первом рендере.
+Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
 
-## Главная причина
+- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
+- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
+- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
 
-Демо-секция «TooltipLight + Popover» (строки 927–949 в `src/routes/index.tsx`) собирает несколько компонентов с дорогими side-эффектами в одном узле, который монтируется одновременно:
+Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
 
-```tsx
-<Button id={tooltipTargetId} variant="secondary">Light tooltip</Button>
-<TooltipLight placement="top" target={tooltipTargetId}>…</TooltipLight>
-<Button ref={popoverTarget} variant="primary">Open popover</Button>
-<Popover target={popoverTarget} placement="bottom">…</Popover>
+## Решение: две сборки из одного репо
+
+### 1. Демо-витрина → SPA для Vercel
+
+Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
+
+- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
+- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
+- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
+- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
+
+### 2. npm-пакет → отдельная команда
+
+- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
+- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
+- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
+
+### 3. Конфигурация Vercel
+
+Добавить `vercel.json` в корень:
+
+```json
+{
+  "buildCommand": "npm run build:site",
+  "outputDirectory": "dist-site",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
 ```
 
-В обоих компонентах (`src/lib/components/Popover/Popover.tsx`, `src/lib/components/TooltipLight/TooltipLight.tsx`) `useEffect` имеет в зависимостях `open` (внутренний state). На каждом изменении `open`/`rect` эффект отписывается и подписывается заново на:
+`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
 
-- `window.scroll` (с `capture: true`)
-- `window.resize`
-- click/mouseenter/mouseleave/focus/blur на target
+### 4. Правки `vite.config.ts`
 
-Радиксовский Popover/Tooltip рендерится в портале и при открытии меняет body (атрибуты `data-state`, классы). Эти мутации повторно триггерят `setRect(getBoundingClientRect())`, что меняет state → переаттач эффекта → снова меняется DOM → цикл.
+- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
+- В SPA-ветке выставить `build.outDir = "dist-site"`.
 
-Дополнительно `useDropdownPosition` (`src/lib/helpers/hooks/useDropdownPosition.ts`) ставит `MutationObserver` на `document.body` с `subtree:true, attributes:true` и в callback вызывает `setPosition(...)`. Любая перерисовка где угодно на странице → mutation → setState → перерисовка. Этот хук экспортируется из `lib/helpers`, и хотя в проекте показа явного импорта нет, любой компонент библиотеки, который его подключит, тут же повесит браузер.
+### 5. Точка входа SPA
 
-## План исправления
+Создать:
 
-1. **Починить `useDropdownPosition`** (`src/lib/helpers/hooks/useDropdownPosition.ts`)
-   - Убрать `MutationObserver` на `document.body` целиком — он смотрит на весь документ и вызывает `setState` при каждом изменении атрибута/класса. Это первоисточник цикла.
-   - Оставить `ResizeObserver` на триггере и слушатели `scroll/resize` на window. Этого достаточно для расчёта позиции.
-   - Если нужно реагировать на анимации/transitions, ограничить `transitionend`/`animationend` целевым элементом, а не window.
+- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
+- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
 
-2. **Починить `Popover`** (`src/lib/components/Popover/Popover.tsx`)
-   - Удалить `open` из массива зависимостей `useEffect`, использовать `ref` для актуального значения внутри обработчика клика. Текущая реализация переаттачит listener при каждом open/close, что само по себе вызывает перерисовку Radix-портала.
-   - Снять `window.addEventListener("scroll", updateRect, true)` (capture-фаза на всём window) — слушать только тогда, когда popover открыт.
+### 6. Чистка зависимостей (без удаления)
 
-3. **Починить `TooltipLight`** (`src/lib/components/TooltipLight/TooltipLight.tsx`)
-   - Аналогично Popover: вынести `open` из deps и слушать scroll/resize только при открытом тултипе.
-   - Возвращать `null` до первого `rect` уже сделано — оставить.
+- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
+- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
 
-4. **Починить `Spinner`** (`src/lib/components/Spinner/Spinner.tsx`)
-   - Косметический баг: `className={(css.cssloadContainer, className)}` использует comma-operator и теряет `cssloadContainer`. Заменить на `cn(css.cssloadContainer, className)`.
+## Что увидит пользователь после применения
 
-5. **Проверить сборку**
-   - Запустить `bun run build:site`, убедиться, что dist собирается.
-   - Открыть прод-URL в браузере, измерить `Script Duration` — должен упасть до < 1 c.
+- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
+- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
+- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
 
-## Технические детали
+## Технические детали (файлы)
 
-- Файлы под изменение: `src/lib/helpers/hooks/useDropdownPosition.ts`, `src/lib/components/Popover/Popover.tsx`, `src/lib/components/TooltipLight/TooltipLight.tsx`, `src/lib/components/Spinner/Spinner.tsx`.
-- Никаких изменений в `src/routes/index.tsx` не требуется — после фикса библиотеки демо заработает как есть.
-- Изменения совместимы с публичным API библиотеки, ломающих изменений нет.
-- После мерджа Vercel автоматически пересоберёт сайт.
+- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
+- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
+- ➕ `index.html` — корневой HTML для SPA.
+- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
+- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
+- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
+- ➖ `react-router-dom` из `dependencies`.
+
+## Альтернатива (если хотите сохранить SSR)
+
+Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.

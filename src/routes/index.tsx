@@ -252,7 +252,7 @@ function DemoSection({
       </header>
       <div
         className={
-          "legacy-rem rounded-xl border border-dashed border-border/70 bg-gradient-to-b from-slate-50/80 to-white p-6 " +
+          "rounded-xl border border-dashed border-border/70 bg-gradient-to-b from-slate-50/80 to-white p-6 " +
           (stageClassName ?? "")
         }
       >

@@ -1,4 +1,4 @@
-import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, RefObject, useCallback, useEffect, useMemo, useState } from "react";
 import cn from "classnames";
 import {
   Popover as UiPopover,
@@ -37,8 +37,6 @@ export const Popover = ({
   const [rect, setRect] = useState<DOMRect | null>(null);
   const open = isOpen ?? internalOpen;
   const { side, align } = useMemo(() => getPlacement(placement), [placement]);
-  const openRef = useRef(open);
-  openRef.current = open;
 
   const updateRect = useCallback(() => {
     setRect(target.current?.getBoundingClientRect() ?? null);
@@ -62,28 +60,20 @@ export const Popover = ({
 
     const handleClick = () => {
       updateRect();
-      setOpen(!openRef.current);
+      setOpen(!open);
       toggle?.();
     };
 
     targetElement.addEventListener("click", handleClick);
+    window.addEventListener("scroll", updateRect, true);
+    window.addEventListener("resize", updateRect);
 
     return () => {
       targetElement.removeEventListener("click", handleClick);
-    };
-  }, [setOpen, target, toggle, updateRect]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    window.addEventListener("scroll", updateRect, true);
-    window.addEventListener("resize", updateRect);
-    return () => {
       window.removeEventListener("scroll", updateRect, true);
       window.removeEventListener("resize", updateRect);
     };
-  }, [open, updateRect]);
+  }, [open, setOpen, target, toggle, updateRect]);
 
   return (
     <UiPopover open={open} onOpenChange={setOpen}>
