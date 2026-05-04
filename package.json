@@ -57,6 +57,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:site": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -145,7 +146,6 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
-    "classnames": "^2.5.1",
-    "react-router-dom": "^7.14.2"
+    "classnames": "^2.5.1"
   }
 }
