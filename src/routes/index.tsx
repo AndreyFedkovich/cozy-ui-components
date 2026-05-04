@@ -411,14 +411,14 @@ function Index() {
         <header className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-foreground backdrop-blur">
             <span className="inline-block h-2 w-2 rounded-full bg-[#00a582]" />
-            v1.0 · npm-ready React package
+            v0.1 · @andreyfedkovich/cozy-ui
           </div>
           <h1 className="bg-gradient-to-r from-[#001a3d] via-[#1f3a8a] to-[#4573d9] bg-clip-text text-5xl font-bold leading-tight tracking-tight text-transparent md:text-6xl">
-            UI Components Library
+            Cozy UI
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Премиальная витрина React-компонентов из <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>:
-            проверьте внешний вид, поведение, доступность и npm-экспорты — всё в одном месте.
+            Премиальная, типизированная React-библиотека компонентов с продуманной дизайн-системой.
+            Установите через <code className="rounded bg-muted px-1.5 py-0.5 text-base">@andreyfedkovich/cozy-ui</code> — SSR-safe, tree-shakeable, ESM + CJS.
           </p>
 
           <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
