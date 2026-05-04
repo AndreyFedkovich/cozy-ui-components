@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { FC, memo, useMemo } from "react";
 import cn from "classnames";
 import css from "./Card.module.scss";
@@ -30,9 +29,9 @@ export const Card: FC<CardProps> = memo(
     );
 
     return link ? (
-      <Link className={containerClassname} style={containerStyle} to={link}>
+      <a className={containerClassname} style={containerStyle} href={link}>
         <span>{text}</span>
-      </Link>
+      </a>
     ) : (
       <div className={containerClassname} style={containerStyle}>
         <span>{text}</span>
