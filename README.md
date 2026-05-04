@@ -12,6 +12,8 @@ Typed end-to-end · SCSS-modules with design tokens · SSR-safe · Tree-shakeabl
 [![license MIT](https://img.shields.io/npm/l/@andreyfedkovich/cozy-ui?style=flat-square&color=0A84FF)](./LICENSE)
 [![react 18 / 19](https://img.shields.io/badge/react-18%20%7C%2019-0A84FF?style=flat-square)](https://react.dev)
 
+**[🌐 Live demo → cozy-ui-components.vercel.app](https://cozy-ui-components.vercel.app)**
+
 ```bash
 npm i @andreyfedkovich/cozy-ui
 ```

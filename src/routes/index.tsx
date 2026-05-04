@@ -33,16 +33,20 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UI Components Demo" },
+      { title: "Cozy UI — Premium React Component Library" },
       {
         name: "description",
-        content: "Демо-витрина React UI компонентов, подготовленных для npm-пакета.",
+        content:
+          "Cozy UI — премиальная React-библиотека компонентов. Живое демо, API и дизайн-токены пакета @andreyfedkovich/cozy-ui.",
       },
-      { property: "og:title", content: "UI Components Demo" },
+      { property: "og:title", content: "Cozy UI — Premium React Component Library" },
       {
         property: "og:description",
-        content: "Проверочная страница всех публичных компонентов UI-библиотеки.",
+        content:
+          "Типизированные, SSR-safe, tree-shakeable React-компоненты с продуманной дизайн-системой. Попробуйте живое демо.",
       },
+      { property: "og:url", content: "https://cozy-ui-components.vercel.app" },
+      { property: "og:type", content: "website" },
     ],
   }),
   component: Index,
