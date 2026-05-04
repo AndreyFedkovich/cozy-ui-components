@@ -1,116 +1,78 @@
-## Goal
 
-Give the library a memorable, premium identity and a README that reads like a top-tier OSS product page, with a full API reference and copy-pasteable examples for every exported component.
+## Проблема
 
-## 1. Naming — propose "Cozy UI"
+Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
 
-Rationale: short, warm, distinct, easy to pronounce, npm-friendly, and pairs well with the soft/premium visual style of the components. Alternatives considered: "Lumen UI", "Soft Stack", "Veil UI", "Atlas UI" — happy to swap if you prefer one.
+- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
+- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
+- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
 
-Identifiers used everywhere:
-- npm package: `@andreyfedkovich/cozy-ui` (keeps your scope, frees the name on npm)
-- Display name: **Cozy UI**
-- Tagline: *A premium, opinionated React component library for crafted product UIs.*
+Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
 
-Touched for renaming:
-- `package.json` — `name`, `description`, `keywords`, `author`, `license` (MIT), `repository` placeholder, `homepage`, `bugs`, `dist` filenames stay (`ui-library.es.js`/`ui-library.cjs.js`) to avoid touching `vite.config.ts`. If you want filenames renamed too, say the word and I'll update the Vite lib config in the same pass.
-- `README.md` — full rewrite (see section 3)
-- `src/lib/UiLibraryPlaceholder.tsx` — leave file, only update any visible string referencing the old name (if any).
+## Решение: две сборки из одного репо
 
-## 2. README structure (premium, production-ready)
+### 1. Демо-витрина → SPA для Vercel
 
-A single `README.md` at repo root, ~600–800 lines, structured for scanability. No emojis in headings (clean, premium tone), tasteful badges, a real Table of Contents, and one runnable example per component.
+Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
 
-Sections:
+- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
+- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
+- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
+- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
 
-1. **Hero**
-   - Centered title `Cozy UI`, tagline, subtle ASCII divider
-   - Badge row: npm version, bundle size (shields.io), license MIT, types included, React 18/19, tree-shakeable
-   - One-line install + one-line import
+### 2. npm-пакет → отдельная команда
 
-2. **Why Cozy UI**
-   - 4–6 bullets: premium defaults, SCSS-modules + design tokens, fully typed, headless-friendly (Radix under the hood for dialogs), SSR-safe, zero global CSS leakage, tree-shakeable ESM + CJS.
+- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
+- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
+- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
 
-3. **Installation**
-   ```bash
-   npm i @andreyfedkovich/cozy-ui
-   # or
-   pnpm add @andreyfedkovich/cozy-ui
-   # or
-   bun add @andreyfedkovich/cozy-ui
-   ```
-   Peer deps note (React ≥ 18). Import the stylesheet once at app root:
-   ```ts
-   import "@andreyfedkovich/cozy-ui/styles.css";
-   ```
+### 3. Конфигурация Vercel
 
-4. **Quick start** — minimal `App.tsx` showing `Button`, `Card`, `Tag` together.
+Добавить `vercel.json` в корень:
 
-5. **Design tokens** — short table of the exported color tokens from `styles/colors`, plus how to reference CSS custom properties from `styles.css`.
+```json
+{
+  "buildCommand": "npm run build:site",
+  "outputDirectory": "dist-site",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
 
-6. **Component API** — one subsection per export. Each subsection contains:
-   - 1–2 sentence description
-   - Props table (name · type · default · description)
-   - Minimal usage snippet (copy-paste runnable)
-   - "When to use" hint where it matters
+`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
 
-   Components covered (matches `src/lib/components/index.ts`):
-   - Layout & content: `BaseBlock`, `Card`, `CollapsableBlock`, `Collapse`, `Carousel`, `EmptyComponent`, `Spinner`
-   - Inputs & forms: `Button`, `RadioGroupButton`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
-   - Navigation: `Tabs`, `TabsRounded`, `Stepper`
-   - Overlays: `Popover`, `TooltipDark`, `TooltipLight`
-   - Utility: `Tag`, `CopyTextTrigger`
-   - Workflow: `ApprovalRoute` (highlighted as a flagship component with a fuller example showing levels/stages/approvers + edit mode)
+### 4. Правки `vite.config.ts`
 
-7. **Hooks & helpers** — `useMeasureElement`, `useDropdownPosition` with signatures and a tiny example each.
+- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
+- В SPA-ветке выставить `build.outDir = "dist-site"`.
 
-8. **Icons** — note that the SVG icon set is exported from the package (`import { DoneIcon, WarnIcon, ... } from "@andreyfedkovich/cozy-ui"`), with a short list of available icons.
+### 5. Точка входа SPA
 
-9. **TypeScript** — note about exported types (`ButtonVariant`, `CustomOption`, `ApprovalLevel`, etc.) and that `.d.ts` ships in the package.
+Создать:
 
-10. **SSR & framework support** — works with Next.js, TanStack Start, Remix, Vite SPA. Note: client-only components (anything using portals: `Select`, `DialogSelect`, `TreeDialogSelect`, `Popover`, tooltips) — if SSR-rendering, gate or `dynamic()`-import.
+- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
+- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
 
-11. **Theming** — how to override CSS variables in user app, brief example.
+### 6. Чистка зависимостей (без удаления)
 
-12. **Accessibility** — Radix primitives under the hood for dialogs/labels; keyboard-friendly Stepper/Tabs; focus-visible rings respected.
+- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
+- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
 
-13. **Local development**
-    ```bash
-    bun install
-    bun run dev          # demo playground
-    bun run build:lib    # produce dist/
-    bun run lint
-    ```
+## Что увидит пользователь после применения
 
-14. **Publishing**
-    ```bash
-    npm publish --access public
-    ```
-    Note about `prepublishOnly` running the lib build automatically.
+- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
+- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
+- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
 
-15. **Contributing** — short, pointing to PRs welcome and code style (Prettier + ESLint).
+## Технические детали (файлы)
 
-16. **License** — MIT © Andrey Fedkovich.
+- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
+- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
+- ➕ `index.html` — корневой HTML для SPA.
+- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
+- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
+- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
+- ➖ `react-router-dom` из `dependencies`.
 
-## 3. Example quality bar
+## Альтернатива (если хотите сохранить SSR)
 
-Every snippet must:
-- Compile against the actual exported API (verified against the source files I read).
-- Use realistic prop values, not `foo`/`bar`.
-- Be ≤ 20 lines.
-- Show the most common use case, not the exhaustive one.
-
-For `ApprovalRoute`, the example will show a 3-level route with one rejected, one current, and one pending stage to demonstrate all visual states, plus an `editable` prop variant in a second snippet.
-
-## 4. Files to change
-
-- `package.json` — name, description, keywords, author, license, repository, homepage, bugs.
-- `README.md` — full rewrite per section 2.
-- (Optional, ask after) `vite.config.ts` if you want bundle filenames renamed to `cozy-ui.es.js`.
-
-## 5. What I will NOT do in this pass
-
-- Won't change source code of components or their exported APIs.
-- Won't rename the npm scope (`@andreyfedkovich`) — only the package suffix.
-- Won't add new badges that require external CI setup; only badges that work from npm/shields.io out of the box.
-
-Approve and I'll implement in one pass.
+Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.
