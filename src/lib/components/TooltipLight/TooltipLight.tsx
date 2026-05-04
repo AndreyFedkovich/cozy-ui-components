@@ -99,8 +99,6 @@ export const TooltipLight: FC<TooltipLightProps> = ({
     element.addEventListener("mouseleave", hide);
     element.addEventListener("focus", show);
     element.addEventListener("blur", hide);
-    window.addEventListener("scroll", updateRect, true);
-    window.addEventListener("resize", updateRect);
 
     return () => {
       clearTimers();
@@ -108,10 +106,20 @@ export const TooltipLight: FC<TooltipLightProps> = ({
       element.removeEventListener("mouseleave", hide);
       element.removeEventListener("focus", show);
       element.removeEventListener("blur", hide);
+    };
+  }, [autohide, delay, setOpen, target, updateRect]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    window.addEventListener("scroll", updateRect, true);
+    window.addEventListener("resize", updateRect);
+    return () => {
       window.removeEventListener("scroll", updateRect, true);
       window.removeEventListener("resize", updateRect);
     };
-  }, [autohide, delay, setOpen, target, updateRect]);
+  }, [open, updateRect]);
 
   if (!rect) {
     return null;
