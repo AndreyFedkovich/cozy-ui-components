@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
-import { LazySection } from "./_sections/LazySection";
+import { Suspense } from "react";
+import { lazyDemoSection } from "./_sections/-lazyDemoSection";
 import { SectionFallback } from "./_sections/shared";
 
-const LayoutSection = lazy(() => import("./_sections/LayoutSection"));
-const InputsSection = lazy(() => import("./_sections/InputsSection"));
-const NavigationSection = lazy(() => import("./_sections/NavigationSection"));
-const FeedbackSection = lazy(() => import("./_sections/FeedbackSection"));
-const WorkflowSection = lazy(() => import("./_sections/WorkflowSection"));
+const LayoutSection = lazyDemoSection(() => import("./_sections/LayoutSection"));
+const InputsSection = lazyDemoSection(() => import("./_sections/InputsSection"));
+const NavigationSection = lazyDemoSection(() => import("./_sections/NavigationSection"));
+const FeedbackSection = lazyDemoSection(() => import("./_sections/FeedbackSection"));
+const WorkflowSection = lazyDemoSection(() => import("./_sections/WorkflowSection"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -88,29 +88,21 @@ function Index() {
           <LayoutSection />
         </Suspense>
 
-        <LazySection fallback={<SectionFallback />}>
-          <Suspense fallback={<SectionFallback />}>
-            <InputsSection />
-          </Suspense>
-        </LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <InputsSection />
+        </Suspense>
 
-        <LazySection fallback={<SectionFallback />}>
-          <Suspense fallback={<SectionFallback />}>
-            <NavigationSection />
-          </Suspense>
-        </LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <NavigationSection />
+        </Suspense>
 
-        <LazySection fallback={<SectionFallback />}>
-          <Suspense fallback={<SectionFallback />}>
-            <FeedbackSection />
-          </Suspense>
-        </LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <FeedbackSection />
+        </Suspense>
 
-        <LazySection fallback={<SectionFallback />}>
-          <Suspense fallback={<SectionFallback />}>
-            <WorkflowSection />
-          </Suspense>
-        </LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <WorkflowSection />
+        </Suspense>
 
         <footer className="flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-8 md:flex-row md:items-center">
           <div className="text-base text-muted-foreground">© 2026 · UI Library</div>

@@ -70,3 +70,23 @@ export function SectionFallback({ minHeight = 320 }: { minHeight?: number }) {
     </div>
   );
 }
+
+export function SectionChunkError() {
+  return (
+    <div
+      className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-destructive/35 bg-destructive/5 px-4 py-8"
+      style={{ minHeight: 320 }}
+    >
+      <p className="max-w-md text-center text-sm text-muted-foreground">
+        Не удалось загрузить фрагмент демо. Проверьте сеть или обновите страницу.
+      </p>
+      <button
+        type="button"
+        className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        onClick={() => window.location.reload()}
+      >
+        Обновить
+      </button>
+    </div>
+  );
+}

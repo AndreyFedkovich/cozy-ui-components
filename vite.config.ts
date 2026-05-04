@@ -3,9 +3,22 @@ import { dirname, resolve } from "node:path";
 import { defineConfig as defineLovableConfig } from "@lovable.dev/vite-tanstack-config";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
-import { defineConfig as defineViteConfig, type ConfigEnv, type LibraryFormats } from "vite";
+import {
+  defineConfig as defineViteConfig,
+  loadEnv,
+  type ConfigEnv,
+  type LibraryFormats,
+} from "vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** Vite `base` for SPA assets when the site is served from a subpath (e.g. GitHub Pages). Set `COZY_UI_SITE_BASE` in env (e.g. `/repo-name/`). */
+function normalizeViteBase(raw: string): string {
+  const t = raw.trim();
+  if (!t || t === "/") return "/";
+  const withLeading = t.startsWith("/") ? t : `/${t}`;
+  return withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
+}
 
 export default async function config(env: ConfigEnv) {
   if (env.mode === "library") {
@@ -59,8 +72,12 @@ export default async function config(env: ConfigEnv) {
     const tailwindcss = (await import("@tailwindcss/vite")).default;
     const tsconfigPaths = (await import("vite-tsconfig-paths")).default;
     const { tanstackRouter } = await import("@tanstack/router-plugin/vite");
+    const cozyEnv = loadEnv(env.mode, __dirname, "COZY_");
+    const siteBase =
+      cozyEnv.COZY_UI_SITE_BASE?.trim() || process.env.COZY_UI_SITE_BASE?.trim() || "";
 
     return defineViteConfig({
+      base: normalizeViteBase(siteBase),
       plugins: [
         tsconfigPaths(),
         tanstackRouter({ target: "react", autoCodeSplitting: true }),
