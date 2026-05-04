@@ -53,5 +53,32 @@ export default async function config(env: ConfigEnv) {
     });
   }
 
+  // SPA build for Vercel / static hosting (no SSR, no Cloudflare worker).
+  if (env.command === "build") {
+    const tailwindcss = (await import("@tailwindcss/vite")).default;
+    const tsconfigPaths = (await import("vite-tsconfig-paths")).default;
+    const { tanstackRouter } = await import("@tanstack/router-plugin/vite");
+
+    return defineViteConfig({
+      plugins: [
+        tsconfigPaths(),
+        tanstackRouter({ target: "react", autoCodeSplitting: true }),
+        react(),
+        svgr(),
+        tailwindcss(),
+      ],
+      resolve: {
+        alias: {
+          "@": resolve(__dirname, "./src"),
+        },
+      },
+      build: {
+        outDir: "dist-site",
+        emptyOutDir: true,
+        sourcemap: false,
+      },
+    });
+  }
+
   return defineLovableConfig({ plugins: [svgr()] })(env);
 }
