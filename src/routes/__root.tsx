@@ -1,4 +1,12 @@
-import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  HeadContent,
+  Scripts,
+  createRootRoute,
+} from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import "../styles.css";
 
 function NotFoundComponent() {
   return (
@@ -23,10 +31,51 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "Cozy UI — Premium React Component Library" },
+      {
+        name: "description",
+        content:
+          "Cozy UI — premium, themeable React component library. Live showcase, API reference and design tokens.",
+      },
+      {
+        property: "og:title",
+        content: "Cozy UI — Premium React Component Library",
+      },
+      {
+        property: "og:description",
+        content:
+          "Typed, SSR-safe, tree-shakeable React components with a crafted design system. Try the live demo.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://cozy-ui-components.vercel.app" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://cozy-ui-components.vercel.app" },
+    ],
+  }),
   component: RootComponent,
+  shellComponent: RootShell,
   notFoundComponent: NotFoundComponent,
 });
 
 function RootComponent() {
   return <Outlet />;
+}
+
+function RootShell({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
 }
