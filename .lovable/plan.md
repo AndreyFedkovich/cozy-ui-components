@@ -1,60 +1,55 @@
-## Проблема
+## Симптом
 
-В `src/styles.css` стоит `html { font-size: 62.5% }` (т.е. `1rem = 10px`). Это нужно SCSS-миксинам библиотеки в `src/lib/styles/_text.scss`, где размеры записаны как `1.4rem = 14px`, `1.6rem = 16px` и т.д.
+На `https://cozy-ui-components.vercel.app` страница зависает после блока **Stepper**. Профайлинг подтверждает проблему: `Script Duration: 73 секунды` при 986 DOM-узлах и 532 слушателях событий — JavaScript-движок занят постоянными перерисовками. CPU-профайлер не успевает запуститься (`context deadline exceeded`).
 
-Но Tailwind v4 тоже использует `rem` для всех текстовых утилит:
-- `text-sm` = 0.875rem → **8.75px** вместо 14px
-- `text-base` = 1rem → **10px** вместо 16px
-- `text-lg` = 1.125rem → **11.25px** вместо 18px
-- `text-xl` = 1.25rem → **12.5px** вместо 20px
+В Lovable preview та же страница работает, потому что preview рендерится в SSR-режиме и часть «тяжёлых» компонентов сначала отдаётся как HTML — клиентская сторона догоняет постепенно. SPA-сборка на Vercel запускает все эффекты синхронно при первом рендере.
 
-Поэтому витрина (на Tailwind) выглядит мелкой, а компоненты библиотеки (на SCSS) — нормально.
+## Главная причина
 
-## Решение
+Демо-секция «TooltipLight + Popover» (строки 927–949 в `src/routes/index.tsx`) собирает несколько компонентов с дорогими side-эффектами в одном узле, который монтируется одновременно:
 
-Переопределить базовый размер шрифта Tailwind через CSS-переменные темы, чтобы Tailwind пересчитывал свои `rem`-размеры от 16px независимо от `html { font-size: 62.5% }`.
-
-В Tailwind v4 это делается одной строкой — добавить в `@theme` блок в `src/styles.css`:
-
-```css
-@theme inline {
-  /* Tailwind v4: пересчитываем rem от 16px, чтобы compensate html{font-size:62.5%} */
-  --text-xs: 0.75rem * 1.6;     /* и так далее */
-}
+```tsx
+<Button id={tooltipTargetId} variant="secondary">Light tooltip</Button>
+<TooltipLight placement="top" target={tooltipTargetId}>…</TooltipLight>
+<Button ref={popoverTarget} variant="primary">Open popover</Button>
+<Popover target={popoverTarget} placement="bottom">…</Popover>
 ```
 
-Но более чистый и поддерживаемый подход — использовать **CSS-каскад с em-единицами на body** для текста витрины, либо изолировать legacy-правило только на контейнер библиотеки.
+В обоих компонентах (`src/lib/components/Popover/Popover.tsx`, `src/lib/components/TooltipLight/TooltipLight.tsx`) `useEffect` имеет в зависимостях `open` (внутренний state). На каждом изменении `open`/`rect` эффект отписывается и подписывается заново на:
 
-### Рекомендуемый вариант (минимальные правки, максимальная совместимость)
+- `window.scroll` (с `capture: true`)
+- `window.resize`
+- click/mouseenter/mouseleave/focus/blur на target
 
-**Перенести `font-size: 62.5%` с `html` на оборачивающий контейнер компонентов библиотеки.**
+Радиксовский Popover/Tooltip рендерится в портале и при открытии меняет body (атрибуты `data-state`, классы). Эти мутации повторно триггерят `setRect(getBoundingClientRect())`, что меняет state → переаттач эффекта → снова меняется DOM → цикл.
 
-1. В `src/styles.css`:
-   - Удалить `html { font-size: 62.5% }`.
-   - Удалить `body { font-size: 1.4rem }` (заменить на нормальный `font-size: 1rem` или удалить — Tailwind задаёт сам).
+Дополнительно `useDropdownPosition` (`src/lib/helpers/hooks/useDropdownPosition.ts`) ставит `MutationObserver` на `document.body` с `subtree:true, attributes:true` и в callback вызывает `setPosition(...)`. Любая перерисовка где угодно на странице → mutation → setState → перерисовка. Этот хук экспортируется из `lib/helpers`, и хотя в проекте показа явного импорта нет, любой компонент библиотеки, который его подключит, тут же повесит браузер.
 
-2. В `src/routes/index.tsx`:
-   - На каждом блоке-обёртке, внутри которого рендерятся компоненты из `@/lib` (т.е. демо-карточки `BaseBlock`, `Button`, `Card`, `Tabs`, `Tag` и т.д.), добавить класс `legacy-rem` (или style `fontSize: '62.5%'`).
+## План исправления
 
-3. Добавить в `src/styles.css` правило:
-   ```css
-   .legacy-rem {
-     font-size: 62.5%;
-   }
-   ```
+1. **Починить `useDropdownPosition`** (`src/lib/helpers/hooks/useDropdownPosition.ts`)
+   - Убрать `MutationObserver` на `document.body` целиком — он смотрит на весь документ и вызывает `setState` при каждом изменении атрибута/класса. Это первоисточник цикла.
+   - Оставить `ResizeObserver` на триггере и слушатели `scroll/resize` на window. Этого достаточно для расчёта позиции.
+   - Если нужно реагировать на анимации/transitions, ограничить `transitionend`/`animationend` целевым элементом, а не window.
 
-   Это даёт scope: внутри `.legacy-rem` дочерние элементы наследуют `1em = 10px`, и SCSS-миксины с `1.4rem` корректно отрабатывают через каскад родительского `font-size`. Заголовки и описания самой витрины (вне `.legacy-rem`) получают нормальный Tailwind-масштаб (16px база).
+2. **Починить `Popover`** (`src/lib/components/Popover/Popover.tsx`)
+   - Удалить `open` из массива зависимостей `useEffect`, использовать `ref` для актуального значения внутри обработчика клика. Текущая реализация переаттачит listener при каждом open/close, что само по себе вызывает перерисовку Radix-портала.
+   - Снять `window.addEventListener("scroll", updateRect, true)` (capture-фаза на всём window) — слушать только тогда, когда popover открыт.
 
-### Файлы для правки
+3. **Починить `TooltipLight`** (`src/lib/components/TooltipLight/TooltipLight.tsx`)
+   - Аналогично Popover: вынести `open` из deps и слушать scroll/resize только при открытом тултипе.
+   - Возвращать `null` до первого `rect` уже сделано — оставить.
 
-- `src/styles.css` — убрать `html { font-size: 62.5% }` и `body { font-size: 1.4rem }`, добавить `.legacy-rem { font-size: 62.5% }`.
-- `src/routes/index.tsx` — обернуть каждый демо-preview компонента в `<div className="legacy-rem">…</div>` (или добавить класс на существующий контейнер демо).
+4. **Починить `Spinner`** (`src/lib/components/Spinner/Spinner.tsx`)
+   - Косметический баг: `className={(css.cssloadContainer, className)}` использует comma-operator и теряет `cssloadContainer`. Заменить на `cn(css.cssloadContainer, className)`.
 
-### Проверка
+5. **Проверить сборку**
+   - Запустить `bun run build:site`, убедиться, что dist собирается.
+   - Открыть прод-URL в браузере, измерить `Script Duration` — должен упасть до < 1 c.
 
-- Заголовок «Cozy UI», описание, статистика (20+/100%/Yes/SCSS), бейджи секций («01 — LAYOUT») — должны быть нормального размера.
-- Внутри демо-блоков (BaseBlock, Card, Button и т.д.) шрифты остаются как сейчас (компоненты выглядят корректно).
+## Технические детали
 
-## Альтернатива (если не хочется трогать разметку)
-
-Оставить `html { font-size: 62.5% }`, но в showcase-странице явно проставлять размеры в `px` или с множителем `1.6` (`text-[1.6rem]` вместо `text-base`). Менее чисто и легко забыть в будущих компонентах.
+- Файлы под изменение: `src/lib/helpers/hooks/useDropdownPosition.ts`, `src/lib/components/Popover/Popover.tsx`, `src/lib/components/TooltipLight/TooltipLight.tsx`, `src/lib/components/Spinner/Spinner.tsx`.
+- Никаких изменений в `src/routes/index.tsx` не требуется — после фикса библиотеки демо заработает как есть.
+- Изменения совместимы с публичным API библиотеки, ломающих изменений нет.
+- После мерджа Vercel автоматически пересоберёт сайт.
