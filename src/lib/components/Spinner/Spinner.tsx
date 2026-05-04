@@ -28,7 +28,7 @@ export const Spinner: React.FC<Props> = ({
   );
 
   return (
-    <div className={(css.cssloadContainer, className)} style={styles}>
+    <div className={cn(css.cssloadContainer, className)} style={styles}>
       <div
         className={cn(css.cssloadSpeedingWheel, {
           [css.bigSize]: size === "big",
