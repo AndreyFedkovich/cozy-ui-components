@@ -1,124 +1,116 @@
-## Новый компонент: `ApprovalRoute` (Маршрут согласования)
+## Goal
 
-Премиальный вертикальный таймлайн с двухуровневой иерархией: **Уровни → Этапы → Согласующие**. В стилях библиотеки (`colorsNew`, SCSS modules, тонкие тени, скругления как у других компонентов).
+Give the library a memorable, premium identity and a README that reads like a top-tier OSS product page, with a full API reference and copy-pasteable examples for every exported component.
 
-### Структура файлов
+## 1. Naming — propose "Cozy UI"
 
-```text
-src/lib/components/ApprovalRoute/
-  ApprovalRoute.tsx                  // главный компонент + типы + экспорт
-  ApprovalRoute.module.scss          // стили
-  parts/
-    LevelNode.tsx                    // кружок-маркер уровня + соединитель
-    StageRow.tsx                     // строка этапа (название + кнопка добавить согласующего)
-    ApproverItem.tsx                 // ФИО + дата + статус + причина отклонения
-    EditNameDialog.tsx               // мини-диалог ввода названия (через ui/dialog)
-```
+Rationale: short, warm, distinct, easy to pronounce, npm-friendly, and pairs well with the soft/premium visual style of the components. Alternatives considered: "Lumen UI", "Soft Stack", "Veil UI", "Atlas UI" — happy to swap if you prefer one.
 
-Экспорт из `src/lib/components/index.ts`:
-```ts
-export { ApprovalRoute, type ApprovalRouteProps, type ApprovalLevel,
-         type ApprovalStage, type Approver, type ApprovalStatus } from "./ApprovalRoute/ApprovalRoute";
-```
+Identifiers used everywhere:
+- npm package: `@andreyfedkovich/cozy-ui` (keeps your scope, frees the name on npm)
+- Display name: **Cozy UI**
+- Tagline: *A premium, opinionated React component library for crafted product UIs.*
 
-### Модель данных
+Touched for renaming:
+- `package.json` — `name`, `description`, `keywords`, `author`, `license` (MIT), `repository` placeholder, `homepage`, `bugs`, `dist` filenames stay (`ui-library.es.js`/`ui-library.cjs.js`) to avoid touching `vite.config.ts`. If you want filenames renamed too, say the word and I'll update the Vite lib config in the same pass.
+- `README.md` — full rewrite (see section 3)
+- `src/lib/UiLibraryPlaceholder.tsx` — leave file, only update any visible string referencing the old name (if any).
 
-```ts
-type ApprovalStatus = "pending" | "approved" | "rejected";
+## 2. README structure (premium, production-ready)
 
-type Approver = {
-  id: string;
-  fullName: string;            // "Мелконян С.Б."
-  status?: ApprovalStatus;     // undefined = ещё не действовал
-  actedAt?: string;            // дата согласования/отклонения (форматированная)
-  rejectReason?: string;       // показывается, если status="rejected"
-};
+A single `README.md` at repo root, ~600–800 lines, structured for scanability. No emojis in headings (clean, premium tone), tasteful badges, a real Table of Contents, and one runnable example per component.
 
-type ApprovalStage = {
-  id: string;
-  name: string;                // "УОР", "УМП", "Руководитель L1"
-  approvers: Approver[];       // если пустой — иконка "согласующий не назначен"
-};
+Sections:
 
-type ApprovalLevel = {
-  id: string;
-  name: string;                // "Согласование", "Утверждение", ...
-  stages: ApprovalStage[];
-  status: "completed" | "current" | "pending"; // текущий выделяется
-};
-```
+1. **Hero**
+   - Centered title `Cozy UI`, tagline, subtle ASCII divider
+   - Badge row: npm version, bundle size (shields.io), license MIT, types included, React 18/19, tree-shakeable
+   - One-line install + one-line import
 
-### Поведение
+2. **Why Cozy UI**
+   - 4–6 bullets: premium defaults, SCSS-modules + design tokens, fully typed, headless-friendly (Radix under the hood for dialogs), SSR-safe, zero global CSS leakage, tree-shakeable ESM + CJS.
 
-- **Статус уровня**:
-  - `completed` — зелёный закрашенный круг с галочкой (`DoneIcon` / `CheckGreen`).
-  - `current` — синий контурный круг с пульсирующим кольцом (как `Stepper.step_current`), название уровня жирное + подчеркнутое.
-  - `pending` — серый контурный круг.
-- **Этапы текущего уровня** все одинаково активны (без выделения «активного из них»).
-- **Согласующие**:
-  - approved → синий/тёмный текст + дата.
-  - rejected → красный текст + дата + причина курсивом.
-  - pending → серый текст.
-  - если `approvers` пуст — строка-плейсхолдер с `WarnIcon` оранжевого цвета и текстом «Согласующий не назначен».
-- **Соединительная линия**: вертикальная 1px полоса слева, окрашенная в `blue03` для пройденных уровней, `gray07` для будущих, плавный градиент на границе текущего уровня.
+3. **Installation**
+   ```bash
+   npm i @andreyfedkovich/cozy-ui
+   # or
+   pnpm add @andreyfedkovich/cozy-ui
+   # or
+   bun add @andreyfedkovich/cozy-ui
+   ```
+   Peer deps note (React ≥ 18). Import the stylesheet once at app root:
+   ```ts
+   import "@andreyfedkovich/cozy-ui/styles.css";
+   ```
 
-### Режим редактирования (`editable?: boolean`)
+4. **Quick start** — minimal `App.tsx` showing `Button`, `Card`, `Tag` together.
 
-Когда `editable=true`:
-- У заголовка каждого уровня — кнопка-иконка `×` для удаления (с подтверждением через `window.confirm` или встроенный мини-диалог).
-- В конце списка уровней — кнопка `+ Добавить уровень` (открывает `EditNameDialog` для ввода названия).
-- У каждого этапа — `+` для добавления согласующего и `×` для удаления этапа.
-- В конце этапов уровня — кнопка `+ Добавить этап`.
-- У каждого согласующего — `×` для удаления.
+5. **Design tokens** — short table of the exported color tokens from `styles/colors`, plus how to reference CSS custom properties from `styles.css`.
 
-Колбэки наружу (контролируемый компонент):
-```ts
-type ApprovalRouteProps = {
-  levels: ApprovalLevel[];
-  editable?: boolean;
-  // приближённый список сотрудников для добавления согласующего
-  loadApprovers?: DialogSelectProps<...>["loadOptions"];
-  onAddLevel?: (name: string) => void;
-  onRemoveLevel?: (levelId: string) => void;
-  onAddStage?: (levelId: string, name: string) => void;
-  onRemoveStage?: (levelId: string, stageId: string) => void;
-  onAddApprover?: (levelId: string, stageId: string, person: CustomOption<...>) => void;
-  onRemoveApprover?: (levelId: string, stageId: string, approverId: string) => void;
-  className?: string;
-  title?: string; // по умолчанию "Маршрут согласования"
-};
-```
+6. **Component API** — one subsection per export. Each subsection contains:
+   - 1–2 sentence description
+   - Props table (name · type · default · description)
+   - Minimal usage snippet (copy-paste runnable)
+   - "When to use" hint where it matters
 
-Для добавления согласующего переиспользуем существующий `DialogSelect` (вызываем его в режиме «открыть и выбрать»). Чтобы не дублировать UX, добавление инициируется кнопкой `+`, которая монтирует скрытый `DialogSelect` с автооткрытием — реализуем через локальное состояние `addingTo: { levelId, stageId } | null` и один общий `<DialogSelect>` внизу компонента.
+   Components covered (matches `src/lib/components/index.ts`):
+   - Layout & content: `BaseBlock`, `Card`, `CollapsableBlock`, `Collapse`, `Carousel`, `EmptyComponent`, `Spinner`
+   - Inputs & forms: `Button`, `RadioGroupButton`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
+   - Navigation: `Tabs`, `TabsRounded`, `Stepper`
+   - Overlays: `Popover`, `TooltipDark`, `TooltipLight`
+   - Utility: `Tag`, `CopyTextTrigger`
+   - Workflow: `ApprovalRoute` (highlighted as a flagship component with a fuller example showing levels/stages/approvers + edit mode)
 
-### Премиальные визуальные акценты
+7. **Hooks & helpers** — `useMeasureElement`, `useDropdownPosition` with signatures and a tiny example each.
 
-- Корневой контейнер: `border-radius: 16px`, `background: white`, мягкая тень `0 1px 2px rgba(15,23,42,0.04), 0 12px 32px -18px rgba(69,115,217,0.25)` — как `DemoSection` на демо-странице.
-- Заголовок «Маршрут согласования» с лёгким `eyebrow`-капс-текстом сверху.
-- Маркеры уровней: 20px круги, у текущего — пульсирующее кольцо `box-shadow: 0 0 0 4px rgba(blue03, 0.18)`.
-- Этап: «карточка-чип» с тонкой границей `gray07`, фон `gray01` при ховере, скругление 12px.
-- Имена согласующих: моноширинный отступ, дата — `gray03`, причина отклонения — `red02` курсивом в скруглённом блоке `red01`.
-- Анимации: `transition: 0.2s ease` на статусные изменения и появление новых элементов (`opacity` + `translateY`).
+8. **Icons** — note that the SVG icon set is exported from the package (`import { DoneIcon, WarnIcon, ... } from "@andreyfedkovich/cozy-ui"`), with a short list of available icons.
 
-### Демо-секция в `src/routes/index.tsx`
+9. **TypeScript** — note about exported types (`ButtonVariant`, `CustomOption`, `ApprovalLevel`, etc.) and that `.d.ts` ships in the package.
 
-Добавить новую категорию **«05 — Workflow»** (после Feedback) с одним `DemoSection` шириной во всю сетку:
-- Заголовок: "ApprovalRoute · Маршрут согласования".
-- Описание: «Многоуровневый маршрут с параллельными этапами и режимом редактирования».
-- Включает realistic данные с 4 уровнями («Согласование» — completed с двумя этапами УОР/УМП и подписантами; «Утверждение» — current с пустым согласующим; «Исполнение» — pending с шестью параллельными подписантами; «Завершено» — pending пустой).
-- Под маршрутом — переключатель `Режим редактирования` (через существующий `RadioGroupButton` или `Tabs`), который переключает `editable` и показывает все кнопки `+`/`×`.
-- Состояние данных хранится в `useState`, колбэки мутируют состояние локально (полноценная интерактивная демонстрация).
+10. **SSR & framework support** — works with Next.js, TanStack Start, Remix, Vite SPA. Note: client-only components (anything using portals: `Select`, `DialogSelect`, `TreeDialogSelect`, `Popover`, tooltips) — if SSR-rendering, gate or `dynamic()`-import.
 
-### Технические детали
+11. **Theming** — how to override CSS variables in user app, brief example.
 
-- Использовать `cn` из `classnames` (как в Stepper).
-- Цвета только из `colorsNew.scss` (без хардкода).
-- Иконки: `DoneIcon`, `WarnIcon`, `CrossIcon`, `EditIcon`, `ProfileIcon`, `CloseRed`, `CheckGreen` — все уже есть.
-- Для кнопки `+` — либо `Button variant="text"` с inline-svg «плюс» (SVG вставляем как inline JSX, без нового asset-файла), либо переиспользуем `Button` со слотом контента.
-- `EditNameDialog`: тонкая обёртка над shadcn `Dialog` (как в `DialogSelect`) с одним `<input>` + 2 кнопки `Button` (primary/secondary).
+12. **Accessibility** — Radix primitives under the hood for dialogs/labels; keyboard-friendly Stepper/Tabs; focus-visible rings respected.
 
-### Что НЕ делаем
+13. **Local development**
+    ```bash
+    bun install
+    bun run dev          # demo playground
+    bun run build:lib    # produce dist/
+    bun run lint
+    ```
 
-- Не вводим drag-and-drop переупорядочивания (вне ТЗ).
-- Не делаем горизонтальный лейаут/мобильную перестройку (вертикальный таймлайн как на референсе).
-- Не трогаем серверную часть — компонент чисто клиентский, контролируемый.
+14. **Publishing**
+    ```bash
+    npm publish --access public
+    ```
+    Note about `prepublishOnly` running the lib build automatically.
+
+15. **Contributing** — short, pointing to PRs welcome and code style (Prettier + ESLint).
+
+16. **License** — MIT © Andrey Fedkovich.
+
+## 3. Example quality bar
+
+Every snippet must:
+- Compile against the actual exported API (verified against the source files I read).
+- Use realistic prop values, not `foo`/`bar`.
+- Be ≤ 20 lines.
+- Show the most common use case, not the exhaustive one.
+
+For `ApprovalRoute`, the example will show a 3-level route with one rejected, one current, and one pending stage to demonstrate all visual states, plus an `editable` prop variant in a second snippet.
+
+## 4. Files to change
+
+- `package.json` — name, description, keywords, author, license, repository, homepage, bugs.
+- `README.md` — full rewrite per section 2.
+- (Optional, ask after) `vite.config.ts` if you want bundle filenames renamed to `cozy-ui.es.js`.
+
+## 5. What I will NOT do in this pass
+
+- Won't change source code of components or their exported APIs.
+- Won't rename the npm scope (`@andreyfedkovich`) — only the package suffix.
+- Won't add new badges that require external CI setup; only badges that work from npm/shields.io out of the box.
+
+Approve and I'll implement in one pass.

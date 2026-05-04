@@ -1,8 +1,32 @@
 {
-  "name": "@andreyfedkovich/ui-library-placeholder",
+  "name": "@andreyfedkovich/cozy-ui",
   "private": false,
   "version": "0.1.0",
-  "description": "A starter React UI component library ready for npm publishing.",
+  "description": "Cozy UI — a premium, opinionated React component library for crafted product UIs. Typed, themeable, SSR-safe, tree-shakeable.",
+  "keywords": [
+    "react",
+    "react-19",
+    "ui",
+    "components",
+    "component-library",
+    "design-system",
+    "typescript",
+    "tailwind",
+    "scss-modules",
+    "radix",
+    "premium-ui",
+    "cozy-ui"
+  ],
+  "author": "Andrey Fedkovich",
+  "license": "MIT",
+  "homepage": "https://github.com/andreyfedkovich/cozy-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreyfedkovich/cozy-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andreyfedkovich/cozy-ui/issues"
+  },
   "sideEffects": [
     "**/*.css"
   ],
