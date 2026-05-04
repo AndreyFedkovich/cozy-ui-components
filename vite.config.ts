@@ -30,6 +30,7 @@ export default async function config(env: ConfigEnv) {
           fileName: (format: string) => `ui-library.${format}.js`,
           formats: ["es", "cjs"] as LibraryFormats[],
         },
+        outDir: "dist-lib",
         rollupOptions: {
           external: ["react", "react-dom", "react/jsx-runtime"],
           output: {
@@ -73,7 +74,7 @@ export default async function config(env: ConfigEnv) {
         },
       },
       build: {
-        outDir: "dist-site",
+        outDir: "dist",
         emptyOutDir: true,
         sourcemap: false,
       },
