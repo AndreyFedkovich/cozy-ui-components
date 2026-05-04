@@ -31,23 +31,23 @@
     "**/*.css"
   ],
   "type": "module",
-  "main": "dist/ui-library.cjs.js",
-  "module": "dist/ui-library.es.js",
-  "types": "dist/index.d.ts",
+  "main": "dist-lib/ui-library.cjs.js",
+  "module": "dist-lib/ui-library.es.js",
+  "types": "dist-lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/ui-library.es.js",
-      "require": "./dist/ui-library.cjs.js"
+      "types": "./dist-lib/index.d.ts",
+      "import": "./dist-lib/ui-library.es.js",
+      "require": "./dist-lib/ui-library.cjs.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist-lib/styles.css"
   },
   "files": [
-    "dist/index.d.ts",
-    "dist/styles.css",
-    "dist/ui-library.es.js",
-    "dist/ui-library.cjs.js",
-    "dist/*.map",
+    "dist-lib/index.d.ts",
+    "dist-lib/styles.css",
+    "dist-lib/ui-library.es.js",
+    "dist-lib/ui-library.cjs.js",
+    "dist-lib/*.map",
     "README.md"
   ],
   "peerDependencies": {
