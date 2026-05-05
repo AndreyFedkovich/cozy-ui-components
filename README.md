@@ -16,12 +16,15 @@ Typed end-to-end · SCSS-modules with design tokens · SSR-safe · Tree-shakeabl
 npm i @andreyfedkovich/cozy-ui
 ```
 
+**[Live demo →](https://cozy-ui-components.vercel.app)**
+
 </div>
 
 ---
 
 ## Table of contents
 
+- [Live demo](#live-demo)
 - [Why Cozy UI](#why-cozy-ui)
 - [Installation](#installation)
 - [Quick start](#quick-start)
@@ -43,6 +46,12 @@ npm i @andreyfedkovich/cozy-ui
 - [Publishing](#publishing)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Live demo
+
+Explore every component in the browser: **<https://cozy-ui-components.vercel.app>**
 
 ---
 
