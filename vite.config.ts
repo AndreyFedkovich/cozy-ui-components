@@ -1,6 +1,5 @@
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { defineConfig as defineLovableConfig } from "@lovable.dev/vite-tanstack-config";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import { defineConfig as defineViteConfig, type ConfigEnv, type LibraryFormats } from "vite";
@@ -54,25 +53,29 @@ export default async function config(env: ConfigEnv) {
     });
   }
 
+  const tailwindcss = (await import("@tailwindcss/vite")).default;
+  const tsconfigPaths = (await import("vite-tsconfig-paths")).default;
+  const { tanstackRouter } = await import("@tanstack/router-plugin/vite");
+
+  const spaConfig = defineViteConfig({
+    plugins: [
+      tsconfigPaths(),
+      tanstackRouter({ target: "react", autoCodeSplitting: true }),
+      react(),
+      svgr(),
+      tailwindcss(),
+    ],
+    resolve: {
+      alias: {
+        "@": resolve(__dirname, "./src"),
+      },
+    },
+  });
+
   // SPA build for Vercel / static hosting (no SSR, no Cloudflare worker).
   if (env.command === "build") {
-    const tailwindcss = (await import("@tailwindcss/vite")).default;
-    const tsconfigPaths = (await import("vite-tsconfig-paths")).default;
-    const { tanstackRouter } = await import("@tanstack/router-plugin/vite");
-
     return defineViteConfig({
-      plugins: [
-        tsconfigPaths(),
-        tanstackRouter({ target: "react", autoCodeSplitting: true }),
-        react(),
-        svgr(),
-        tailwindcss(),
-      ],
-      resolve: {
-        alias: {
-          "@": resolve(__dirname, "./src"),
-        },
-      },
+      ...spaConfig,
       build: {
         outDir: "dist",
         emptyOutDir: true,
@@ -81,5 +84,5 @@ export default async function config(env: ConfigEnv) {
     });
   }
 
-  return defineLovableConfig({ plugins: [svgr()] })(env);
+  return spaConfig;
 }
