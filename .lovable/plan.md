@@ -1,78 +1,36 @@
+## Goal
 
-## Проблема
+Update the showcase page (`src/routes/index.tsx`) so its title, description, meta tags, and badge match the new package name **Cozy UI** (`@andreyfedkovich/cozy-ui`), and add a link to the live demo (`https://cozy-ui-components.vercel.app`) into the README.
 
-Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
+## Changes
 
-- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
-- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
-- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
+### 1. `src/routes/index.tsx` — hero & meta
 
-Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
+Update the `head()` meta block:
+- `title` and `og:title` → `Cozy UI — Premium React Component Library`
+- `description` and `og:description` → A short Cozy UI pitch (premium, typed, SSR-safe, tree-shakeable React components).
 
-## Решение: две сборки из одного репо
+Update the hero (`<header>`):
+- Badge pill text → `v1.0 · @andreyfedkovich/cozy-ui · npm-ready`
+- `<h1>` → `Cozy UI`
+- Subheading paragraph → New copy describing Cozy UI as a premium, opinionated React component library (typed end-to-end, SCSS modules, SSR-safe, tree-shakeable ESM + CJS), keeping the reference to `src/lib`.
+- Add a CTA row under the subheading with two links:
+  - Primary: **View on npm** → `https://www.npmjs.com/package/@andreyfedkovich/cozy-ui`
+  - Secondary: **GitHub / README** → `https://github.com/andreyfedkovich/cozy-ui#readme`
+  - Tertiary: **Live demo** → `https://cozy-ui-components.vercel.app`
 
-### 1. Демо-витрина → SPA для Vercel
+The `BaseBlock` inside "Layout & containers" currently shows `UI Library v1.0 / @company/ui-kit · MIT License` — update it to `Cozy UI v1.0` / `@andreyfedkovich/cozy-ui · MIT License` so it stays consistent.
 
-Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
+### 2. `README.md` — Live demo link
 
-- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
-- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
-- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
-- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
+Add a **Live demo** badge/link near the top (under the install snippet, inside the centered intro block):
 
-### 2. npm-пакет → отдельная команда
-
-- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
-- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
-- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
-
-### 3. Конфигурация Vercel
-
-Добавить `vercel.json` в корень:
-
-```json
-{
-  "buildCommand": "npm run build:site",
-  "outputDirectory": "dist-site",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
+```
+[Live demo →](https://cozy-ui-components.vercel.app)
 ```
 
-`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
+Also add a new top-level `## Live demo` section right after the centered intro (before `Table of contents`) with a one-line description and the URL, and add `- [Live demo](#live-demo)` to the table of contents.
 
-### 4. Правки `vite.config.ts`
+## Out of scope
 
-- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
-- В SPA-ветке выставить `build.outDir = "dist-site"`.
-
-### 5. Точка входа SPA
-
-Создать:
-
-- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
-- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
-
-### 6. Чистка зависимостей (без удаления)
-
-- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
-- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
-
-## Что увидит пользователь после применения
-
-- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
-- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
-- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
-
-## Технические детали (файлы)
-
-- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
-- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
-- ➕ `index.html` — корневой HTML для SPA.
-- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
-- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
-- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
-- ➖ `react-router-dom` из `dependencies`.
-
-## Альтернатива (если хотите сохранить SSR)
-
-Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.
+No changes to component code, build config, routing, or package metadata.

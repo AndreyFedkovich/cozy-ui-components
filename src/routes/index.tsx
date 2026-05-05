@@ -33,15 +33,17 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UI Components Demo" },
+      { title: "Cozy UI — Premium React Component Library" },
       {
         name: "description",
-        content: "Демо-витрина React UI компонентов, подготовленных для npm-пакета.",
+        content:
+          "Cozy UI — премиальная React-библиотека компонентов: типизированная, с SCSS-модулями, SSR-safe и tree-shakeable ESM + CJS.",
       },
-      { property: "og:title", content: "UI Components Demo" },
+      { property: "og:title", content: "Cozy UI — Premium React Component Library" },
       {
         property: "og:description",
-        content: "Проверочная страница всех публичных компонентов UI-библиотеки.",
+        content:
+          "Премиальные React-компоненты Cozy UI: типизированы end-to-end, готовы к npm, SSR-safe.",
       },
     ],
   }),
@@ -407,15 +409,44 @@ function Index() {
         <header className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-foreground backdrop-blur">
             <span className="inline-block h-2 w-2 rounded-full bg-[#00a582]" />
-            v1.0 · npm-ready React package
+            v1.0 · @andreyfedkovich/cozy-ui · npm-ready
           </div>
           <h1 className="bg-gradient-to-r from-[#001a3d] via-[#1f3a8a] to-[#4573d9] bg-clip-text text-5xl font-bold leading-tight tracking-tight text-transparent md:text-6xl">
-            UI Components Library
+            Cozy UI
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Премиальная витрина React-компонентов из <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>:
-            проверьте внешний вид, поведение, доступность и npm-экспорты — всё в одном месте.
+            Премиальная, продуманная React-библиотека компонентов из{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>:
+            типизирована end-to-end, на SCSS-модулях с дизайн-токенами, SSR-safe и tree-shakeable
+            (ESM + CJS). Проверьте внешний вид, поведение и npm-экспорты — всё в одном месте.
           </p>
+
+          <div className="flex flex-wrap gap-3 pt-1">
+            <a
+              href="https://www.npmjs.com/package/@andreyfedkovich/cozy-ui"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#1f3a8a] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#001a3d]"
+            >
+              View on npm →
+            </a>
+            <a
+              href="https://github.com/andreyfedkovich/cozy-ui#readme"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-white/70 px-4 py-2 text-sm font-semibold text-foreground backdrop-blur transition hover:bg-white"
+            >
+              GitHub / README
+            </a>
+            <a
+              href="https://cozy-ui-components.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-white/70 px-4 py-2 text-sm font-semibold text-foreground backdrop-blur transition hover:bg-white"
+            >
+              Live demo ↗
+            </a>
+          </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
             {[
@@ -448,7 +479,7 @@ function Index() {
               description="Универсальный контейнер с заголовком и подзаголовком."
               className="lg:col-span-2"
             >
-              <BaseBlock title="UI Library v1.0" subtitle="@company/ui-kit · MIT License">
+              <BaseBlock title="Cozy UI v1.0" subtitle="@andreyfedkovich/cozy-ui · MIT License">
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {[
                     { v: "20+", l: "компонентов" },
