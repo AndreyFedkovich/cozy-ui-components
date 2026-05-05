@@ -21,19 +21,11 @@ export const useMeasureElement = (element?: HTMLElement | null) => {
             const borderBoxSize = Array.isArray(entry.borderBoxSize)
               ? entry.borderBoxSize[0]
               : entry.borderBoxSize;
-            setHeight((prev) =>
-              prev === borderBoxSize.blockSize ? prev : borderBoxSize.blockSize,
-            );
-            setWidth((prev) =>
-              prev === borderBoxSize.inlineSize ? prev : borderBoxSize.inlineSize,
-            );
+            setHeight(borderBoxSize.blockSize);
+            setWidth(borderBoxSize.inlineSize);
           } else {
-            setHeight((prev) =>
-              prev === entry.contentRect.height ? prev : entry.contentRect.height,
-            );
-            setWidth((prev) =>
-              prev === entry.contentRect.width ? prev : entry.contentRect.width,
-            );
+            setHeight(entry.contentRect.height);
+            setWidth(entry.contentRect.width);
           }
         }
       });
@@ -42,7 +34,7 @@ export const useMeasureElement = (element?: HTMLElement | null) => {
     resizeObserver.observe(element);
 
     const initialHeight = element.getBoundingClientRect().height;
-    setHeight((prev) => (prev === initialHeight ? prev : initialHeight));
+    setHeight(initialHeight);
 
     return () => {
       resizeObserver.disconnect();

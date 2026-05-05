@@ -1,4 +1,4 @@
-import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, RefObject, useCallback, useEffect, useMemo, useState } from "react";
 import cn from "classnames";
 import {
   Popover as UiPopover,
@@ -37,25 +37,9 @@ export const Popover = ({
   const [rect, setRect] = useState<DOMRect | null>(null);
   const open = isOpen ?? internalOpen;
   const { side, align } = useMemo(() => getPlacement(placement), [placement]);
-  const openRef = useRef(open);
-  openRef.current = open;
 
   const updateRect = useCallback(() => {
-    const next = target.current?.getBoundingClientRect() ?? null;
-    setRect((prev) => {
-      if (prev === next) return prev;
-      if (
-        prev &&
-        next &&
-        prev.left === next.left &&
-        prev.top === next.top &&
-        prev.width === next.width &&
-        prev.height === next.height
-      ) {
-        return prev;
-      }
-      return next;
-    });
+    setRect(target.current?.getBoundingClientRect() ?? null);
   }, [target]);
 
   const setOpen = useCallback(
@@ -73,26 +57,23 @@ export const Popover = ({
     if (!targetElement) {
       return;
     }
+
     const handleClick = () => {
       updateRect();
-      setOpen(!openRef.current);
+      setOpen(!open);
       toggle?.();
     };
-    targetElement.addEventListener("click", handleClick);
-    return () => {
-      targetElement.removeEventListener("click", handleClick);
-    };
-  }, [setOpen, target, toggle, updateRect]);
 
-  useEffect(() => {
-    if (!open) return;
+    targetElement.addEventListener("click", handleClick);
     window.addEventListener("scroll", updateRect, true);
     window.addEventListener("resize", updateRect);
+
     return () => {
+      targetElement.removeEventListener("click", handleClick);
       window.removeEventListener("scroll", updateRect, true);
       window.removeEventListener("resize", updateRect);
     };
-  }, [open, updateRect]);
+  }, [open, setOpen, target, toggle, updateRect]);
 
   return (
     <UiPopover open={open} onOpenChange={setOpen}>

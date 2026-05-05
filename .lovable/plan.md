@@ -1,46 +1,78 @@
-## Problem
 
-`src/routes/index.tsx` (~1100 lines) eagerly mounts 20+ interactive components from `src/lib` on a single page: 2x Tabs, 2x Stepper, Carousel, 3 advanced Selects (one with 12 CFO options, one with 48 employees, TreeDialogSelect), Popover, Tooltips, ApprovalRoute (4 уровня + DialogSelect внутри в режиме «Редактирование»), 3 Spinner cards, etc. Каждый такой компонент тянет SCSS-модуль, ResizeObserver и эффекты. На первый рендер браузер делает огромную синхронную работу — отсюда «зависание» и долгий отклик при клике.
+## Проблема
 
-Попутно есть лишняя работа на каждый кадр в нескольких компонентах:
-- `Popover.tsx` — `useEffect` зависит от `open`, поэтому при каждом тогле listener click + scroll + resize пересоздаётся.
-- `RadioGroupButton.tsx` — `useMeasureElement(buttonRefs.current.get(...))` читает ref в render-фазе; элемент в первом рендере отсутствует, измерение не запускается до следующего ре-рендера, а каждый scroll/resize страницы дёргает `setRect` без сравнения значений.
-- На странице `index.tsx` массивы `cfoOptions`/`employeeOptions` и `deptTree` создаются на верхнем уровне модуля — это норм, но `cfoOptions.filter(...)` и `collectAllWithPaths(...)` пересчитываются на каждый рендер.
+Деплой на Vercel падает с `404: NOT_FOUND` (Vercel edge), потому что:
 
-## Plan
+- `npm run build` собирает проект как **Cloudflare Worker** (через `@cloudflare/vite-plugin` + TanStack Start SSR). Vercel ждёт статику в `dist/` либо адаптер под Vercel — ни того, ни другого нет.
+- `package.json` сейчас сконфигурирован как npm-библиотека (`main`, `module`, `exports`, `files`, `prepublishOnly`), и `vite build` в режиме по умолчанию даёт артефакты, несовместимые с Vercel-хостингом сайта.
+- Нет `vercel.json` с `outputDirectory` и SPA-fallback, поэтому даже если бы статика собралась, прямые URL отдавали бы 404.
 
-### 1. Разбить страницу на секции с ленивой подгрузкой
-- Вынести каждую категорию (Layout, Inputs, Navigation, Feedback, Workflow) в отдельный компонент `src/routes/_sections/<Name>Section.tsx`.
-- В `src/routes/index.tsx` импортировать секции через `React.lazy` + `Suspense` с лёгким fallback (Spinner / skeleton).
-- Hero и первая секция (Layout) остаются eager, остальные грузятся по мере прокрутки через `IntersectionObserver` (компонент-обёртка `<LazySection>`), чтобы первый paint был быстрым и страница не «вешалась».
+Проект должен решать **две независимые задачи**: публиковать npm-пакет и хостить демо-витрину. Их надо явно разделить.
 
-### 2. Убрать лишние ре-рендеры в lib-компонентах
-- `Popover.tsx`: разделить эффекты — отдельно `click` listener (deps: `[target, open, setOpen, toggle]` без переподписки на каждый toggle, использовать ref на `open`), отдельно `scroll`/`resize` (deps: `[target, updateRect]`). Сравнивать `rect` перед `setRect`, чтобы не плодить ре-рендеры.
-- `useMeasureElement.ts`: добавить equality-check перед `setHeight`/`setWidth`.
-- `RadioGroupButton.tsx`: хранить активный элемент в state через `useEffect`, чтобы `useMeasureElement` стабильно получал HTMLElement.
+## Решение: две сборки из одного репо
 
-### 3. Снизить вес демо-данных
-- В `src/routes/index.tsx` обернуть тяжёлые вычисления в `useMemo` (`cfoOptions.filter`, `collectAllWithPaths`).
-- Сократить `employeeOptions` с 48 до 24 (для демо достаточно, lazy-load в `loadEmployees` остаётся).
-- ApprovalRoute: «Редактирование» инициализировать выключенным (как сейчас) и не монтировать `DialogSelect` внутри стадий, пока режим = «Просмотр» — это срежет десятки компонентов в первичном рендере.
+### 1. Демо-витрина → SPA для Vercel
 
-### 4. Проверка
-- Локальная сборка `bun run build` + ручной прогон страницы.
-- Profile через `browser--performance_profile` до/после.
-- Убедиться, что все интерактивные компоненты по-прежнему работают (табы, степпер, селекты, попап, аппрувы).
+Демо не нуждается в SSR/server functions. Конвертируем сборку демо в чистый Vite SPA:
 
-## Файлы, которые изменятся
+- Убрать из дефолтной сборки `@cloudflare/vite-plugin` и TanStack Start SSR-обвязку (оставив их доступными для локальной разработки/Lovable).
+- Включить TanStack Router в режиме клиентского SPA: добавить `index.html` + `src/main.tsx`, монтирующий `RouterProvider` от существующего `getRouter()` из `src/router.tsx`. Файлы маршрутов из `src/routes/` остаются — `@tanstack/router-plugin` продолжает генерировать `routeTree.gen.ts`.
+- В корневом маршруте `__root.tsx` оставить только `<Outlet/>` без `shellComponent`/`HeadContent`/`Scripts` (это SSR-API). Вынести метаданные в `index.html`.
+- Скрипт `build:site` = `vite build` с режимом SPA (output → `dist-site/`). Дефолтный `build` тоже указать на SPA, чтобы Vercel брал его «из коробки».
 
-- `src/routes/index.tsx` — разбить на секции, lazy-импорты, useMemo.
-- `src/routes/_sections/LayoutSection.tsx` (new)
-- `src/routes/_sections/InputsSection.tsx` (new)
-- `src/routes/_sections/NavigationSection.tsx` (new)
-- `src/routes/_sections/FeedbackSection.tsx` (new)
-- `src/routes/_sections/WorkflowSection.tsx` (new)
-- `src/routes/_sections/LazySection.tsx` (new — IntersectionObserver wrapper)
-- `src/lib/components/Popover/Popover.tsx` — раздельные эффекты, equality check для rect.
-- `src/lib/components/TooltipLight/TooltipLight.tsx` — equality check для rect.
-- `src/lib/helpers/hooks/useMeasureElement.ts` — equality check для height/width.
-- `src/lib/components/RadioGroupButton/RadioGroupButton.tsx` — стабилизировать ref активной кнопки через state.
+### 2. npm-пакет → отдельная команда
 
-После одобрения переключусь в build-режим и сделаю изменения.
+- Скрипт `build:lib` остаётся (`vite build --mode library`) и собирает в `dist/`, как сейчас.
+- `prepublishOnly: npm run build:lib` — публикация в npm не зависит от деплоя сайта.
+- Поля `main`/`module`/`exports`/`files` в `package.json` оставляем — они влияют только на `npm publish`, а Vercel их не использует.
+
+### 3. Конфигурация Vercel
+
+Добавить `vercel.json` в корень:
+
+```json
+{
+  "buildCommand": "npm run build:site",
+  "outputDirectory": "dist-site",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+`rewrites` нужен, чтобы прямой переход на `/components/...` отдавал `index.html` и роутер уже на клиенте показывал нужную страницу — иначе Vercel будет возвращать 404 на любых URL кроме `/`.
+
+### 4. Правки `vite.config.ts`
+
+- Сделать конфиг условным: при `mode === "library"` — нынешняя сборка либы; иначе — SPA-сборка демо без `@cloudflare/vite-plugin` и без TanStack Start SSR-плагина (оставить только `@vitejs/plugin-react`, `@tanstack/router-plugin/vite`, `vite-plugin-svgr`, `vite-tsconfig-paths`, `@tailwindcss/vite`).
+- В SPA-ветке выставить `build.outDir = "dist-site"`.
+
+### 5. Точка входа SPA
+
+Создать:
+
+- `index.html` в корне с `<div id="root"></div>` и `<script type="module" src="/src/main.tsx">`.
+- `src/main.tsx`: импорт `getRouter`, создание роутера, рендер `<RouterProvider router={router}/>` в `#root`. Импорт `./styles.css`.
+
+### 6. Чистка зависимостей (без удаления)
+
+- `react-router-dom` в `dependencies` — не используется, удалить, чтобы не попадал в bundle потребителей пакета.
+- Никаких других удалений: `@tanstack/react-start`, `@cloudflare/vite-plugin`, `wrangler.jsonc` остаются для совместимости с Lovable preview.
+
+## Что увидит пользователь после применения
+
+- На Vercel: `npm run build:site` собирает SPA → `dist-site/` → витрина открывается по корню и по любым внутренним маршрутам.
+- В Lovable preview: всё работает как раньше (TanStack Start SSR через Cloudflare-плагин при `vite dev`).
+- `npm publish` (или `npm run build:lib`) собирает библиотеку независимо.
+
+## Технические детали (файлы)
+
+- ✏️ `package.json` — `scripts.build` = `vite build` (SPA), добавить `build:site`, удалить `react-router-dom` из `dependencies`.
+- ➕ `vercel.json` — buildCommand, outputDirectory, SPA rewrites.
+- ➕ `index.html` — корневой HTML для SPA.
+- ➕ `src/main.tsx` — клиентский bootstrap `RouterProvider`.
+- ✏️ `vite.config.ts` — условные плагины и `outDir` в зависимости от `mode`.
+- ✏️ `src/routes/__root.tsx` — убрать `shellComponent`/`HeadContent`/`Scripts`, оставить `<Outlet/>` и `notFoundComponent`.
+- ➖ `react-router-dom` из `dependencies`.
+
+## Альтернатива (если хотите сохранить SSR)
+
+Можно оставить TanStack Start с SSR и деплоить на Vercel через официальный Vercel-адаптер `@tanstack/react-start` (`target: "vercel"` в Vite-конфиге). Это сложнее в поддержке для библиотечного репо и не даёт преимуществ для статичной демо-витрины — поэтому по умолчанию предлагаю SPA-вариант.

@@ -59,21 +59,7 @@ export const TooltipLight: FC<TooltipLightProps> = ({
 
   const updateRect = useCallback(() => {
     const element = getTargetElement(target);
-    const next = element?.getBoundingClientRect() ?? null;
-    setRect((prev) => {
-      if (prev === next) return prev;
-      if (
-        prev &&
-        next &&
-        prev.left === next.left &&
-        prev.top === next.top &&
-        prev.width === next.width &&
-        prev.height === next.height
-      ) {
-        return prev;
-      }
-      return next;
-    });
+    setRect(element?.getBoundingClientRect() ?? null);
   }, [target]);
 
   const setOpen = useCallback(
