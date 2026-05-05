@@ -3,15 +3,15 @@
 
 .card {
   display: block;
-  padding: 1.6rem;
+  padding: 1rem;
   white-space: pre;
-  border-radius: 1.6rem;
+  border-radius: 1rem;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
 
   span {
-    @include mixinsNew.text-s-m(1.6rem);
+    @include mixinsNew.text-s-m(1rem);
   }
 }
 

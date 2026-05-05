@@ -79,16 +79,16 @@ $colors: (
 
 $sizes: (
   small: (
-    padding: 0.4rem 1.1rem,
-    border-radius: 0.8rem,
+    padding: 0.25rem 0.6875rem,
+    border-radius: 0.5rem,
   ),
   medium: (
-    padding: 0.75rem 1.5rem,
-    border-radius: 1rem,
+    padding: 0.46875rem 0.9375rem,
+    border-radius: 0.625rem,
   ),
   large: (
-    padding: 1rem 2rem,
-    border-radius: 1.2rem,
+    padding: 0.625rem 1.25rem,
+    border-radius: 0.75rem,
   ),
 );
 
@@ -171,7 +171,7 @@ $sizes: (
     pointer-events: none;
 
     .button__loader {
-      margin-left: 1rem;
+      margin-left: 0.625rem;
 
       div {
         div {
@@ -186,6 +186,6 @@ $sizes: (
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.3125rem;
   }
 }

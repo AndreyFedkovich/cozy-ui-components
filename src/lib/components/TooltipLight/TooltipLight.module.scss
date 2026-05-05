@@ -8,12 +8,12 @@
 
 .tooltip {
   z-index: 50;
-  max-width: 28rem;
+  max-width: 17.5rem;
   border: none;
   background-color: colorsNew.$white01;
   color: colorsNew.$gray05;
-  border-radius: 1.2rem;
-  padding: 0.8rem 1.2rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 
   :global(.radix-tooltip-arrow) {

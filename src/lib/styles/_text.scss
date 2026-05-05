@@ -23,53 +23,53 @@
   font-weight: normal;
 }
 
-@mixin text($size: 1.4rem, $height: 2.4rem) {
+@mixin text($size: 0.875rem, $height: 1.5rem) {
   @include fontNormal();
   font-size: $size;
   line-height: $height;
 }
 
-@mixin text-b($size: 1.6rem, $height: 2.4rem) {
+@mixin text-b($size: 1rem, $height: 1.5rem) {
   @include fontBold();
   font-size: $size;
   line-height: $height;
 }
 
-@mixin text-s($size: 1.4rem, $height: 2rem) {
+@mixin text-s($size: 0.875rem, $height: 1.25rem) {
   @include fontNormal();
   font-size: $size;
   line-height: $height;
 }
 
-@mixin text-s-b($size: 1.4rem, $height: 2rem) {
+@mixin text-s-b($size: 0.875rem, $height: 1.25rem) {
   @include fontBold();
   font-size: $size;
   line-height: $height;
 }
 
-@mixin text-s-l($size: 1.4rem, $height: 2rem) {
+@mixin text-s-l($size: 0.875rem, $height: 1.25rem) {
   @include fontLight();
   font-size: $size;
   line-height: $height;
 }
 
-@mixin text-s-m($size: 1.4rem, $height: 2rem) {
+@mixin text-s-m($size: 0.875rem, $height: 1.25rem) {
   @include fontMedium();
   font-size: $size;
   line-height: $height;
 }
 
 @mixin h1() {
-  font-size: 2.4rem;
-  line-height: 3.6rem;
+  font-size: 1.5rem;
+  line-height: 2.25rem;
 }
 
 @mixin h2() {
-  font-size: 2rem;
-  line-height: 2.4rem;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
 }
 
 @mixin h3() {
-  font-size: 1.6rem;
-  line-height: 2.4rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
 }

@@ -3,15 +3,15 @@
 
 .block {
   background-color: colorsNew.$white01;
-  border-radius: 2.4rem;
-  padding: 3.2rem;
+  border-radius: 1.5rem;
+  padding: 2rem;
 
   .subtitle {
     color: colorsNew.$gray04;
-    @include mixinsNew.text(1.2rem, 2.4rem);
+    @include mixinsNew.text(0.75rem, 1.5rem);
   }
 
   .title {
-    @include mixinsNew.text-s-m(1.8rem, 2.4rem);
+    @include mixinsNew.text-s-m(1.125rem, 1.5rem);
   }
 }

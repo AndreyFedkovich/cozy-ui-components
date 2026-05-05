@@ -1,5 +1,6 @@
 import { FC, RefObject, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import cn from "classnames";
+import { portalBody } from "@/components/ui/portal-body";
 import {
   Tooltip,
   TooltipContent,
@@ -120,12 +121,14 @@ export const TooltipLight: FC<TooltipLightProps> = ({
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip open={open} onOpenChange={setOpen}>
-        <TooltipTrigger asChild>
-          <span
-            className={css.anchor}
-            style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
-          />
-        </TooltipTrigger>
+        {portalBody(
+          <TooltipTrigger asChild>
+            <span
+              className={css.anchor}
+              style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
+            />
+          </TooltipTrigger>,
+        )}
         <TooltipContent side={side} align={align} className={cn(css.tooltip, popperClassName)}>
           {children}
         </TooltipContent>

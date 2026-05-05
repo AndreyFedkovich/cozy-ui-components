@@ -67,7 +67,7 @@ const cfoOptions: CustomOption<{ code: string }>[] = Array.from({ length: 12 }, 
   const codes = ["0201RP", "0201SN", "0201SP", "0203SN", "0204SN", "0205SN", "0206RP", "0207SP"];
   return {
     value: `cfo-${num}`,
-    label: `обзл_ЦФО${num}`,
+    label: `ЦФО ${num}`,
     meta: { code: codes[index % codes.length] },
   };
 });
@@ -404,7 +404,7 @@ function Index() {
         className="pointer-events-none absolute -top-20 right-0 h-[420px] w-[420px] rounded-full bg-[#d3e8fa]/60 blur-[120px]"
       />
 
-      <div className="relative mx-auto max-w-7xl space-y-16">
+      <div className="relative mx-auto max-w-6xl space-y-16">
         {/* HERO */}
         <header className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-foreground backdrop-blur">

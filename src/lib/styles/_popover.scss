@@ -13,8 +13,8 @@
   :global(.arrow) {
     position: absolute;
     display: block;
-    width: 1rem;
-    height: 1rem;
+    width: 0.625rem;
+    height: 0.625rem;
 
     &::before {
       content: "";
@@ -30,7 +30,7 @@
 
   &[x-placement^="top-start"] {
     :global(.arrow) {
-      bottom: -1rem;
+      bottom: -0.625rem;
 
       &::before {
         content: "";
@@ -42,7 +42,7 @@
 
   &[x-placement^="bottom-start"] {
     :global(.arrow) {
-      top: -1rem;
+      top: -0.625rem;
 
       &::before {
         bottom: -5px;
@@ -52,7 +52,7 @@
 
   &[x-placement^="bottom-center"] {
     :global(.arrow) {
-      top: -1rem;
+      top: -0.625rem;
 
       &::before {
         bottom: -5px;
@@ -63,7 +63,7 @@
 
   &[x-placement^="right-start"] {
     :global(.arrow) {
-      top: -1rem;
+      top: -0.625rem;
 
       &::before {
         bottom: -5px;

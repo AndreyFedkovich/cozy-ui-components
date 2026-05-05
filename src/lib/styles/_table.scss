@@ -13,12 +13,12 @@
         }
 
         &:first-child {
-          border-top-left-radius: 1.6rem;
+          border-top-left-radius: 1rem;
           border-left: 1px solid colorsNew.$gray02;
         }
 
         &:last-child {
-          border-top-right-radius: 1.6rem;
+          border-top-right-radius: 1rem;
           border-right: 1px solid colorsNew.$gray02;
         }
       }
@@ -28,7 +28,7 @@
   tbody {
     tr {
       td {
-        padding: 2rem;
+        padding: 1.25rem;
         border-right: none;
         border-bottom: 1px solid colorsNew.$gray02;
       }
@@ -45,11 +45,11 @@
     tr:last-child {
       td {
         &:first-child {
-          border-bottom-left-radius: 1.6rem;
+          border-bottom-left-radius: 1rem;
         }
 
         &:last-child {
-          border-bottom-right-radius: 1.6rem;
+          border-bottom-right-radius: 1rem;
         }
       }
     }

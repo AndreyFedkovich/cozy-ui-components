@@ -3,12 +3,12 @@
 
 .collapsableBlock {
   background-color: colorsNew.$white01;
-  border-radius: 2.4rem;
-  padding: 3.2rem;
+  border-radius: 1.5rem;
+  padding: 2rem;
 
   .header {
     span {
-      @include mixinsNew.text-s-m(1.8rem, 2.4rem);
+      @include mixinsNew.text-s-m(1.125rem, 1.5rem);
     }
   }
 
@@ -17,11 +17,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.6rem;
-    padding-right: 1.2rem;
+    gap: 1rem;
+    padding-right: 0.75rem;
 
     .infoIcon {
-      padding-top: 0.4rem;
+      padding-top: 0.25rem;
     }
   }
 }

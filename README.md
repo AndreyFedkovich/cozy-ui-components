@@ -84,6 +84,8 @@ Import the stylesheet **once** at your app root:
 import "@andreyfedkovich/cozy-ui/styles.css";
 ```
 
+Sizing uses CSS `rem` against the browser’s default root font size (commonly **16px**). You **do not** need to set `html { font-size: … }` for components to match the library demo.
+
 ---
 
 ## Quick start

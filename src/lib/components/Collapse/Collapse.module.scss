@@ -13,7 +13,7 @@
     &_icon {
       display: flex;
       align-items: center;
-      padding-top: 0.4rem;
+      padding-top: 0.25rem;
       cursor: pointer;
 
       .iconTransition {
@@ -33,7 +33,7 @@
     word-break: break-word;
 
     &.padding {
-      padding-top: 0.8rem;
+      padding-top: 0.5rem;
     }
   }
 }
