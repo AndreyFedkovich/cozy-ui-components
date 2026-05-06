@@ -3,11 +3,24 @@ import { useMemo } from "react";
 import * as React from "react";
 import css from "./Spinner.module.scss";
 
+export type SpinnerSize = "big" | "small" | "extraSmall" | "medium" | "large";
+
+function resolveSpinnerSize(size: SpinnerSize): "big" | "small" | "extraSmall" {
+  if (size === "medium") {
+    return "small";
+  }
+  if (size === "large") {
+    return "big";
+  }
+  return size;
+}
+
 interface Props {
   marginTop?: React.CSSProperties["marginTop"];
   marginBottom?: React.CSSProperties["marginBottom"];
   marginLeft?: React.CSSProperties["marginLeft"];
-  size?: "big" | "small" | "extraSmall";
+  /** `medium` → small wheel, `large` → big wheel; legacy names `big` \| `small` \| `extraSmall` unchanged. */
+  size?: SpinnerSize;
   className?: string;
 }
 
@@ -27,13 +40,15 @@ export const Spinner: React.FC<Props> = ({
     [marginBottom, marginLeft, marginTop],
   );
 
+  const resolved = resolveSpinnerSize(size);
+
   return (
     <div className={(css.cssloadContainer, className)} style={styles}>
       <div
         className={cn(css.cssloadSpeedingWheel, {
-          [css.bigSize]: size === "big",
-          [css.smallSize]: size === "small",
-          [css.extraSmallSize]: size === "extraSmall",
+          [css.bigSize]: resolved === "big",
+          [css.smallSize]: resolved === "small",
+          [css.extraSmallSize]: resolved === "extraSmall",
         })}
       />
     </div>

@@ -200,19 +200,23 @@ A block with a header that expands and collapses its content.
 ```tsx
 import { CollapsableBlock } from "@andreyfedkovich/cozy-ui";
 
-<CollapsableBlock title="Advanced settings">
-  {/* hidden by default */}
-</CollapsableBlock>;
+<CollapsableBlock
+  header="Advanced settings"
+  content={<div>{/* hidden by default */}</div>}
+/>;
 ```
 
 #### `Collapse`
 
-Low-level animated open/close primitive — give it `isOpen` and children.
+Animated expandable section with explicit `header` and `content`.
 
-| Prop      | Type      | Default | Description                       |
-| --------- | --------- | ------- | --------------------------------- |
-| `isOpen`  | `boolean` | `false` | Controls expansion.               |
-| `children`| `ReactNode` | —     | Collapsible content.              |
+| Prop          | Type        | Default | Description                              |
+| ------------- | ----------- | ------- | ---------------------------------------- |
+| `header`      | `ReactNode` | —       | Header row content.                      |
+| `content`     | `ReactNode` | —       | Expandable body content.                 |
+| `isOpen`      | `boolean`   | —       | Controlled open state.                   |
+| `defaultOpen` | `boolean`   | `false` | Initial open state (uncontrolled mode).  |
+| `onToggle`    | `() => void`| —       | Toggle callback.                         |
 
 ```tsx
 import { Collapse } from "@andreyfedkovich/cozy-ui";
@@ -220,10 +224,12 @@ import { useState } from "react";
 
 const [open, setOpen] = useState(false);
 
-<>
-  <button onClick={() => setOpen((v) => !v)}>Toggle</button>
-  <Collapse isOpen={open}>Hidden content</Collapse>
-</>;
+<Collapse
+  header="Toggle"
+  content="Hidden content"
+  isOpen={open}
+  onToggle={() => setOpen((v) => !v)}
+/>;
 ```
 
 #### `Carousel`
@@ -359,7 +365,7 @@ import { DialogSelect } from "@andreyfedkovich/cozy-ui";
     const { items, total } = await res.json();
     return { options: items.map((p) => ({ value: p.id, label: p.name })), total };
   }}
-  onSelect={(opt) => console.log(opt)}
+  onChange={(opt) => console.log(opt)}
 />;
 ```
 
@@ -372,9 +378,12 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
 
 <TreeDialogSelect
   title="Pick a department"
-  loadNodes={async ({ parentId }) => ({ nodes: await fetchChildren(parentId) })}
-  searchNodes={async ({ search }) => ({ nodes: await searchTree(search) })}
-  onSelect={(node) => console.log(node)}
+  placeholder="Choose department"
+  loadNodes={async ({ parentId, search }) => ({
+    nodes: await fetchChildren(parentId, search),
+  })}
+  searchNodes={async (search) => ({ matches: await searchTreeWithPath(search) })}
+  onChange={(node) => console.log(node)}
 />;
 ```
 
@@ -385,7 +394,7 @@ Small caption row under an input — supports neutral, error, and success tones.
 ```tsx
 import { InputCaption } from "@andreyfedkovich/cozy-ui";
 
-<InputCaption type="error">Email is required.</InputCaption>;
+<InputCaption variant="error">Email is required.</InputCaption>;
 ```
 
 #### `Label`
@@ -414,7 +423,7 @@ const [tab, setTab] = useState("overview");
 
 <Tabs
   value={tab}
-  onChange={setTab}
+  onValueChange={setTab}
   items={[
     { value: "overview", label: "Overview" },
     { value: "activity", label: "Activity" },
@@ -431,7 +440,7 @@ import { TabsRounded } from "@andreyfedkovich/cozy-ui";
 
 <TabsRounded
   value="all"
-  onChange={(v) => console.log(v)}
+  onValueChange={(v) => console.log(v)}
   items={[
     { value: "all", label: "All" },
     { value: "open", label: "Open" },
@@ -448,17 +457,18 @@ Linear, numbered progress for multi-step flows.
 | --------- | ---------------- | ------- | --------------------------------------------- |
 | `items`   | `StepperItem[]`  | —       | Step definitions.                             |
 | `current` | `number`         | `0`     | Index of the active step.                     |
-| `onStepClick` | `(index) => void` | —   | Optional click handler for completed steps.   |
+| `onChange` | `(index) => void` | —   | Optional click handler for step buttons.   |
 
 ```tsx
 import { Stepper } from "@andreyfedkovich/cozy-ui";
 
 <Stepper
   current={1}
+  onChange={(index) => console.log(index)}
   items={[
-    { title: "Account" },
-    { title: "Profile" },
-    { title: "Review" },
+    { label: "Account" },
+    { label: "Profile" },
+    { label: "Review" },
   ]}
 />;
 ```
@@ -518,8 +528,18 @@ Wraps any element to copy a string to clipboard, with built-in feedback.
 
 ```tsx
 import { CopyTextTrigger } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
 
-<CopyTextTrigger text="cozy-ui">
+const [copied, setCopied] = useState(false);
+
+<CopyTextTrigger
+  copied={copied}
+  onClick={() => {
+    navigator.clipboard.writeText("cozy-ui");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  }}
+>
   <button>Copy package name</button>
 </CopyTextTrigger>;
 ```
@@ -608,12 +628,14 @@ Edit mode:
 
 Tracks the size of a DOM element via `ResizeObserver`.
 
-```ts
+```tsx
 import { useMeasureElement } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
 
-const { ref, width, height } = useMeasureElement<HTMLDivElement>();
+const [element, setElement] = useState<HTMLDivElement | null>(null);
+const { width, height } = useMeasureElement(element);
 
-<div ref={ref}>{width} × {height}</div>;
+<div ref={setElement}>{width} × {height}</div>;
 ```
 
 ### `useDropdownPosition`

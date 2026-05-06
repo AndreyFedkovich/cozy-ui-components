@@ -45,10 +45,13 @@ export type TreeSearchResult<T, S extends string | number> = {
   matches: Array<{ node: TreeNode<T, S>; path: TreeNode<T, S>[] }>;
 };
 
-export interface TreeDialogSelectProps<T, S extends string | number> {
+type TreeLoader<T, S extends string | number> = (
+  params: TreeLoadParams<S>,
+) => Promise<TreeLoadResult<T, S>>;
+
+interface TreeDialogSelectShared<T, S extends string | number> {
   value?: TreeNode<T, S> | null;
   placeholder: string;
-  loadChildren: (params: TreeLoadParams<S>) => Promise<TreeLoadResult<T, S>>;
   searchNodes?: (search: string) => Promise<TreeSearchResult<T, S>>;
   onChange?: (node: TreeNode<T, S>) => void;
   onClear?: () => void;
@@ -67,12 +70,20 @@ export interface TreeDialogSelectProps<T, S extends string | number> {
   nodeRender?: (node: TreeNode<T, S>) => ReactNode;
 }
 
+/** Pass either {@link loadNodes} or {@link loadChildren} (deprecated alias). */
+export type TreeDialogSelectProps<T, S extends string | number> = TreeDialogSelectShared<T, S> &
+  (
+    | { /** Loads nodes for a tree level (`parentId` null = roots). */ loadNodes: TreeLoader<T, S>; loadChildren?: TreeLoader<T, S> }
+    | { /** @deprecated Use {@link loadNodes} */ loadChildren: TreeLoader<T, S>; loadNodes?: TreeLoader<T, S> }
+  );
+
 type Key<S extends string | number> = S | typeof ROOT_KEY;
 
 export const TreeDialogSelect = <T, S extends string | number>({
   value,
   placeholder,
-  loadChildren,
+  loadChildren: loadChildrenProp,
+  loadNodes,
   searchNodes,
   onChange,
   onClear,
@@ -90,6 +101,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   selectedOptionRender,
   nodeRender,
 }: TreeDialogSelectProps<T, S>) => {
+  const loadChildren = loadNodes ?? loadChildrenProp;
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import cardCoverUrl from "@/assets/demo/card-cover.png";
 import {
   BaseBlock,
@@ -50,12 +50,17 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const tabsItems = [{ title: "Обзор" }, { title: "Данные" }, { title: "Настройки" }];
-const tabContent = [
-  "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
-  "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
-  "Управление параметрами рабочего пространства и интеграциями.",
+const tabsItems = [
+  { value: "overview", label: "Обзор" },
+  { value: "data", label: "Данные" },
+  { value: "settings", label: "Настройки" },
 ];
+const tabContent: Record<string, string> = {
+  overview:
+    "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
+  data: "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
+  settings: "Управление параметрами рабочего пространства и интеграциями.",
+};
 
 const selectOptions: CustomOption<{ group: string }>[] = [
   { value: "design", label: "Design system", meta: { group: "Library" } },
@@ -262,8 +267,8 @@ function DemoSection({
 
 function Index() {
   const [radio, setRadio] = useState("first");
-  const [tab, setTab] = useState(0);
-  const [roundedTab, setRoundedTab] = useState(0);
+  const [tab, setTab] = useState<string>("overview");
+  const [roundedTab, setRoundedTab] = useState<string>("overview");
   const [copied, setCopied] = useState(false);
   const [selected, setSelected] = useState<CustomOption<{ group: string }> | null>(
     selectOptions[0],
@@ -278,7 +283,6 @@ function Index() {
   const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>(null);
   const [stepperStep, setStepperStep] = useState(2);
   const [namedStep, setNamedStep] = useState(1);
-  const popoverTarget = useRef<HTMLButtonElement>(null);
   const tooltipTargetId = "tooltip-light-demo-target";
 
   const [routeEditable, setRouteEditable] = useState("view");
@@ -612,7 +616,7 @@ function Index() {
                 </div>
                 <EmptyComponent
                   title="Задач пока нет"
-                  subtitle="Создайте первую задачу — она появится здесь."
+                  description="Создайте первую задачу — она появится здесь."
                 />
               </div>
             </DemoSection>
@@ -632,12 +636,12 @@ function Index() {
               description="Сегментированный переключатель с одним активным значением."
             >
               <RadioGroupButton
-                data={[
-                  { id: "first", label: "First" },
-                  { id: "second", label: "Second" },
-                  { id: "third", label: "Third" },
+                options={[
+                  { value: "first", label: "First" },
+                  { value: "second", label: "Second" },
+                  { value: "third", label: "Third" },
                 ]}
-                activeButton={radio}
+                value={radio}
                 onChange={setRadio}
               />
               <p className="mt-3 text-sm text-muted-foreground">
@@ -657,7 +661,7 @@ function Index() {
                     className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-base"
                     defaultValue="user@company.com"
                   />
-                  <InputCaption>Используется для входа в систему.</InputCaption>
+                  <InputCaption variant="neutral">Используется для входа в систему.</InputCaption>
                 </div>
                 <div>
                   <Label htmlFor="demo-field-err">Пароль</Label>
@@ -667,7 +671,7 @@ function Index() {
                     className="mt-2 h-10 w-full rounded-md border border-[#d72d40] bg-background px-3 text-base"
                     defaultValue="123"
                   />
-                  <InputCaption>Минимум 8 символов.</InputCaption>
+                  <InputCaption variant="error">Минимум 8 символов.</InputCaption>
                 </div>
               </div>
             </DemoSection>
@@ -774,7 +778,7 @@ function Index() {
                   title="Выбор подразделения"
                   searchPlaceholder="Поиск по названию"
                   value={department}
-                  loadChildren={loadDeptChildren}
+                  loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
                   onChange={setDepartment}
                   onClear={() => setDepartment(null)}
@@ -795,16 +799,16 @@ function Index() {
             <DemoSection title="Tabs" description="Классические табы с подчёркиванием активного.">
               <Tabs
                 items={tabsItems}
-                activeTab={tab}
+                value={tab}
+                onValueChange={setTab}
                 changesIndex={2}
                 badgeValue={3}
-                onClick={setTab}
               />
               <p className="mt-4 text-base text-muted-foreground">{tabContent[tab]}</p>
             </DemoSection>
 
             <DemoSection title="TabsRounded" description="Скруглённый стиль табов.">
-              <TabsRounded items={tabsItems} activeTab={roundedTab} onClick={setRoundedTab} />
+              <TabsRounded items={tabsItems} value={roundedTab} onValueChange={setRoundedTab} />
               <p className="mt-4 text-base text-muted-foreground">{tabContent[roundedTab]}</p>
             </DemoSection>
 
@@ -944,7 +948,7 @@ function Index() {
                   </CopyTextTrigger>
                 </div>
                 <div>
-                  <TooltipDark title="Тёмный tooltip с подсказкой" trigger="hover" placement="top">
+                  <TooltipDark content="Тёмный tooltip с подсказкой" trigger="hover" placement="top">
                     <Button variant="secondary">Hover me</Button>
                   </TooltipDark>
                 </div>
@@ -963,10 +967,10 @@ function Index() {
                 <TooltipLight placement="top" target={tooltipTargetId}>
                   Светлый tooltip
                 </TooltipLight>
-                <Button ref={popoverTarget} variant="primary">
-                  Open popover
-                </Button>
-                <Popover target={popoverTarget} placement="bottom">
+                <Popover
+                  trigger={<Button variant="primary">Open popover</Button>}
+                  placement="bottom"
+                >
                   Контент popover-компонента.
                 </Popover>
                 <span className="ml-auto text-sm text-muted-foreground">
@@ -982,8 +986,8 @@ function Index() {
             >
               <div className="grid gap-4 md:grid-cols-3">
                 {[
-                  { size: "big" as const, label: "Loading data…", min: 180 },
-                  { size: "small" as const, label: "Saving…", min: 140 },
+                  { size: "large" as const, label: "Loading data…", min: 180 },
+                  { size: "medium" as const, label: "Saving…", min: 140 },
                   { size: "extraSmall" as const, label: "Synchronizing…", min: 100 },
                 ].map((s) => (
                   <div
@@ -1017,11 +1021,11 @@ function Index() {
               <div className="mb-5 flex items-center gap-4">
                 <span className="text-base font-medium text-foreground">Режим:</span>
                 <RadioGroupButton<string>
-                  data={[
-                    { id: "view", label: "Просмотр" },
-                    { id: "edit", label: "Редактирование" },
+                  options={[
+                    { value: "view", label: "Просмотр" },
+                    { value: "edit", label: "Редактирование" },
                   ]}
-                  activeButton={routeEditable}
+                  value={routeEditable}
                   onChange={(v) => setRouteEditable(v)}
                 />
               </div>

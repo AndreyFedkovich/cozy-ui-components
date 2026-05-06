@@ -1,5 +1,6 @@
 export { BaseBlock } from "./BaseBlock/BaseBlock";
 export { RadioGroupButton } from "./RadioGroupButton/RadioGroupButton";
+export type { RadioGroupButtonChoice, RadioGroupButtonOption } from "./RadioGroupButton/RadioGroupButton";
 export { Card } from "./Card/Card";
 export { Button } from "./Button/Button";
 export { Carousel } from "./Carousel/Carousel";
@@ -25,10 +26,13 @@ export {
   type TreeSearchResult,
 } from "./TreeDialogSelect/TreeDialogSelect";
 export { TabsRounded } from "./TabsRounded/TabsRounded";
+export type { TabItemRounded } from "./TabsRounded/TabsRounded";
 export { Stepper, type StepperProps, type StepperItem } from "./Stepper/Stepper";
 export { Tabs } from "./Tabs/Tabs";
+export type { TabItem } from "./Tabs/Tabs";
 export { Tag } from "./Tag/Tag";
 export { InputCaption } from "./InputCaption/InputCaption";
+export type { InputCaptionVariant } from "./InputCaption/InputCaption";
 export { Label } from "./Label/Label";
 export {
   ApprovalRoute,

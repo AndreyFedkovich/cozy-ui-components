@@ -4,11 +4,15 @@ import { portalBody } from "@/components/ui/portal-body";
 import { Popover as UiPopover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import css from "./Popover.module.scss";
 
-type PopoverPlacement = "top" | "bottom" | "left" | "right" | `${"top" | "bottom" | "left" | "right"}-${"start" | "end"}`;
+type PopoverPlacement =
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | `${"top" | "bottom" | "left" | "right"}-${"start" | "end"}`;
 
-interface PopoverProps {
+interface PopoverSharedProps {
   children?: ReactNode;
-  target: RefObject<HTMLElement | null>;
   placement?: PopoverPlacement;
   className?: string;
   isOpen?: boolean;
@@ -16,28 +20,43 @@ interface PopoverProps {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
+export type PopoverProps = PopoverSharedProps &
+  (
+    | { /** Preferred when you can pass the anchor inline. */ trigger: ReactNode; target?: never }
+    | { /** Legacy: ref to an existing element that toggles the popover. */ target: RefObject<HTMLElement | null>; trigger?: never }
+  );
+
 const getPlacement = (placement: PopoverPlacement = "bottom") => {
-  const [side, align] = placement.split("-") as ["top" | "bottom" | "left" | "right", "start" | "end" | undefined];
+  const [side, align] = placement.split("-") as [
+    "top" | "bottom" | "left" | "right",
+    "start" | "end" | undefined,
+  ];
   return { side, align: (align ?? "center") as "start" | "center" | "end" };
 };
 
-export const Popover = ({
-  children,
-  placement = "bottom",
-  target,
-  className,
-  isOpen,
-  toggle,
-  onOpenChange,
-}: PopoverProps) => {
+export const Popover = (props: PopoverProps) => {
+  const triggerMode = "trigger" in props && props.trigger !== undefined;
+  const {
+    children,
+    placement = "bottom",
+    className,
+    isOpen,
+    toggle,
+    onOpenChange,
+  } = props;
+
   const [internalOpen, setInternalOpen] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const open = isOpen ?? internalOpen;
   const { side, align } = useMemo(() => getPlacement(placement), [placement]);
 
   const updateRect = useCallback(() => {
-    setRect(target.current?.getBoundingClientRect() ?? null);
-  }, [target]);
+    if (triggerMode) {
+      return;
+    }
+    const target = props.target?.current;
+    setRect(target?.getBoundingClientRect() ?? null);
+  }, [props.target, triggerMode]);
 
   const setOpen = useCallback(
     (value: boolean) => {
@@ -50,7 +69,11 @@ export const Popover = ({
   );
 
   useEffect(() => {
-    const targetElement = target.current;
+    if (triggerMode) {
+      return;
+    }
+
+    const targetElement = props.target?.current;
     if (!targetElement) {
       return;
     }
@@ -78,7 +101,24 @@ export const Popover = ({
       window.removeEventListener("scroll", updateRect, true);
       window.removeEventListener("resize", updateRect);
     };
-  }, [isOpen, onOpenChange, target, toggle, updateRect]);
+  }, [isOpen, onOpenChange, props.target, toggle, triggerMode, updateRect]);
+
+  const content = (
+    <PopoverContent side={side} align={align} className={cn(css.popover, className)}>
+      {children}
+    </PopoverContent>
+  );
+
+  if (triggerMode) {
+    return (
+      <UiPopover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <span className={css.triggerWrap}>{props.trigger}</span>
+        </PopoverTrigger>
+        {content}
+      </UiPopover>
+    );
+  }
 
   return (
     <UiPopover open={open} onOpenChange={setOpen}>
@@ -95,9 +135,7 @@ export const Popover = ({
           />
         </PopoverTrigger>,
       )}
-      <PopoverContent side={side} align={align} className={cn(css.popover, className)}>
-        {children}
-      </PopoverContent>
+      {content}
     </UiPopover>
   );
 };

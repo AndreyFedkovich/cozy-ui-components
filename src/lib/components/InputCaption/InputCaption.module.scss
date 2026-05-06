@@ -1,19 +1,30 @@
 @use "../../styles/colorsNew";
 
-.errorCaption {
+.caption {
   font-family: "Navigo", "RobotoRegular", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 12px;
   line-height: 20px;
   margin: 0;
-  color: colorsNew.$red02;
   transition: 150ms;
   animation-name: fadeIn;
   animation-iteration-count: 1;
   animation-timing-function: ease-in;
   animation-duration: 100ms;
   opacity: 1;
+}
+
+.caption_neutral {
+  color: colorsNew.$gray04;
+}
+
+.caption_error {
+  color: colorsNew.$red02;
+}
+
+.caption_success {
+  color: colorsNew.$green02;
 }
 
 @keyframes fadeIn {

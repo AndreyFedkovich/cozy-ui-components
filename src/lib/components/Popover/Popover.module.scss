@@ -5,6 +5,11 @@
   pointer-events: none;
 }
 
+.triggerWrap {
+  display: inline-flex;
+  cursor: pointer;
+}
+
 .popover {
   @include mixinsNew.popover();
 }

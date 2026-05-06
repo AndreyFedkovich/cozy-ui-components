@@ -33,7 +33,9 @@ function getArrowDirection(placement: TooltipPlacement): "top" | "bottom" | "lef
 }
 
 export interface TooltipProps {
-  title: ReactNode;
+  title?: ReactNode;
+  /** Alias for {@link title}. If both are set, `title` wins. */
+  content?: ReactNode;
   open?: boolean;
   defaultOpen?: boolean;
   trigger?: TooltipTrigger | TooltipTrigger[];
@@ -50,6 +52,7 @@ export interface TooltipProps {
 export const TooltipDark = memo(
   ({
     title,
+    content,
     open: openProp,
     defaultOpen = false,
     trigger = "hover",
@@ -163,12 +166,13 @@ export const TooltipDark = memo(
 
     const container = typeof document !== "undefined" ? getPopupContainer() : null;
     const arrowDirection = getArrowDirection(placement);
+    const overlayBody = title ?? content;
 
     const overlay =
       open &&
       // eslint-disable-next-line eqeqeq
-      title != null &&
-      title !== "" &&
+      overlayBody != null &&
+      overlayBody !== "" &&
       style &&
       container &&
       createPortal(
@@ -181,7 +185,7 @@ export const TooltipDark = memo(
           }}
           role="tooltip"
         >
-          {title}
+          {overlayBody}
           {arrow && <span className={cn(css.arrow, css[arrowDirection])} />}
         </span>,
         container,

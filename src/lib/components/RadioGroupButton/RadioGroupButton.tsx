@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import cn from "classnames";
 import { Button } from "../Button/Button";
 import { useMeasureElement } from "../../helpers";
@@ -10,23 +10,53 @@ export interface RadioGroupButtonOption<T> {
   additionalComponent?: React.ReactNode;
 }
 
-interface RadioGroupButtonProps<T> {
-  data: RadioGroupButtonOption<T>[];
-  activeButton?: string | number;
-  defaultActiveButton?: string | number;
-  onChange?: (id: T) => void;
+export interface RadioGroupButtonChoice<T extends string | number> {
+  value: T;
+  label: string;
+  additionalComponent?: React.ReactNode;
+}
+
+interface RadioGroupButtonProps<T extends string | number> {
+  /** Preferred API — matches typical form control naming. */
+  options?: RadioGroupButtonChoice<T>[];
+  value?: T;
+  defaultValue?: T;
+  /** @deprecated Use {@link options} with `{ value, label }`. */
+  data?: RadioGroupButtonOption<T>[];
+  /** @deprecated Use {@link value}. */
+  activeButton?: T;
+  /** @deprecated Use {@link defaultValue}. */
+  defaultActiveButton?: T;
+  onChange?: (value: T) => void;
 }
 
 export const RadioGroupButton = <T extends string | number>({
+  options,
+  value,
+  defaultValue,
   data,
   activeButton,
   defaultActiveButton,
   onChange,
 }: RadioGroupButtonProps<T>) => {
-  const [_activeButton, setActiveButton] = useState(defaultActiveButton || data[0]?.id);
+  const items = useMemo((): RadioGroupButtonOption<T>[] => {
+    if (options?.length) {
+      return options.map((o) => ({
+        id: o.value,
+        label: o.label,
+        additionalComponent: o.additionalComponent,
+      }));
+    }
+    return data ?? [];
+  }, [options, data]);
+
+  const [_activeButton, setActiveButton] = useState<T | undefined>(() => {
+    const initial = defaultValue ?? defaultActiveButton ?? items[0]?.id;
+    return initial;
+  });
   const [sliderPosition, setSliderPosition] = useState({ transform: "translateX(0)", width: 0 });
   const buttonRefs = useRef<Map<string | number, HTMLDivElement | null>>(new Map());
-  const resolvedActiveButton = activeButton || _activeButton;
+  const resolvedActiveButton = value ?? activeButton ?? _activeButton;
 
   const { width: activeButtonWidth } = useMeasureElement(
     buttonRefs.current.get(resolvedActiveButton as string),
@@ -45,9 +75,9 @@ export const RadioGroupButton = <T extends string | number>({
   }, []);
 
   useEffect(() => {
-    const activeButtonIndex = data.findIndex((option) => option.id === resolvedActiveButton);
+    const activeButtonIndex = items.findIndex((option) => option.id === resolvedActiveButton);
     if (activeButtonIndex >= 0) {
-      const buttonsBeforeActive = data.slice(0, activeButtonIndex);
+      const buttonsBeforeActive = items.slice(0, activeButtonIndex);
       const sliderPosition = buttonsBeforeActive.reduce((acc, button) => {
         const buttonElement = buttonRefs.current.get(button.id);
         if (buttonElement) {
@@ -60,11 +90,11 @@ export const RadioGroupButton = <T extends string | number>({
 
       setSliderPosition({ transform: `translateX(${sliderPosition}px)`, width: activeButtonWidth });
     }
-  }, [resolvedActiveButton, activeButtonWidth, data]);
+  }, [resolvedActiveButton, activeButtonWidth, items]);
 
   return (
     <div className={css.container}>
-      {data.map((option) => (
+      {items.map((option) => (
         <div key={option.id} ref={(el) => callbackRef(el, option.id)}>
           <Button
             size="small"
