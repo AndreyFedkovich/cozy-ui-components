@@ -16,6 +16,13 @@ dist-ssr
 .nitro
 *.local
 
+# Agent / local smoke tests
+.tmp-consumer-smoke/
+.tmp-pack-test/
+
+# Built library output (published via npm `files`)
+dist-lib/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
