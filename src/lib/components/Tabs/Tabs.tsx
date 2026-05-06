@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import css from "./Tabs.module.scss";
 
 type TabItemLegacy = { title: string; className?: string; header?: string };
-export type TabItem = TabItemLegacy | { value: string | number; label: string; className?: string; header?: string };
+export type TabItem =
+  | TabItemLegacy
+  | { value: string | number; label: string; className?: string; header?: string };
 
 interface TabsProps {
   items: TabItem[];
@@ -94,7 +96,7 @@ export const Tabs = React.memo(
       };
 
       const scheduleLineUpdate = () => {
-        if (!!animationFrameRef.current) {
+        if (animationFrameRef.current !== null) {
           cancelAnimationFrame(animationFrameRef.current);
         }
 
@@ -146,11 +148,7 @@ export const Tabs = React.memo(
                   {item.label}
                   {changesIndex === index && (
                     <div className={css.notificationChanges}>
-                      {badgeValue != null
-                        ? badgeValue > 99
-                          ? "99+"
-                          : String(badgeValue)
-                        : null}
+                      {badgeValue != null ? (badgeValue > 99 ? "99+" : String(badgeValue)) : null}
                     </div>
                   )}
                 </div>

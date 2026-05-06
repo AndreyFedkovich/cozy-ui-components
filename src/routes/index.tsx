@@ -56,8 +56,7 @@ const tabsItems = [
   { value: "settings", label: "Настройки" },
 ];
 const tabContent: Record<string, string> = {
-  overview:
-    "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
+  overview: "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
   data: "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
   settings: "Управление параметрами рабочего пространства и интеграциями.",
 };
@@ -100,7 +99,10 @@ const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   { length: 48 },
   (_, index) => {
     const id = index + 100;
-    const surname = employeeSurnames[Math.floor(index / employeeNamePatronymics.length) % employeeSurnames.length];
+    const surname =
+      employeeSurnames[
+        Math.floor(index / employeeNamePatronymics.length) % employeeSurnames.length
+      ];
     const { name, patronymic } = employeeNamePatronymics[index % employeeNamePatronymics.length];
 
     return {
@@ -136,7 +138,12 @@ const deptTree: DeptNode[] = [
         hasChildren: true,
         meta: { kind: "department" },
         children: [
-          { value: "team-1", label: "Команда фронтенда", hasChildren: false, meta: { kind: "team" } },
+          {
+            value: "team-1",
+            label: "Команда фронтенда",
+            hasChildren: false,
+            meta: { kind: "team" },
+          },
           { value: "team-2", label: "Команда бэкенда", hasChildren: false, meta: { kind: "team" } },
           { value: "team-3", label: "QA", hasChildren: false, meta: { kind: "team" } },
         ],
@@ -312,9 +319,7 @@ function Index() {
       id: "lvl-2",
       name: "Утверждение",
       status: "current",
-      stages: [
-        { id: "stg-3", name: "Руководитель L1", approvers: [] },
-      ],
+      stages: [{ id: "stg-3", name: "Руководитель L1", approvers: [] }],
     },
     {
       id: "lvl-3",
@@ -381,6 +386,12 @@ function Index() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
+  const handleTabValueChange = useCallback((next: string | number) => {
+    setTab(String(next));
+  }, []);
+  const handleRoundedTabValueChange = useCallback((next: string | number) => {
+    setRoundedTab(String(next));
+  }, []);
 
   const loadApproversForRoute = useCallback(
     async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
@@ -389,7 +400,10 @@ function Index() {
       const filtered = employeeOptions.filter((o) => o.label.toLowerCase().includes(q));
       const start = (page - 1) * pageSize;
       return {
-        options: filtered.slice(start, start + pageSize) as unknown as CustomOption<unknown, string>[],
+        options: filtered.slice(start, start + pageSize) as unknown as CustomOption<
+          unknown,
+          string
+        >[],
         total: filtered.length,
       };
     },
@@ -420,9 +434,9 @@ function Index() {
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
             Премиальная, продуманная React-библиотека компонентов из{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>:
-            типизирована end-to-end, на SCSS-модулях с дизайн-токенами, SSR-safe и tree-shakeable
-            (ESM + CJS). Проверьте внешний вид, поведение и npm-экспорты — всё в одном месте.
+            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>: типизирована
+            end-to-end, на SCSS-модулях с дизайн-токенами, SSR-safe и tree-shakeable (ESM + CJS).
+            Проверьте внешний вид, поведение и npm-экспорты — всё в одном месте.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1">
@@ -800,7 +814,7 @@ function Index() {
               <Tabs
                 items={tabsItems}
                 value={tab}
-                onValueChange={setTab}
+                onValueChange={handleTabValueChange}
                 changesIndex={2}
                 badgeValue={3}
               />
@@ -808,7 +822,11 @@ function Index() {
             </DemoSection>
 
             <DemoSection title="TabsRounded" description="Скруглённый стиль табов.">
-              <TabsRounded items={tabsItems} value={roundedTab} onValueChange={setRoundedTab} />
+              <TabsRounded
+                items={tabsItems}
+                value={roundedTab}
+                onValueChange={handleRoundedTabValueChange}
+              />
               <p className="mt-4 text-base text-muted-foreground">{tabContent[roundedTab]}</p>
             </DemoSection>
 
@@ -948,7 +966,11 @@ function Index() {
                   </CopyTextTrigger>
                 </div>
                 <div>
-                  <TooltipDark content="Тёмный tooltip с подсказкой" trigger="hover" placement="top">
+                  <TooltipDark
+                    content="Тёмный tooltip с подсказкой"
+                    trigger="hover"
+                    placement="top"
+                  >
                     <Button variant="secondary">Hover me</Button>
                   </TooltipDark>
                 </div>
@@ -1053,10 +1075,7 @@ function Index() {
                       l.id === levelId
                         ? {
                             ...l,
-                            stages: [
-                              ...l.stages,
-                              { id: `stg-${Date.now()}`, name, approvers: [] },
-                            ],
+                            stages: [...l.stages, { id: `stg-${Date.now()}`, name, approvers: [] }],
                           }
                         : l,
                     ),
@@ -1101,7 +1120,10 @@ function Index() {
                             ...l,
                             stages: l.stages.map((s) =>
                               s.id === stageId
-                                ? { ...s, approvers: s.approvers.filter((a) => a.id !== approverId) }
+                                ? {
+                                    ...s,
+                                    approvers: s.approvers.filter((a) => a.id !== approverId),
+                                  }
                                 : s,
                             ),
                           }

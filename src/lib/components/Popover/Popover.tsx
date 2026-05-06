@@ -23,7 +23,10 @@ interface PopoverSharedProps {
 export type PopoverProps = PopoverSharedProps &
   (
     | { /** Preferred when you can pass the anchor inline. */ trigger: ReactNode; target?: never }
-    | { /** Legacy: ref to an existing element that toggles the popover. */ target: RefObject<HTMLElement | null>; trigger?: never }
+    | {
+        /** Legacy: ref to an existing element that toggles the popover. */ target: RefObject<HTMLElement | null>;
+        trigger?: never;
+      }
   );
 
 const getPlacement = (placement: PopoverPlacement = "bottom") => {
@@ -36,14 +39,7 @@ const getPlacement = (placement: PopoverPlacement = "bottom") => {
 
 export const Popover = (props: PopoverProps) => {
   const triggerMode = "trigger" in props && props.trigger !== undefined;
-  const {
-    children,
-    placement = "bottom",
-    className,
-    isOpen,
-    toggle,
-    onOpenChange,
-  } = props;
+  const { children, placement = "bottom", className, isOpen, toggle, onOpenChange } = props;
 
   const [internalOpen, setInternalOpen] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);

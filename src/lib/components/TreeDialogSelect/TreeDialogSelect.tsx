@@ -1,12 +1,5 @@
 import cn from "classnames";
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -73,8 +66,14 @@ interface TreeDialogSelectShared<T, S extends string | number> {
 /** Pass either {@link loadNodes} or {@link loadChildren} (deprecated alias). */
 export type TreeDialogSelectProps<T, S extends string | number> = TreeDialogSelectShared<T, S> &
   (
-    | { /** Loads nodes for a tree level (`parentId` null = roots). */ loadNodes: TreeLoader<T, S>; loadChildren?: TreeLoader<T, S> }
-    | { /** @deprecated Use {@link loadNodes} */ loadChildren: TreeLoader<T, S>; loadNodes?: TreeLoader<T, S> }
+    | {
+        /** Loads nodes for a tree level (`parentId` null = roots). */ loadNodes: TreeLoader<T, S>;
+        loadChildren?: TreeLoader<T, S>;
+      }
+    | {
+        /** @deprecated Use {@link loadNodes} */ loadChildren: TreeLoader<T, S>;
+        loadNodes?: TreeLoader<T, S>;
+      }
   );
 
 type Key<S extends string | number> = S | typeof ROOT_KEY;
@@ -101,7 +100,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   selectedOptionRender,
   nodeRender,
 }: TreeDialogSelectProps<T, S>) => {
-  const loadChildren = loadNodes ?? loadChildrenProp;
+  const loadChildren: TreeLoader<T, S> = (loadNodes ?? loadChildrenProp) as TreeLoader<T, S>;
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -353,8 +352,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
           <span className={css.nodeLabel}>{nodeRender ? nodeRender(node) : node.label}</span>
           {isNodeLoading && <Spinner size="extraSmall" className={css.nodeSpinner} />}
         </div>
-        {showChildren &&
-          visibleChildren.map((child) => renderNode(child, level + 1))}
+        {showChildren && visibleChildren.map((child) => renderNode(child, level + 1))}
       </React.Fragment>
     );
   };
@@ -383,11 +381,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
         id="TreeDialogSelectInput"
         role="button"
         tabIndex={disabled ? -1 : 0}
-        className={cn(
-          css.input,
-          { [css.disabled]: disabled, [css.error]: error },
-          inputClassName,
-        )}
+        className={cn(css.input, { [css.disabled]: disabled, [css.error]: error }, inputClassName)}
         onClick={() => !disabled && handleOpenChange(true)}
         onKeyDown={(event) => {
           if (!disabled && (event.key === "Enter" || event.key === " ")) {
@@ -442,9 +436,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
               placeholder={searchPlaceholder}
               autoFocus
             />
-            {showSearchSpinner && (
-              <Spinner size="extraSmall" className={css.searchSpinner} />
-            )}
+            {showSearchSpinner && <Spinner size="extraSmall" className={css.searchSpinner} />}
           </div>
 
           <div className={css.treeContainer}>
