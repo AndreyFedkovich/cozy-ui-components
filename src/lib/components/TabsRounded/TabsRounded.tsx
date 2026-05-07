@@ -22,6 +22,7 @@ interface Props {
   className?: string;
   tabsClassName?: string;
   items: TabItemRounded[];
+  children?: React.ReactNode;
   value?: string | number;
   onValueChange?: (value: string | number) => void;
   /** Legacy */
@@ -52,7 +53,7 @@ function normalizeItems(items: TabItemRounded[]) {
 }
 
 export const TabsRounded: React.FC<Props> = React.memo(
-  ({ className, items = [], value, onValueChange, activeTab, onClick, tabsClassName }) => {
+  ({ className, items = [], children, value, onValueChange, activeTab, onClick, tabsClassName }) => {
     const normalized = useMemo(() => normalizeItems(items), [items]);
 
     const activeIndex = useMemo(() => {
@@ -96,6 +97,7 @@ export const TabsRounded: React.FC<Props> = React.memo(
               ),
           )}
         </div>
+        <div className={css.panel}>{children}</div>
       </div>
     );
   },

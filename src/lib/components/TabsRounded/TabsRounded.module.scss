@@ -1,6 +1,11 @@
 @use "../../styles/mixinsNew";
 @use "../../styles/colorsNew";
 
+.wrapper {
+  position: relative;
+  overflow: visible;
+}
+
 .tabs {
   display: flex;
   position: relative;
@@ -8,6 +13,8 @@
   align-items: flex-end;
   overflow: visible;
   isolation: isolate;
+  z-index: 2;
+  margin-bottom: -1px;
 
   .tabItem {
     @include mixinsNew.text-s();
@@ -35,7 +42,6 @@
     }
 
     &:last-child {
-      padding-right: 0;
       margin-right: 0;
     }
 
@@ -102,4 +108,14 @@
       }
     }
   }
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  min-height: 56px;
+  padding: 16px 20px;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 0 0 12px 12px;
+  background-color: colorsNew.$white01;
 }

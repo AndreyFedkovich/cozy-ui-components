@@ -826,8 +826,9 @@ function Index() {
                 items={tabsItems}
                 value={roundedTab}
                 onValueChange={handleRoundedTabValueChange}
-              />
-              <p className="mt-4 text-base text-muted-foreground">{tabContent[roundedTab]}</p>
+              >
+                <p className="text-base text-muted-foreground">{tabContent[roundedTab]}</p>
+              </TabsRounded>
             </DemoSection>
 
             <DemoSection
