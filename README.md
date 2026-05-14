@@ -383,9 +383,12 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
     nodes: await fetchChildren(parentId, search),
   })}
   searchNodes={async (search) => ({ matches: await searchTreeWithPath(search) })}
+  leafConfirmOnly
   onChange={(node) => console.log(node)}
 />;
 ```
+
+With **`leafConfirmOnly`**, the confirm button in the dialog stays disabled until a row is selected and that node’s `hasChildren` is not strictly `true` (only leaves can be confirmed). Omit the prop to allow confirming any selected node, including branches.
 
 #### `InputCaption`
 

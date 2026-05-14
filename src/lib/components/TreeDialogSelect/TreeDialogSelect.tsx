@@ -61,6 +61,11 @@ interface TreeDialogSelectShared<T, S extends string | number> {
   inputClassName?: string;
   selectedOptionRender?: (node: TreeNode<T, S>) => ReactNode;
   nodeRender?: (node: TreeNode<T, S>) => ReactNode;
+  /**
+   * When true, the dialog confirm button stays disabled until a node is selected and
+   * {@link TreeNode.hasChildren} is not strictly `true` (confirm leaf nodes only).
+   */
+  leafConfirmOnly?: boolean;
 }
 
 /** Pass either {@link loadNodes} or {@link loadChildren} (deprecated alias). */
@@ -99,6 +104,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   inputClassName,
   selectedOptionRender,
   nodeRender,
+  leafConfirmOnly = false,
 }: TreeDialogSelectProps<T, S>) => {
   const loadChildren: TreeLoader<T, S> = (loadNodes ?? loadChildrenProp) as TreeLoader<T, S>;
   const [isOpen, setIsOpen] = useState(false);
@@ -291,11 +297,17 @@ export const TreeDialogSelect = <T, S extends string | number>({
   }, []);
 
   const handleConfirm = useCallback(() => {
+    if (
+      leafConfirmOnly &&
+      (!pendingSelection || pendingSelection.hasChildren === true)
+    ) {
+      return;
+    }
     if (pendingSelection) {
       onChange?.(pendingSelection);
     }
     handleOpenChange(false);
-  }, [handleOpenChange, onChange, pendingSelection]);
+  }, [handleOpenChange, leafConfirmOnly, onChange, pendingSelection]);
 
   const isExpanded = useCallback(
     (nodeValue: S) => expanded.has(nodeValue) || forcedExpanded.has(nodeValue),
@@ -373,6 +385,10 @@ export const TreeDialogSelect = <T, S extends string | number>({
     () => isSearching || (isRootLoading && Boolean(debouncedSearch)),
     [isSearching, isRootLoading, debouncedSearch],
   );
+
+  const isConfirmDisabled =
+    !pendingSelection ||
+    (leafConfirmOnly && pendingSelection.hasChildren === true);
 
   return (
     <div className={cn(css.wrapper, className)}>
@@ -460,7 +476,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
             <Button variant="secondary" onClick={() => handleOpenChange(false)}>
               {closeButtonText}
             </Button>
-            <Button variant="primary" disabled={!pendingSelection} onClick={handleConfirm}>
+            <Button variant="primary" disabled={isConfirmDisabled} onClick={handleConfirm}>
               {confirmButtonText}
             </Button>
           </DialogFooter>

@@ -1,7 +1,7 @@
 {
   "name": "@andreyfedkovich/cozy-ui",
   "private": false,
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Cozy UI — a premium, opinionated React component library for crafted product UIs. Typed, themeable, SSR-safe, tree-shakeable.",
   "keywords": [
     "react",
