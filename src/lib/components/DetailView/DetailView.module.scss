@@ -1,0 +1,162 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.card {
+  background-color: colorsNew.$white01;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.size_lg {
+  padding: 2.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & + & {
+    padding-top: 1.5rem;
+    border-top: 1px solid colorsNew.$gray07;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.sectionTitle {
+  color: colorsNew.$blue03;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  @include mixinsNew.text-s-m(1rem, 1.5rem);
+}
+
+.sectionDescription {
+  color: colorsNew.$gray04;
+  @include mixinsNew.text(0.75rem, 1.25rem);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 0.25rem;
+  column-gap: 1.5rem;
+}
+
+.fields_2col {
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: grid;
+  grid-template-columns: var(--cozy-detail-label-width, 14rem) 1fr;
+  align-items: start;
+  gap: 1.25rem;
+  padding: 0.625rem 0.75rem;
+  margin: 0 -0.75rem;
+  border-radius: 0.625rem;
+  transition: background-color 0.18s ease;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+.field_span2 {
+  grid-column: 1 / -1;
+}
+
+.field_interactive {
+  &:hover {
+    background-color: colorsNew.$gray01;
+  }
+}
+
+.label {
+  color: colorsNew.$gray04;
+  @include mixinsNew.text(0.875rem, 1.5rem);
+}
+
+.value {
+  color: colorsNew.$gray05;
+  @include mixinsNew.text(0.875rem, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.valueRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hint {
+  color: colorsNew.$gray03;
+  @include mixinsNew.text(0.75rem, 1.125rem);
+}
+
+.empty {
+  color: colorsNew.$gray03;
+}
+
+.divider {
+  height: 1px;
+  background-color: colorsNew.$gray07;
+  border: none;
+  margin: 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  > div {
+    height: 1.25rem;
+    background: linear-gradient(
+      90deg,
+      colorsNew.$gray01 0%,
+      colorsNew.$gray07 50%,
+      colorsNew.$gray01 100%
+    );
+    background-size: 200% 100%;
+    border-radius: 0.5rem;
+    animation: cozyShimmer 1.4s infinite linear;
+  }
+}
+
+@keyframes cozyShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
