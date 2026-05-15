@@ -29,6 +29,7 @@ import {
   ApprovalRoute,
   type ApprovalLevel,
 } from "../lib";
+import { DetailView } from "../lib";
 
 export const Route = createFileRoute("/")({
   head: () => ({
