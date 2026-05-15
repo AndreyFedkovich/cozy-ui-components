@@ -6,6 +6,7 @@ import {
   useState,
   type FC,
   type ReactNode,
+  type CSSProperties,
 } from "react";
 import cn from "classnames";
 import { CopyTextTrigger } from "../CopyTextTrigger/CopyTextTrigger";
@@ -217,7 +218,7 @@ const DetailViewBase: FC<DetailViewProps> = ({
 
   const containerStyle = {
     ["--cozy-detail-label-width" as string]: labelWidthValue,
-  } as React.CSSProperties;
+  } as CSSProperties;
 
   if (loading) {
     return (
