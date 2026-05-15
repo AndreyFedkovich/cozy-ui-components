@@ -519,6 +519,102 @@ function Index() {
             </DemoSection>
 
             <DemoSection
+              title="DetailView"
+              description="Премиальная форма просмотра: секции, поля, копирование, composition-first API."
+              className="lg:col-span-2"
+            >
+              <DetailView
+                sections={[
+                  {
+                    title: "Основные данные",
+                    fields: [
+                      {
+                        label: "Номер и дата заявки",
+                        value: (
+                          <span>
+                            <a
+                              href="#"
+                              className="text-[#4573d9] underline-offset-2 hover:underline"
+                            >
+                              ekd-242512
+                            </a>{" "}
+                            от 08.05.2026
+                          </span>
+                        ),
+                        copyable: true,
+                        copyText: "ekd-242512",
+                      },
+                      { label: "Автор заявки", value: "Петрова Е. В." },
+                      {
+                        label: "Статус",
+                        value: <Tag>На согласовании</Tag>,
+                      },
+                      { label: "Срок действия заявки", value: "Нет" },
+                      { label: "Код ШР", value: "66" },
+                      { label: "Комментарий к коду ШР", value: "Замена сотрудника" },
+                      { label: "Название вакансии", value: "Frontend-разработчик" },
+                      { label: "Юридическая должность", value: "Ведущий специалист" },
+                    ],
+                  },
+                  {
+                    title: "Формальные признаки должности",
+                    fields: [
+                      { label: "Заказчик по заявке", value: "Иванов И. И." },
+                      { label: "Функциональный руководитель", value: "Руководитель отсутствует" },
+                      { label: "Руководитель L1", value: "Иванов И. И." },
+                      { label: "Корпоративное подразделение", value: "Корпоративное подразделение" },
+                      { label: "Юридическое подразделение", value: "Юридическое подразделение" },
+                    ],
+                  },
+                ]}
+              />
+
+              <p className="mt-6 text-sm text-muted-foreground">
+                Composition-first: тот же компонент через дочерние элементы и кастомный
+                <code className="mx-1 rounded bg-[#f4f7fa] px-1.5 py-0.5">render</code> поля.
+              </p>
+
+              <div className="mt-3">
+                <DetailView labelWidth="12rem">
+                  <DetailView.Section title="Контакты" columns={2}>
+                    <DetailView.Field label="Email" value="petrova@example.com" copyable />
+                    <DetailView.Field label="Телефон" value="+7 (900) 123-45-67" copyable />
+                    <DetailView.Field
+                      label="Адрес"
+                      hint="Основное место работы"
+                      span={2}
+                    >
+                      г. Москва, ул. Примерная, д. 1, оф. 42
+                    </DetailView.Field>
+                  </DetailView.Section>
+
+                  <DetailView.Section title="Кастомный шаблон поля">
+                    <DetailView.Field
+                      label="Прогресс онбординга"
+                      render={({ label, value: _v }) => (
+                        <div
+                          className="grid items-center gap-5"
+                          style={{ gridTemplateColumns: "12rem 1fr" }}
+                        >
+                          <div className="text-[#525252]">{label}</div>
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 flex-1 rounded-full bg-[#dde5f5]">
+                              <div
+                                className="h-full rounded-full bg-[#4573d9]"
+                                style={{ width: "72%" }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-[#2a2a2a]">72%</span>
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </DetailView.Section>
+                </DetailView>
+              </div>
+            </DemoSection>
+
+            <DemoSection
               title="Card"
               description="Простые карточки с фоном, цветом или изображением."
               className="lg:col-span-2"
