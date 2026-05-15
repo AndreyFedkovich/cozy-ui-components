@@ -42,3 +42,10 @@ export {
   type Approver,
   type ApprovalStatus,
 } from "./ApprovalRoute/ApprovalRoute";
+export {
+  DetailView,
+  type DetailViewProps,
+  type DetailSection,
+  type DetailField,
+  type DetailFieldRenderer,
+} from "./DetailView/DetailView";
