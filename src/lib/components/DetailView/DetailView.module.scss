@@ -105,9 +105,22 @@
 
 .valueRow {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.copyTrigger {
+  display: inline-flex;
+  flex-shrink: 0;
+  transform: translateY(0.125rem);
+}
+
+.copyableValue {
+  &:not(:has(a)) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 .hint {

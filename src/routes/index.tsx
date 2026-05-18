@@ -520,7 +520,7 @@ function Index() {
 
             <DemoSection
               title="DetailView"
-              description="Премиальная форма просмотра: секции, поля, копирование, composition-first API."
+              description="Премиальная форма просмотра: секции, поля, копирование. В одном экземпляре можно смешивать декларативный sections и composition-first children."
               className="lg:col-span-2"
             >
               <DetailView
@@ -534,7 +534,7 @@ function Index() {
                           <span>
                             <a
                               href="#"
-                              className="text-[#4573d9] underline-offset-2 hover:underline"
+                              className="text-[#4573d9] underline underline-offset-2 hover:text-[#3d63c4]"
                             >
                               ekd-242512
                             </a>{" "}
@@ -567,26 +567,17 @@ function Index() {
                     ],
                   },
                 ]}
-              />
-
-              <p className="mt-6 text-sm text-muted-foreground">
-                Composition-first: тот же компонент через дочерние элементы и кастомный
-                <code className="mx-1 rounded bg-[#f4f7fa] px-1.5 py-0.5">render</code> поля.
-              </p>
-
-              <div className="mt-3">
-                <DetailView labelWidth="12rem">
-                  <DetailView.Section title="Контакты" columns={2}>
-                    <DetailView.Field label="Email" value="petrova@example.com" copyable />
-                    <DetailView.Field label="Телефон" value="+7 (900) 123-45-67" copyable />
-                    <DetailView.Field
-                      label="Адрес"
-                      hint="Основное место работы"
-                      span={2}
-                    >
-                      г. Москва, ул. Примерная, д. 1, оф. 42
-                    </DetailView.Field>
-                  </DetailView.Section>
+              >
+                <DetailView.Section title="Контакты">
+                  <DetailView.Field label="Email" value="petrova@example.com" copyable />
+                  <DetailView.Field label="Телефон" value="+7 (900) 123-45-67" copyable />
+                  <DetailView.Field
+                    label="Адрес"
+                    hint="Основное место работы"
+                  >
+                    г. Москва, ул. Примерная, д. 1, оф. 42
+                  </DetailView.Field>
+                </DetailView.Section>
 
                   <DetailView.Section title="Кастомный шаблон поля">
                     <DetailView.Field
@@ -594,7 +585,7 @@ function Index() {
                       render={({ label, value: _v }) => (
                         <div
                           className="grid items-center gap-5"
-                          style={{ gridTemplateColumns: "12rem 1fr" }}
+                          style={{ gridTemplateColumns: "14rem 1fr" }}
                         >
                           <div className="text-[#525252]">{label}</div>
                           <div className="flex items-center gap-3">
@@ -609,9 +600,8 @@ function Index() {
                         </div>
                       )}
                     />
-                  </DetailView.Section>
-                </DetailView>
-              </div>
+                </DetailView.Section>
+              </DetailView>
             </DemoSection>
 
             <DemoSection

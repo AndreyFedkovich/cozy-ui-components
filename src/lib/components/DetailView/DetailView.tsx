@@ -53,6 +53,7 @@ export interface DetailSection {
 
 export interface DetailViewProps {
   sections?: DetailSection[];
+  /** Composition-first секции (`DetailView.Section`). Если заданы и `sections`, и `children`, конфиг рендерится первым. */
   children?: ReactNode;
   /** `card` — обёртка с фоном и паддингом (как BaseBlock); `plain` — без неё. */
   variant?: "card" | "plain";
@@ -133,13 +134,17 @@ const FieldRow: FC<FieldComponentProps> = ({
       <div className={css.value}>
         <div className={css.valueRow}>
           {copyable ? (
-            <CopyTextTrigger
-              copied={copied}
-              onClick={handleCopy}
-              ariaLabel="Скопировать значение"
-            >
-              {displayValue}
-            </CopyTextTrigger>
+            <>
+              <span className={css.copyableValue}>{displayValue}</span>
+              <span className={css.copyTrigger}>
+                <CopyTextTrigger
+                  iconOnly
+                  copied={copied}
+                  onClick={handleCopy}
+                  ariaLabel="Скопировать значение"
+                />
+              </span>
+            </>
           ) : (
             displayValue
           )}

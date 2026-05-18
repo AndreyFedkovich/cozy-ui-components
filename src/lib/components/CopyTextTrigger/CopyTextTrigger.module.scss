@@ -19,9 +19,27 @@
 
   @include mixinsNew.link();
 
+  a,
+  a:hover,
+  a:focus-visible {
+    text-decoration: none;
+  }
+
   &:focus-visible {
     outline: 2px solid colorsNew.$blue03;
     outline-offset: 2px;
+  }
+}
+
+.trigger_iconOnly {
+  text-decoration: none;
+  color: colorsNew.$gray04;
+  line-height: 1;
+  min-height: 0;
+  padding: 0;
+
+  &:hover {
+    color: colorsNew.$blue03;
   }
 }
 

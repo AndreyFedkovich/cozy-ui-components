@@ -6,12 +6,14 @@ import { TooltipDark } from "../TooltipDark/Tooltip";
 import css from "./CopyTextTrigger.module.scss";
 
 export interface CopyTextTriggerProps {
-  children: ReactNode;
+  children?: ReactNode;
   onClick: () => void;
   copied: boolean;
   tooltipText?: string;
   ariaLabel?: string;
   showIcon?: boolean;
+  /** Только иконка копирования, без оборачивания children в кнопку. */
+  iconOnly?: boolean;
   className?: string;
 }
 
@@ -23,6 +25,7 @@ export const CopyTextTrigger = memo(
     tooltipText = "Скопировано",
     ariaLabel,
     showIcon = true,
+    iconOnly = false,
     className,
   }: CopyTextTriggerProps) => {
     const handleClick = useCallback(() => {
@@ -36,12 +39,12 @@ export const CopyTextTrigger = memo(
             type="button"
             variant={null}
             size={null}
-            className={cn(css.trigger, className)}
+            className={cn(css.trigger, iconOnly && css.trigger_iconOnly, className)}
             onClick={handleClick}
             aria-label={ariaLabel}
             aria-live="polite"
           >
-            {children}
+            {!iconOnly && children}
             {showIcon && <CopyIcon className={css.icon} aria-hidden />}
           </UiButton>
         </TooltipDark>
