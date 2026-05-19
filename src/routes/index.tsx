@@ -417,6 +417,178 @@ function Index() {
     [],
   );
 
+  /* ---------- CommentFeed demo state ---------- */
+  const currentDemoUser = useMemo<CommentAuthor>(
+    () => ({ id: "u-me", name: "Андрей Ф." }),
+    [],
+  );
+  const commentsRef = useRef<FeedComment[]>([
+    {
+      id: "c-1",
+      parentId: null,
+      author: { id: "u-1", name: "Кнопкин Тимур" },
+      text: "Коллеги, выкладываю первую версию документа на ваше рассмотрение. Жду фидбэк до конца недели.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+      repliesCount: 2,
+      attachments: [
+        { id: "f-1", name: "specification-v1.pdf", size: 184_320 },
+      ],
+      recipients: [
+        { id: "u-2", name: "Снежкина М." },
+        { id: "u-3", name: "Бубликова Н." },
+      ],
+    },
+    {
+      id: "c-2",
+      parentId: null,
+      author: { id: "u-2", name: "Снежкина Мария" },
+      text: "Принято в работу. Вернусь с правками в течение дня.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
+      repliesCount: 0,
+    },
+    {
+      id: "c-3",
+      parentId: null,
+      author: { id: "u-3", name: "Бубликова Надежда" },
+      text: "По разделу 3.2 есть вопросы — нужно синхронизироваться лично.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+      repliesCount: 1,
+    },
+    {
+      id: "c-4",
+      parentId: "c-1",
+      author: { id: "u-me", name: "Андрей Ф." },
+      text: "Спасибо! Подсветил пару моментов в разделе про API.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+      repliesCount: 0,
+    },
+    {
+      id: "c-5",
+      parentId: "c-1",
+      author: { id: "u-2", name: "Снежкина Мария" },
+      text: "Дополню, что нужно учесть требования безопасности из соседнего проекта.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(),
+      repliesCount: 0,
+    },
+    {
+      id: "c-6",
+      parentId: "c-3",
+      author: { id: "u-me", name: "Андрей Ф." },
+      text: "Окей, давай завтра в 11:00.",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+      repliesCount: 0,
+    },
+  ]);
+
+  const loadDemoComments = useCallback(
+    async ({ parentId, skip, take }: { parentId: string | null; skip: number; take: number }) => {
+      await new Promise((r) => window.setTimeout(r, 300));
+      const branch = commentsRef.current
+        .filter((c) => c.parentId === parentId)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return { items: branch.slice(skip, skip + take), total: branch.length };
+    },
+    [],
+  );
+
+  const loadDemoRecipients = useCallback(
+    async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
+      await new Promise((r) => window.setTimeout(r, 200));
+      const q = search.toLowerCase();
+      const filtered = employeeOptions.filter((o) => o.label.toLowerCase().includes(q));
+      const start = (page - 1) * pageSize;
+      return {
+        options: filtered.slice(start, start + pageSize).map((o) => ({
+          value: o.value,
+          label: o.label,
+          meta: { id: String(o.value), name: String(o.label) } satisfies CommentAuthor,
+        })) as CustomOption<CommentAuthor, string>[],
+        total: filtered.length,
+      };
+    },
+    [],
+  );
+
+  const onCommentCreate = useCallback(
+    async (input: {
+      parentId: string | null;
+      text: string;
+      attachments: CommentAttachment[];
+      recipients: CommentAuthor[];
+    }) => {
+      await new Promise((r) => window.setTimeout(r, 250));
+      const created: FeedComment = {
+        id: `c-${Date.now()}`,
+        parentId: input.parentId,
+        author: currentDemoUser,
+        text: input.text,
+        attachments: input.attachments,
+        recipients: input.recipients,
+        createdAt: new Date().toISOString(),
+        repliesCount: 0,
+      };
+      commentsRef.current.push(created);
+      if (input.parentId) {
+        const parent = commentsRef.current.find((c) => c.id === input.parentId);
+        if (parent) parent.repliesCount += 1;
+      }
+      return created;
+    },
+    [currentDemoUser],
+  );
+
+  const onCommentEdit = useCallback(
+    async (input: {
+      id: string;
+      text: string;
+      attachments: CommentAttachment[];
+      recipients: CommentAuthor[];
+    }) => {
+      await new Promise((r) => window.setTimeout(r, 200));
+      const idx = commentsRef.current.findIndex((c) => c.id === input.id);
+      const updated = {
+        ...commentsRef.current[idx],
+        text: input.text,
+        attachments: input.attachments,
+        recipients: input.recipients,
+        editedAt: new Date().toISOString(),
+      };
+      commentsRef.current[idx] = updated;
+      return updated;
+    },
+    [],
+  );
+
+  const onCommentDelete = useCallback(async (id: string) => {
+    await new Promise((r) => window.setTimeout(r, 200));
+    const c = commentsRef.current.find((x) => x.id === id);
+    if (!c) return;
+    if (c.repliesCount > 0) {
+      c.deleted = true;
+      c.text = "";
+    } else {
+      commentsRef.current = commentsRef.current.filter((x) => x.id !== id);
+      if (c.parentId) {
+        const parent = commentsRef.current.find((p) => p.id === c.parentId);
+        if (parent) parent.repliesCount = Math.max(0, parent.repliesCount - 1);
+      }
+    }
+  }, []);
+
+  const onUploadDemoAttachment = useCallback(async (file: File): Promise<CommentAttachment> => {
+    await new Promise((r) => window.setTimeout(r, 400));
+    return {
+      id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+    };
+  }, []);
+
+  const onDeleteDemoAttachment = useCallback(async () => {
+    await new Promise((r) => window.setTimeout(r, 150));
+  }, []);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#f4f7fa] via-white to-[#eef3fb] px-6 py-16 text-foreground md:px-10">
       {/* decorative blobs */}
