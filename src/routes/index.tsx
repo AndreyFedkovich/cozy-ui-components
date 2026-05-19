@@ -1399,6 +1399,28 @@ function Index() {
                 }
               />
             </DemoSection>
+
+            <DemoSection
+              title="CommentFeed · Лента комментариев"
+              description="Древовидные обсуждения с ленивой постраничной загрузкой по веткам, вложениями, ознакомителями, окном редактирования 10 минут и системой прав."
+            >
+              <CommentFeed
+                currentUser={currentDemoUser}
+                loadComments={loadDemoComments}
+                recipientsSource={loadDemoRecipients}
+                onCreate={onCommentCreate}
+                onEdit={onCommentEdit}
+                onDelete={onCommentDelete}
+                onUploadAttachment={onUploadDemoAttachment}
+                onDeleteAttachment={onDeleteDemoAttachment}
+                onDownloadAttachment={(att) =>
+                  window.alert(`Скачать ${att.name} (${att.size} байт)`)
+                }
+                pageSize={5}
+                title="Обсуждение документа"
+                eyebrow="Discussion"
+              />
+            </DemoSection>
           </div>
         </section>
 
