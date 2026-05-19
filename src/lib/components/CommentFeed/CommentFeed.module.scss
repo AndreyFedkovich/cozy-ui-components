@@ -1,0 +1,516 @@
+@use "../../styles/colorsNew";
+
+.root {
+  width: 100%;
+  background: colorsNew.$white01;
+  border-radius: 1rem;
+  border: 1px solid rgba(colorsNew.$gray07, 0.7);
+  padding: 1.5rem 1.75rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 12px 32px -18px rgba(colorsNew.$blue03, 0.25);
+  color: colorsNew.$blue05;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(colorsNew.$gray07, 0.7);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: colorsNew.$blue03;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: colorsNew.$blue05;
+  line-height: 1.2;
+}
+
+.counter {
+  font-size: 0.8125rem;
+  color: colorsNew.$gray04;
+  font-weight: 500;
+  padding: 0.25rem 0.625rem;
+  background: colorsNew.$gray01;
+  border-radius: 999px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loadOlderBtn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: transparent;
+  border: 1px dashed colorsNew.$gray06;
+  border-radius: 999px;
+  padding: 0.3125rem 0.75rem;
+  color: colorsNew.$blue03;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: colorsNew.$blue01;
+    border-color: colorsNew.$blue03;
+    border-style: solid;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+  color: colorsNew.$blue03;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* === comment node === */
+.item {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  column-gap: 0.875rem;
+  position: relative;
+}
+
+.avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: colorsNew.$white01;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, colorsNew.$blue03, colorsNew.$blue05);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.bubble {
+  position: relative;
+  background: linear-gradient(180deg, rgba(colorsNew.$gray01, 0.6), colorsNew.$white01);
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 0 0.875rem 0.875rem 0.875rem;
+  padding: 0.75rem 0.875rem 0.8125rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: rgba(colorsNew.$blue03, 0.35);
+    box-shadow: 0 4px 14px -8px rgba(colorsNew.$blue03, 0.25);
+
+    .actions {
+      opacity: 1;
+    }
+  }
+}
+
+.bubble_deleted {
+  background: rgba(colorsNew.$gray01, 0.5);
+  color: colorsNew.$gray03;
+  font-style: italic;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.author {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: colorsNew.$blue05;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: colorsNew.$gray03;
+}
+
+.editedTag {
+  font-size: 0.6875rem;
+  color: colorsNew.$gray04;
+  font-style: italic;
+}
+
+.text {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: colorsNew.$blue05;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.recipients {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: colorsNew.$gray04;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+}
+
+.attachments {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.5rem 0.3125rem 0.625rem;
+  background: colorsNew.$white01;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: colorsNew.$blue05;
+  max-width: 18rem;
+
+  &:hover {
+    border-color: colorsNew.$blue03;
+    color: colorsNew.$blue03;
+  }
+}
+
+.attachmentName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.attachmentSize {
+  color: colorsNew.$gray03;
+  flex-shrink: 0;
+}
+
+.attachmentRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: colorsNew.$gray04;
+  cursor: pointer;
+  padding: 0;
+
+  svg {
+    width: 0.6875rem;
+    height: 0.6875rem;
+  }
+
+  &:hover {
+    background: colorsNew.$red01;
+    color: colorsNew.$red02;
+  }
+}
+
+.attachmentSpinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.125rem;
+}
+
+/* === hover actions === */
+.actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  background: colorsNew.$white01;
+  border: 1px solid colorsNew.$gray07;
+  cursor: pointer;
+  color: colorsNew.$gray04;
+  padding: 0;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  &:hover {
+    background: colorsNew.$gray01;
+    color: colorsNew.$blue03;
+    border-color: colorsNew.$blue03;
+  }
+}
+
+.iconButton_danger:hover {
+  background: colorsNew.$red01;
+  color: colorsNew.$red02;
+  border-color: colorsNew.$red02;
+}
+
+/* === child branch === */
+.children {
+  margin-top: 0.875rem;
+  margin-left: 1.125rem;
+  padding-left: 1.125rem;
+  border-left: 2px solid colorsNew.$gray07;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* === form === */
+.form {
+  background: colorsNew.$white01;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 0.875rem;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.form_root {
+  background: linear-gradient(180deg, rgba(colorsNew.$blue01, 0.25), colorsNew.$white01);
+  border-color: rgba(colorsNew.$blue03, 0.25);
+}
+
+.form_inline {
+  margin-top: 0.625rem;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 4.5rem;
+  resize: vertical;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  border: 1px solid colorsNew.$gray07;
+  border-radius: 0.625rem;
+  outline: none;
+  background: colorsNew.$white01;
+  color: colorsNew.$blue05;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: colorsNew.$blue03;
+    box-shadow: 0 0 0 3px rgba(colorsNew.$blue03, 0.15);
+  }
+}
+
+.formRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.formTools {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.formActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  background: colorsNew.$gray01;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.3125rem 0.6875rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: colorsNew.$blue05;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  &:hover {
+    background: colorsNew.$blue01;
+    color: colorsNew.$blue03;
+  }
+}
+
+.recipientsChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3125rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.1875rem 0.4375rem 0.1875rem 0.625rem;
+  background: rgba(colorsNew.$blue01, 0.6);
+  color: colorsNew.$blue05;
+  border-radius: 999px;
+  font-size: 0.75rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: colorsNew.$blue05;
+    cursor: pointer;
+    padding: 0;
+
+    svg {
+      width: 0.625rem;
+      height: 0.625rem;
+    }
+
+    &:hover {
+      background: colorsNew.$white01;
+    }
+  }
+}
+
+.empty {
+  padding: 2rem 0;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.skeletonLine {
+  height: 0.875rem;
+  border-radius: 0.375rem;
+  background: linear-gradient(90deg, colorsNew.$gray01, colorsNew.$gray07, colorsNew.$gray01);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: colorsNew.$blue05;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.branchSpinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.375rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.notice {
+  font-size: 0.75rem;
+  color: colorsNew.$gray04;
+  background: colorsNew.$yellow01;
+  border: 1px solid rgba(colorsNew.$yellow02, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.625rem;
+}

@@ -49,3 +49,16 @@ export {
   type DetailField,
   type DetailFieldRenderer,
 } from "./DetailView/DetailView";
+export {
+  CommentFeed,
+  type CommentFeedProps,
+  type CommentFeedHandle,
+  type Comment,
+  type CommentAuthor,
+  type CommentAttachment,
+  type CommentPermissions,
+  type CommentLoadParams,
+  type CommentLoadResult,
+  type CommentMutationInput,
+  type CommentEditInput,
+} from "./CommentFeed/CommentFeed";
