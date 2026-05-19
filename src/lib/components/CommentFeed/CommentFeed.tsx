@@ -523,9 +523,14 @@ function CommentForm({
           {recipientsSource && (
             <DialogSelect<CommentAuthor, string>
               value={null}
-              placeholder=""
+              placeholder={
+                recipients.length > 0
+                  ? `Ознакомители (${recipients.length})`
+                  : "Ознакомители"
+              }
               title="Добавить ознакомителя"
               searchPlaceholder="Поиск сотрудника"
+              selectButtonText=""
               loadOptions={recipientsSource}
               onChange={(opt) => {
                 const meta = opt.meta;
@@ -536,12 +541,8 @@ function CommentForm({
                   prev.some((p) => p.id === author.id) ? prev : [...prev, author],
                 );
               }}
-              selectedOptionRender={() => (
-                <span className={css.toolBtn}>
-                  <EnvelopIcon /> Ознакомители
-                </span>
-              )}
               className={css.recipientsPickerWrap}
+              inputClassName={css.recipientsPickerInput}
             />
           )}
         </div>

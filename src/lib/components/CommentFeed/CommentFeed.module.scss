@@ -124,7 +124,12 @@
   font-weight: 600;
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
-  background: linear-gradient(135deg, colorsNew.$blue03, colorsNew.$blue05);
+  background: linear-gradient(
+    135deg,
+    mix(colorsNew.$blue03, colorsNew.$white01, 18%) 0%,
+    colorsNew.$blue03 52%,
+    mix(colorsNew.$blue03, colorsNew.$blue05, 20%) 100%
+  );
   flex-shrink: 0;
   user-select: none;
 }
@@ -415,6 +420,68 @@
   &:hover {
     background: colorsNew.$blue01;
     color: colorsNew.$blue03;
+  }
+}
+
+.recipientsPickerWrap {
+  width: auto !important;
+  max-width: 100%;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.recipientsPickerInput {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0.3125rem 0.6875rem !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: colorsNew.$gray01 !important;
+  box-shadow: none !important;
+  color: colorsNew.$blue05;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  > :first-child {
+    flex: 0 0 auto !important;
+    min-width: 0;
+    overflow: visible !important;
+    display: inline-flex !important;
+    align-items: center;
+    color: colorsNew.$blue05 !important;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  > :last-child {
+    display: none !important;
+  }
+
+  &:hover {
+    background: colorsNew.$blue01 !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+
+    > :first-child {
+      color: colorsNew.$blue03;
+    }
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    border-color: transparent !important;
+    box-shadow: none !important;
   }
 }
 
