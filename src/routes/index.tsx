@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import cardCoverUrl from "@/assets/demo/card-cover.png";
 import {
   BaseBlock,
