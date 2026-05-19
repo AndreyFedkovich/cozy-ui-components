@@ -1,117 +1,194 @@
-## Новый компонент: `DetailView` (форма просмотра)
 
-Премиальная read-only форма для отображения данных в виде секций со строками «Лейбл → Значение». Соответствует стилю `BaseBlock` / `CollapsableBlock` (фон `$white01`, скругление `1.5rem`, паддинг `2rem`, токены `colorsNew`/`mixinsNew`).
+## Компонент `CommentFeed`
 
-### Расположение
+Премиальная лента комментариев с древовидной структурой, ленивой постраничной загрузкой по уровням, редактированием в окне 10 минут, вложениями, ознакомителями и системой прав.
+
+---
+
+## Архитектура данных
+
+Плоская модель — каждый комментарий хранит ссылку на родителя через `parentId`. Дерево не передаётся снаружи: компонент строит и пагинирует его сам, вызывая `loadComments` для каждой ветки по требованию.
+
+```ts
+type Author = { id: string; name: string; avatarUrl?: string };
+
+type Attachment = {
+  id: string;
+  name: string;
+  size: number;
+  url?: string;
+  mimeType?: string;
+};
+
+type Comment = {
+  id: string;
+  parentId: string | null;
+  author: Author;
+  text: string;
+  createdAt: string;          // ISO
+  editedAt?: string;
+  attachments?: Attachment[];
+  recipients?: Author[];       // только для отображения (кому ушло уведомление)
+  repliesCount: number;        // нужен, чтобы показать "Ответы (12)" без загрузки ветки
+  permissions?: {              // per-comment, перекрывает глобальные
+    canEdit?: boolean;
+    canDelete?: boolean;
+    canReply?: boolean;
+  };
+};
 ```
-src/lib/components/DetailView/
-  DetailView.tsx
-  DetailView.module.scss
+
+`recipients` — простой список, не участвует в построении дерева. Используется только для отображения "Уведомлены: …" и возвращается в callback `onCreate`/`onEdit`, чтобы фронт передал на бэк для рассылки.
+
+---
+
+## API компонента
+
+```ts
+type LoadParams  = { parentId: string | null; skip: number; take: number };
+type LoadResult  = { items: Comment[]; total: number };
+
+type CommentFeedProps = {
+  loadComments: (p: LoadParams) => Promise<LoadResult>;
+  pageSize?: number;                 // default 10
+  currentUser: Author;
+  recipientsSource: (query: string) => Promise<Author[]>;
+
+  onCreate?: (input: {
+    parentId: string | null;
+    text: string;
+    attachments: Attachment[];
+    recipients: Author[];
+  }) => Promise<Comment>;            // должен вернуть финальный объект
+
+  onEdit?: (input: {
+    id: string;
+    text: string;
+    attachments: Attachment[];
+    recipients: Author[];
+  }) => Promise<Comment>;
+
+  onDelete?: (id: string) => Promise<void>;
+
+  onUploadAttachment?:   (file: File) => Promise<Attachment>;
+  onDownloadAttachment?: (a: Attachment) => void;
+  onDeleteAttachment?:   (a: Attachment) => Promise<void>;
+
+  permissions?: { canCreate?: boolean; canReply?: boolean };
+  editWindowMs?: number;             // default 10 * 60_000
+};
+```
+
+Imperative ref: `feedRef.refresh(parentId?: string | null)` для внешнего обновления одной ветки или всего корня.
+
+---
+
+## Порядок и пагинация (ключевое решение)
+
+Сортировка внутри каждой ветки: **старые сверху, новые снизу** (хронологический фид).
+Новый комментарий или ответ всегда добавляется **в конец** своей ветки.
+
+Чтобы новые сообщения были видны сразу, ветка загружается **с последней страницы**, а не с первой. Сверху появляется кнопка "Показать предыдущие".
+
+Алгоритм первой загрузки ветки `parentId`:
+1. Дёрнуть `loadComments({ parentId, skip: 0, take: pageSize })` — нужен только `total` и первый чанк (используется как заглушка, если ветка маленькая).
+2. Если `total > pageSize`, повторно дёрнуть `loadComments({ parentId, skip: total - pageSize, take: pageSize })` — последняя страница.
+3. Запомнить `loadedFrom` (нижняя граница загруженного диапазона). Кнопка "Показать предыдущие N" сверху уменьшает `loadedFrom` на `pageSize` и подгружает предыдущий чанк.
+
+Альтернатива для экономии запроса: компонент может сразу делать один вызов `loadComments({ parentId, skip: -pageSize, take: pageSize })` если бэк это поддерживает, но в API заложен только положительный `skip` — это совместимо с любым REST.
+
+Поведение `onCreate`:
+- Локально добавляем новый `Comment` в **конец** ветки `parentId`.
+- Инкрементим `repliesCount` у родителя и `total` у ветки.
+- Если ветка ещё не открыта (пользователь только что нажал "Ответить", не раскрывая чужие ответы), то после успеха ветка считается "открытой только с этого нового сообщения" — выше показывается "Показать предыдущие (N)". Никаких дубликатов: дедуп по `id` при подгрузке предыдущих страниц.
+
+Это решает заданную проблему: новое сообщение в конце ленты, а ещё не подгруженные старые честно скрыты под кнопкой "Показать предыдущие".
+
+---
+
+## Состояние
+
+```ts
+type BranchState = {
+  items: Comment[];           // отсортированы по createdAt asc
+  total: number;
+  loadedFrom: number;         // skip нижней границы загруженного хвоста
+  loading: boolean;
+  expanded: boolean;          // раскрыта ли ветка ответов
+};
+
+// Map<parentKey, BranchState>, где parentKey = parentId ?? '__root__'
+```
+
+Дедупликация при подгрузке "предыдущих": слияние по `id`, сохраняем порядок по `createdAt`.
+
+---
+
+## Редактирование
+
+- Кнопка "Редактировать" показывается, если `comment.permissions?.canEdit ?? (comment.author.id === currentUser.id && now - createdAt < editWindowMs)`.
+- Таймер на клиенте перерисовывает кнопку, когда окно истекает.
+- Финальная проверка — на сервере: при ошибке `onEdit` показываем toast и откатываем UI.
+
+## Удаление
+
+- Кнопка "Удалить" по правам.
+- Подтверждение через диалог.
+- После успеха: если у комментария `repliesCount > 0`, заменяем текст на "Комментарий удалён" и блокируем действия (чтобы не ломать дерево). Если нет ответов — удаляем из ветки и декрементим `repliesCount` родителя.
+
+## Вложения
+
+- В форме создания/редактирования — drag&drop + кнопка "Прикрепить".
+- При выборе файла → `onUploadAttachment(file)` → возвращает `Attachment`, показывается чип с прогрессом и кнопкой удаления.
+- Удаление прикреплённого файла внутри открытой формы → подтверждение → `onDeleteAttachment`.
+- В отрисованном комментарии: чипы файлов, клик → `onDownloadAttachment`, кнопка-крестик (если есть права редактирования) → подтверждение → `onDeleteAttachment` + обновление списка.
+
+## Ознакомители
+
+- В форме создания/ответа — кнопка "Добавить ознакомителей", открывает `DialogSelect` с асинхронным поиском через `recipientsSource(query)`.
+- Выбранные показываются чипами с возможностью удаления.
+- При сабмите уходят в `onCreate`/`onEdit` как `recipients: Author[]`.
+- В готовом комментарии: компактная строка "Уведомлены: Иванов И.И., Петров П.П., +3" с тултипом со списком.
+
+## Права
+
+Глобальные `permissions.canCreate` / `canReply` управляют отображением формы корня и кнопки "Ответить".
+Per-comment `permissions.{canEdit,canDelete,canReply}` перекрывают глобальные для конкретного узла.
+
+---
+
+## UI
+
+- Бабблы сообщений в стиле библиотеки: аватар слева, мягкая карточка, hover-actions справа (Ответить / Редактировать / Удалить).
+- Дочерние ветки с лёгким левым отступом и тонкой вертикальной линией-направляющей.
+- "Показать ответы (N)" / "Скрыть ответы" — toggle на каждом узле.
+- "Показать предыдущие (N)" — кнопка-ссылка сверху ветки, когда есть нераскрытый верх.
+- Skeleton при первичной загрузке корня, мини-спиннер на кнопках пагинации.
+- Пустое состояние корня через `EmptyComponent`.
+
+---
+
+## Файлы
+
+```
+src/lib/components/CommentFeed/
+  CommentFeed.tsx              — корневой компонент + контекст
+  CommentItem.tsx              — отрисовка одного узла + рекурсия
+  CommentForm.tsx              — форма создания/ответа/редактирования
+  AttachmentChip.tsx           — чип файла с действиями
+  RecipientsPicker.tsx         — обёртка над DialogSelect
+  useBranchLoader.ts           — хук состояния веток и пагинации
+  CommentFeed.module.scss
+  types.ts
   index.ts
 ```
-Экспорт добавить в `src/lib/components/index.ts`.
 
-### API — composition-first + декларативный
+Экспорт в `src/lib/components/index.ts`. Демо-секция "Workflow / Communication" на `src/routes/index.tsx` с фейковым `loadComments` (имитация задержки, дерево из 3 уровней) — показывает раскрытие, пагинацию "Показать предыдущие", добавление нового ответа в конец.
 
-Поддержать **два совместимых способа** использования.
+---
 
-**1. Декларативный (через props):**
-```tsx
-<DetailView
-  sections={[
-    {
-      title: "Основные данные",
-      fields: [
-        { label: "Номер и дата заявки", value: <Link>ekd-242512</Link>, copyable: true },
-        { label: "Автор заявки", value: "Петрова Е. В." },
-        { label: "Статус", value: <Tag color="blue">На согласовании</Tag> },
-        { label: "Срок действия заявки", value: "Нет" },
-      ],
-    },
-    {
-      title: "Формальные признаки должности",
-      fields: [
-        { label: "Заказчик по заявке", value: "Иванов И. И." },
-        // ...
-      ],
-    },
-  ]}
-/>
-```
+## Что НЕ входит
 
-**2. Composition (children):**
-```tsx
-<DetailView>
-  <DetailView.Section title="Основные данные">
-    <DetailView.Field label="Номер и дата заявки">
-      <a href="...">ekd-242512</a> от 08.05.2026
-    </DetailView.Field>
-    <DetailView.Field label="Статус" value={<Tag>На согласовании</Tag>} />
-    <DetailView.Field label="Автор заявки">Петрова Е. В.</DetailView.Field>
-  </DetailView.Section>
-
-  <DetailView.Divider />
-
-  <DetailView.Section title="Формальные признаки должности">
-    {/* любой кастомный JSX — multi-column grids, графики и т.п. */}
-    <MyCustomRow />
-  </DetailView.Section>
-</DetailView>
-```
-
-### Типы
-```ts
-type DetailFieldRenderer = (ctx: { label: ReactNode; value: ReactNode }) => ReactNode;
-
-interface DetailField {
-  label: ReactNode;
-  value: ReactNode;
-  hint?: ReactNode;          // подсказка под значением
-  copyable?: boolean;        // показать CopyTextTrigger
-  render?: DetailFieldRenderer; // полный кастом строки
-  hidden?: boolean;
-  span?: 1 | 2;              // для двухколоночной сетки
-}
-
-interface DetailSection {
-  id?: string;
-  title?: ReactNode;
-  description?: ReactNode;
-  collapsible?: boolean;     // по флагу — рендерится через CollapsableBlock
-  fields?: DetailField[];
-  children?: ReactNode;
-  columns?: 1 | 2;
-}
-
-interface DetailViewProps {
-  sections?: DetailSection[];
-  children?: ReactNode;
-  variant?: "plain" | "card"; // card = обёртка как BaseBlock; plain = без фона
-  labelWidth?: number | string; // ширина колонки лейблов, по умолч. 14rem
-  size?: "md" | "lg";
-  loading?: boolean;         // показать Spinner
-  emptyState?: ReactNode;    // если нет данных
-  className?: string;
-}
-```
-
-Под капотом `DetailView.Section` и `DetailView.Field` — это статические свойства компонента (`DetailView.Section = Section`), стандартный паттерн compound-component. Если переданы и `sections`, и `children` — рендерим оба последовательно.
-
-### Визуал (премиально, в духе библиотеки)
-- Контейнер: `background: $white01`, `border-radius: 1.5rem`, `padding: 2rem` (как `BaseBlock`).
-- Заголовок секции: `colorsNew.$blue03`, `text-s-m(0.875rem, 1.25rem)`, uppercase tracking `0.04em`.
-- Тонкий разделитель между секциями: `1px` линия `$gray07` с верхним/нижним отступом `1.5rem`.
-- Строка поля (двухколоночная сетка): лейбл `$gray04`, значение `$gray05`, `text(0.875rem, 1.5rem)`.
-- На широких экранах — CSS Grid `grid-template-columns: <labelWidth> 1fr`, на мобильных (`<640px`) — стек.
-- Hover-подсветка строки: лёгкий фон `$gray01` для строк с `copyable` или ссылками.
-- Поддержка `loading` — заглушка через существующий `Spinner` + skeleton-плейсхолдер для строк (используем `_placeholder.scss`).
-- `emptyState` — fallback через `EmptyComponent`.
-- `copyable` — рендерим значение в обёртке с `CopyTextTrigger` справа.
-
-### Демо в `src/routes/index.tsx`
-Добавить новую секцию-демо «Form / DetailView» сразу после `BaseBlock`-демо: воспроизвести пример из скриншота (Основные данные / Формальные признаки должности) с использованием `DetailView` через декларативный API + рядом мини-пример composition с кастомным `render`.
-
-### Что НЕ входит
-- Без режима редактирования (это именно «просмотр»).
-- Без серверной интеграции.
-- Без правок `package.json` / билда — компонент попадёт в пакет автоматически через `lib/components/index.ts`.
+- Realtime-подписки (компонент чистый presentational + callbacks).
+- Markdown/rich-text — только plain text + переводы строк.
+- Лайки/реакции.
