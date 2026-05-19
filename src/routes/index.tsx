@@ -30,6 +30,12 @@ import {
   type ApprovalLevel,
 } from "../lib";
 import { DetailView } from "../lib";
+import {
+  CommentFeed,
+  type Comment as FeedComment,
+  type CommentAttachment,
+  type CommentAuthor,
+} from "../lib";
 
 export const Route = createFileRoute("/")({
   head: () => ({
