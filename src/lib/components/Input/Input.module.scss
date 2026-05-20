@@ -1,0 +1,43 @@
+@use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
+
+$inputHeight: 48px;
+
+.wrapper {
+  justify-content: center;
+  width: 100%;
+}
+
+.container {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  min-height: $inputHeight;
+  border: 1px solid colorsNew.$gray06;
+  background: colorsNew.$white01;
+  border-radius: 0.375rem;
+  padding: 6px 12px;
+  outline: none;
+  @include mixinsNew.text();
+  @include mixinsNew.placeholder();
+
+  &:focus {
+    outline: 1px solid colorsNew.$blue03;
+  }
+
+  &.error {
+    border: 1px solid colorsNew.$red02;
+
+    &:focus {
+      outline: 1px solid colorsNew.$red02;
+    }
+  }
+
+  &.disabled {
+    pointer-events: none;
+    background-color: rgba(colorsNew.$gray02, 0.3);
+    color: colorsNew.$gray04;
+  }
+}

@@ -11,8 +11,11 @@ import {
   CopyTextTrigger,
   DialogSelect,
   EmptyComponent,
+  Calendar,
+  Checkbox,
+  Input,
   InputCaption,
-  Label,
+  todayLocalDay,
   Popover,
   RadioGroupButton,
   Select,
@@ -281,6 +284,12 @@ function DemoSection({
 
 function Index() {
   const [radio, setRadio] = useState("first");
+  const [demoEmail, setDemoEmail] = useState("user@company.com");
+  const [demoPassword, setDemoPassword] = useState("123");
+  const [demoDate, setDemoDate] = useState<string | null>(null);
+  const [demoDateError, setDemoDateError] = useState<string | null>(null);
+  const [demoAgreed, setDemoAgreed] = useState(false);
+  const [demoNotify, setDemoNotify] = useState(true);
   const [tab, setTab] = useState<string>("overview");
   const [roundedTab, setRoundedTab] = useState<string>("overview");
   const [copied, setCopied] = useState(false);
@@ -929,29 +938,80 @@ function Index() {
             </DemoSection>
 
             <DemoSection
-              title="InputCaption + Label"
-              description="Подпись к полю и текст валидации/подсказки."
+              title="Input"
+              description="Текстовое поле для форм с опциональной подписью и сообщением валидации."
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="demo-field">Email</Label>
-                  <input
-                    id="demo-field"
-                    className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-base"
-                    defaultValue="user@company.com"
+                  <Input
+                    label="Email"
+                    placeholder="you@company.com"
+                    value={demoEmail}
+                    onChange={(e) => setDemoEmail(e.target.value)}
                   />
                   <InputCaption variant="neutral">Используется для входа в систему.</InputCaption>
                 </div>
-                <div>
-                  <Label htmlFor="demo-field-err">Пароль</Label>
-                  <input
-                    id="demo-field-err"
-                    type="password"
-                    className="mt-2 h-10 w-full rounded-md border border-[#d72d40] bg-background px-3 text-base"
-                    defaultValue="123"
-                  />
-                  <InputCaption variant="error">Минимум 8 символов.</InputCaption>
-                </div>
+                <Input
+                  label="Пароль"
+                  type="password"
+                  value={demoPassword}
+                  onChange={(e) => setDemoPassword(e.target.value)}
+                  error="Минимум 8 символов."
+                />
+              </div>
+              <div className="mt-4">
+                <Input label="Отключённое поле" placeholder="Недоступно" disabled />
+              </div>
+            </DemoSection>
+
+            <DemoSection
+              title="Calendar"
+              description="Выбор даты в popover. Значение — yyyy-MM-dd, отображение — dd.MM.yyyy."
+            >
+              <div className="grid gap-4">
+                <Calendar
+                  label="Дата начала"
+                  required
+                  value={demoDate}
+                  onChange={(v) => {
+                    setDemoDate(v);
+                    setDemoDateError(v ? null : "Укажите дату.");
+                  }}
+                  minDate={todayLocalDay()}
+                  error={demoDateError}
+                  tooltipContent="Дата не может быть раньше сегодняшнего дня."
+                />
+                <p className="text-sm text-muted-foreground">
+                  Значение:{" "}
+                  <span className="font-medium text-foreground">
+                    {demoDate ?? "не выбрано"}
+                  </span>
+                </p>
+              </div>
+            </DemoSection>
+
+            <DemoSection
+              title="Checkbox"
+              description="Чекбокс с кастомным боксом, подписью и валидацией."
+            >
+              <div className="flex flex-col gap-4">
+                <Checkbox
+                  label="Согласен с условиями обработки персональных данных"
+                  checked={demoAgreed}
+                  onChange={(e) => setDemoAgreed(e.target.checked)}
+                />
+                <Checkbox
+                  label="Получать уведомления о статусе заявки"
+                  checked={demoNotify}
+                  onChange={(e) => setDemoNotify(e.target.checked)}
+                />
+                <Checkbox label="Опция недоступна" defaultChecked disabled />
+                <Checkbox
+                  label="Обязательное согласие"
+                  error={demoAgreed ? null : "Необходимо принять условия."}
+                  checked={demoAgreed}
+                  onChange={(e) => setDemoAgreed(e.target.checked)}
+                />
               </div>
             </DemoSection>
 

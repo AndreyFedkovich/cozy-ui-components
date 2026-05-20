@@ -74,43 +74,76 @@ export const TooltipLight: FC<TooltipLightProps> = ({
   );
 
   useEffect(() => {
-    const element = getTargetElement(target);
-    if (!element) {
-      return;
-    }
-
+    let element: HTMLElement | null = null;
+    let rafId: number | null = null;
     let showTimer: ReturnType<typeof setTimeout> | null = null;
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
     const clearTimers = () => {
       if (showTimer) clearTimeout(showTimer);
       if (hideTimer) clearTimeout(hideTimer);
+      showTimer = null;
+      hideTimer = null;
     };
+
     const show = () => {
       clearTimers();
       updateRect();
       showTimer = setTimeout(() => setOpen(true), getDelay(delay, "show"));
     };
+
     const hide = () => {
       if (!autohide) return;
       clearTimers();
       hideTimer = setTimeout(() => setOpen(false), getDelay(delay, "hide"));
     };
 
-    element.addEventListener("mouseenter", show);
-    element.addEventListener("mouseleave", hide);
-    element.addEventListener("focus", show);
-    element.addEventListener("blur", hide);
-    window.addEventListener("scroll", updateRect, true);
-    window.addEventListener("resize", updateRect);
-
-    return () => {
-      clearTimers();
+    const detach = () => {
+      if (!element) return;
       element.removeEventListener("mouseenter", show);
       element.removeEventListener("mouseleave", hide);
       element.removeEventListener("focus", show);
       element.removeEventListener("blur", hide);
       window.removeEventListener("scroll", updateRect, true);
       window.removeEventListener("resize", updateRect);
+      element = null;
+    };
+
+    const attach = (el: HTMLElement) => {
+      element = el;
+      updateRect();
+      el.addEventListener("mouseenter", show);
+      el.addEventListener("mouseleave", hide);
+      el.addEventListener("focus", show);
+      el.addEventListener("blur", hide);
+      window.addEventListener("scroll", updateRect, true);
+      window.addEventListener("resize", updateRect);
+    };
+
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    const tryAttach = () => {
+      const el = getTargetElement(target);
+      if (el) {
+        attach(el);
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        return;
+      }
+      attempts += 1;
+      rafId = requestAnimationFrame(tryAttach);
+    };
+
+    tryAttach();
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      clearTimers();
+      detach();
     };
   }, [autohide, delay, setOpen, target, updateRect]);
 

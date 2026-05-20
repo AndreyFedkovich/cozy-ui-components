@@ -10,7 +10,7 @@ import {
 import { Button } from "../Button/Button";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
 import { InputCaption } from "../InputCaption/InputCaption";
-import { Label } from "../Label/Label";
+import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { CrossIcon, SearchIcon } from "../../icons";
 import type { CustomOption } from "../Select/Select";
@@ -46,6 +46,9 @@ export interface DialogSelectProps<T, S extends string | number> {
   onClear?: () => void;
   columns?: DialogSelectColumn<T, S>[];
   label?: ReactNode;
+  /** Подсказка по наведению на иконку «?» справа от подписи */
+  tooltipContent?: ReactNode;
+  tooltipPopperClassName?: string;
   title?: ReactNode;
   searchPlaceholder?: string;
   selectButtonText?: string;
@@ -69,6 +72,8 @@ export const DialogSelect = <T, S extends string | number>({
   onClear,
   columns,
   label,
+  tooltipContent,
+  tooltipPopperClassName,
   title = "Поиск сотрудника",
   searchPlaceholder = "Введите запрос",
   selectButtonText = "Выбрать",
@@ -178,7 +183,16 @@ export const DialogSelect = <T, S extends string | number>({
 
   return (
     <div className={cn(css.wrapper, className)}>
-      {label && <Label htmlFor="DialogSelectInput">{label}</Label>}
+      {label && (
+        <FieldLabel
+          htmlFor="DialogSelectInput"
+          tooltipContent={tooltipContent}
+          tooltipPopperClassName={tooltipPopperClassName}
+        >
+          {label}
+        </FieldLabel>
+      )}
+
       <div
         id="DialogSelectInput"
         role="button"

@@ -10,7 +10,7 @@ import {
 import { Button } from "../Button/Button";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
 import { InputCaption } from "../InputCaption/InputCaption";
-import { Label } from "../Label/Label";
+import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { ArrowDownIcon, CrossIcon, SearchIcon } from "../../icons";
 import css from "./TreeDialogSelect.module.scss";
@@ -49,6 +49,9 @@ interface TreeDialogSelectShared<T, S extends string | number> {
   onChange?: (node: TreeNode<T, S>) => void;
   onClear?: () => void;
   label?: ReactNode;
+  /** Подсказка по наведению на иконку «?» справа от подписи */
+  tooltipContent?: ReactNode;
+  tooltipPopperClassName?: string;
   title?: ReactNode;
   searchPlaceholder?: string;
   selectButtonText?: string;
@@ -92,6 +95,8 @@ export const TreeDialogSelect = <T, S extends string | number>({
   onChange,
   onClear,
   label,
+  tooltipContent,
+  tooltipPopperClassName,
   title = "Выбор элемента",
   searchPlaceholder = "Введите запрос",
   selectButtonText = "Выбрать",
@@ -392,7 +397,16 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
   return (
     <div className={cn(css.wrapper, className)}>
-      {label && <Label htmlFor="TreeDialogSelectInput">{label}</Label>}
+      {label && (
+        <FieldLabel
+          htmlFor="TreeDialogSelectInput"
+          tooltipContent={tooltipContent}
+          tooltipPopperClassName={tooltipPopperClassName}
+        >
+          {label}
+        </FieldLabel>
+      )}
+
       <div
         id="TreeDialogSelectInput"
         role="button"

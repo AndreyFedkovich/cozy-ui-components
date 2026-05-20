@@ -3,7 +3,7 @@ import { autoUpdate, flip, offset as floatingOffset, size, useFloating } from "@
 import cn from "classnames";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InputCaption } from "../InputCaption/InputCaption";
-import { Label } from "../Label/Label";
+import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
 import { ArrowDownIcon, SearchIcon, CrossIcon } from "../../icons";
@@ -54,6 +54,9 @@ type CustomSelectProps<T, S> = {
   onClear?: () => void;
   icon?: ReactNode;
   label?: ReactNode;
+  /** Подсказка по наведению на иконку «?» справа от подписи */
+  tooltipContent?: ReactNode;
+  tooltipPopperClassName?: string;
   onSearch?: (value: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
@@ -338,6 +341,8 @@ export const Select = <T, S extends string | number>({
   onDelete,
   onClear,
   label,
+  tooltipContent,
+  tooltipPopperClassName,
   onSearch,
   searchClassName,
   searchPlaceholder,
@@ -548,7 +553,16 @@ export const Select = <T, S extends string | number>({
 
   return (
     <div className={css.wrapper}>
-      {label && <Label htmlFor="CustomSelectInput">{label}</Label>}
+      {label && (
+        <FieldLabel
+          htmlFor="CustomSelectInput"
+          tooltipContent={tooltipContent}
+          tooltipPopperClassName={tooltipPopperClassName}
+        >
+          {label}
+        </FieldLabel>
+      )}
+
       <div className={css.container} ref={containerRef}>
         <div
           role="button"

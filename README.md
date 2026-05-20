@@ -31,7 +31,7 @@ npm i @andreyfedkovich/cozy-ui
 - [Design tokens](#design-tokens)
 - [Component API](#component-api)
   - [Layout & content](#layout--content) — `BaseBlock`, `Card`, `CollapsableBlock`, `Collapse`, `Carousel`, `EmptyComponent`, `Spinner`
-  - [Inputs & forms](#inputs--forms) — `Button`, `RadioGroupButton`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
+  - [Inputs & forms](#inputs--forms) — `Button`, `RadioGroupButton`, `Input`, `Calendar`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
   - [Navigation](#navigation) — `Tabs`, `TabsRounded`, `Stepper`
   - [Overlays](#overlays) — `Popover`, `TooltipDark`, `TooltipLight`
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
@@ -312,6 +312,121 @@ const [view, setView] = useState<"grid" | "list">("grid");
 />;
 ```
 
+#### `Input`
+
+Accessible text field with optional label and validation message for product forms.
+
+| Prop             | Type                                    | Default | Description                          |
+| ---------------- | --------------------------------------- | ------- | ------------------------------------ |
+| `label`                  | `ReactNode`      | —       | Field label above the input.                         |
+| `tooltipContent`         | `ReactNode`      | —       | Help tooltip on the «?» icon next to the label.      |
+| `tooltipPopperClassName` | `string`         | —       | Extra class for the tooltip popper.                  |
+| `error`                  | `string \| null` | —       | Validation message under the input.                  |
+| `disabled`       | `boolean`                               | `false` | Disabled state.                      |
+| `className`      | `string`                                | —       | Wrapper class.                       |
+| `inputClassName` | `string`                                | —       | Native `<input>` class.              |
+| `...rest`        | `InputHTMLAttributes<HTMLInputElement>` | —       | All native input props.              |
+
+```tsx
+import { Input } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
+
+const [email, setEmail] = useState("");
+
+<Input
+  label="Email"
+  placeholder="you@company.com"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+/>;
+
+<Input
+  label="Password"
+  type="password"
+  error="Minimum 8 characters."
+/>;
+```
+
+#### `Calendar`
+
+Date picker field for forms. Value is stored as `yyyy-MM-dd` (or `null`); the trigger shows `dd.MM.yyyy`. Includes helpers for parsing and serializing local calendar days.
+
+| Prop                      | Type                              | Default | Description                                              |
+| ------------------------- | --------------------------------- | ------- | -------------------------------------------------------- |
+| `label`                   | `string`                          | —       | Field label.                                             |
+| `required`                | `boolean`                         | `false` | Appends ` *` to the label.                               |
+| `value`                   | `string \| null`                  | —       | Selected date as `yyyy-MM-dd`.                           |
+| `onChange`                | `(value: string \| null) => void` | —       | Called when the user picks or clears a date.             |
+| `minDate`                 | `Date`                            | —       | Earliest selectable day (inclusive, local calendar).     |
+| `error`                   | `string \| null`                  | —       | Validation message under the field.                      |
+| `disabled`                | `boolean`                         | `false` | Disables the trigger.                                    |
+| `tooltipContent`          | `ReactNode`                       | —       | Help tooltip on the «i» icon next to the label.          |
+| `tooltipPopperClassName`  | `string`                          | —       | Extra class for the tooltip popper.                      |
+| `className`               | `string`                          | —       | Wrapper class.                                           |
+
+Exported utilities: `startOfLocalDay`, `todayLocalDay`, `toYmdString`, `parseYmdToLocalDay`.
+
+```tsx
+import {
+  Calendar,
+  todayLocalDay,
+} from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
+
+const [startDate, setStartDate] = useState<string | null>(null);
+
+<Calendar
+  label="Дата начала"
+  required
+  value={startDate}
+  onChange={setStartDate}
+  minDate={todayLocalDay()}
+/>;
+
+<Calendar
+  label="Дедлайн"
+  value={startDate}
+  onChange={setStartDate}
+  error="Укажите дату."
+  tooltipContent="Дата должна быть не раньше сегодня."
+/>;
+```
+
+#### `Checkbox`
+
+Accessible checkbox with a custom premium box, optional inline label, and validation message.
+
+| Prop                | Type                                         | Default | Description                              |
+| ------------------- | -------------------------------------------- | ------- | ---------------------------------------- |
+| `label`             | `ReactNode`                                  | —       | Label text to the right of the checkbox. |
+| `error`             | `string \| null`                             | —       | Validation message under the control.    |
+| `disabled`          | `boolean`                                    | `false` | Disabled state.                          |
+| `className`         | `string`                                     | —       | Wrapper class.                           |
+| `checkboxClassName` | `string`                                     | —       | Class on the visual checkbox box.        |
+| `...rest`           | `Omit<InputHTMLAttributes<HTMLInputElement>, "type">` | — | All native checkbox props (`checked`, `onChange`, `name`, etc.). |
+
+```tsx
+import { Checkbox } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
+
+const [agreed, setAgreed] = useState(false);
+
+<Checkbox
+  label="Согласен с условиями обработки данных"
+  checked={agreed}
+  onChange={(e) => setAgreed(e.target.checked)}
+/>;
+
+<Checkbox label="Уведомления по email" defaultChecked disabled />;
+
+<Checkbox
+  label="Обязательное согласие"
+  checked={agreed}
+  onChange={(e) => setAgreed(e.target.checked)}
+  error={agreed ? null : "Необходимо принять условия."}
+/>;
+```
+
 #### `Select`
 
 Powerful, virtualized-friendly select with `single` and `multiple` modes, search, custom rendering, and table layout.
@@ -327,7 +442,9 @@ Powerful, virtualized-friendly select with `single` and `multiple` modes, search
 | `columns`     | `SelectColumn[]`                      | —          | Required when `template="table"`.    |
 | `isLoading`   | `boolean`                             | `false`    | Show loading state in dropdown.      |
 | `error`       | `string \| null`                      | —          | Validation message.                  |
-| `label`       | `ReactNode`                           | —          | Field label.                         |
+| `label`                  | `ReactNode` | —          | Field label.                                    |
+| `tooltipContent`         | `ReactNode` | —          | Help tooltip on the «?» icon next to the label. |
+| `tooltipPopperClassName` | `string`    | —          | Extra class for the tooltip popper.             |
 
 ```tsx
 import { Select, type CustomOption } from "@andreyfedkovich/cozy-ui";
@@ -354,6 +471,12 @@ const [value, setValue] = useState<CustomOption<unknown, string> | null>(null);
 
 Dialog-based picker for large datasets — search + paginated loading + multi-select.
 
+| Prop                     | Type        | Description                                     |
+| ------------------------ | ----------- | ----------------------------------------------- |
+| `label`                  | `ReactNode` | Field label above the trigger.                  |
+| `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
+| `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
+
 ```tsx
 import { DialogSelect } from "@andreyfedkovich/cozy-ui";
 
@@ -372,6 +495,12 @@ import { DialogSelect } from "@andreyfedkovich/cozy-ui";
 #### `TreeDialogSelect`
 
 Hierarchical picker with lazy-loaded branches and search.
+
+| Prop                     | Type        | Description                                     |
+| ------------------------ | ----------- | ----------------------------------------------- |
+| `label`                  | `ReactNode` | Field label above the trigger.                  |
+| `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
+| `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
 
 ```tsx
 import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";

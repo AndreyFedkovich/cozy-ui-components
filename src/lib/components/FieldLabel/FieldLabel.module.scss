@@ -1,0 +1,41 @@
+@use "../../styles/colorsNew";
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.helpIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: colorsNew.$gray06;
+  cursor: help;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: colorsNew.$blue03;
+  }
+
+  &:focus-visible {
+    outline: 1px solid colorsNew.$blue03;
+    outline-offset: 2px;
+  }
+}
+
+.helpIconSvg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.75;
+}
