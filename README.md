@@ -86,6 +86,19 @@ import "@andreyfedkovich/cozy-ui/styles.css";
 
 Sizing uses CSS `rem` against the browser’s default root font size (commonly **16px**). You **do not** need to set `html { font-size: … }` for components to match the library demo.
 
+### Tailwind-powered components
+
+Most Cozy UI styles come from SCSS modules bundled into `styles.css`. Components built on shadcn use Tailwind class names in JS; those utilities are **prebuilt into the same** `@andreyfedkovich/cozy-ui/styles.css` when the package is published. You do **not** need Tailwind CSS in your application.
+
+If your app already uses Tailwind v4 and you prefer to generate utilities yourself, you may add `@source` pointing at the library bundle — optional, not required.
+
+### Adding a new Tailwind-based component (library authors)
+
+1. Primitive in `src/components/ui/<name>.tsx` (Tailwind + Radix as needed).
+2. Public API in `src/lib/components/<Name>/` (field label, errors, value; SCSS optional for the trigger shell).
+3. Ensure paths are covered by `@source` in `src/lib/tailwind.css` (`../lib/**/*`, `../components/ui/**/*`).
+4. Run `npm run build:lib` before publish; verify `dist-lib/styles.css` includes the new classes.
+
 ---
 
 ## Quick start
@@ -350,6 +363,8 @@ const [email, setEmail] = useState("");
 #### `Calendar`
 
 Date picker field for forms. Value is stored as `yyyy-MM-dd` (or `null`); the trigger shows `dd.MM.yyyy`. Includes helpers for parsing and serializing local calendar days.
+
+**Styling:** import `@andreyfedkovich/cozy-ui/styles.css` once (same as other components). Calendar popover and day grid use Tailwind utilities that are included in that file — no extra CSS or Tailwind config in your project.
 
 | Prop                      | Type                              | Default | Description                                              |
 | ------------------------- | --------------------------------- | ------- | -------------------------------------------------------- |
@@ -849,7 +864,7 @@ For per-component overrides, every component accepts a `className` prop and uses
 ```bash
 bun install
 bun run dev          # demo playground at http://localhost:5173
-bun run build:lib    # produce dist/ (ESM + CJS + .d.ts + styles.css)
+bun run build:lib    # dist-lib/ (ESM + CJS + .d.ts + styles.css with SCSS + Tailwind)
 bun run lint
 bun run format
 ```
