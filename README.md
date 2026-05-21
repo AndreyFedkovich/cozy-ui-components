@@ -769,7 +769,7 @@ Edit mode:
 
 ---
 
-### `SideNav`
+#### `SideNav`
 
 Premium vertical navigation panel with a user block on top, configurable sections, optional collapse and two visual variants — `classic` (light, reference-style) and `aurora` (deep gradient with glass and glow accents). Composition-first like `DetailView`.
 
