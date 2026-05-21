@@ -39,6 +39,23 @@ import {
   type CommentAttachment,
   type CommentAuthor,
 } from "../lib";
+import { SideNav, type SideNavVariant } from "../lib";
+import {
+  HomeIcon,
+  GridIcon,
+  ProfileIcon,
+  ClockIcon,
+  PlaneIcon,
+  TaskListIcon,
+  HeartIcon,
+  ChatIcon,
+  HelpIcon,
+  NotebookIcon,
+  WalletIcon,
+  FeedbackIcon,
+  SettingsIcon,
+  CancelIcon,
+} from "../lib";
 
 export const Route = createFileRoute("/")({
   head: () => ({
