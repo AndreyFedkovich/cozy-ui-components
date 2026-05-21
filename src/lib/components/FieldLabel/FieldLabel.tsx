@@ -13,6 +13,7 @@ export interface FieldLabelProps {
   tooltipContent?: ReactNode;
   tooltipPopperClassName?: string;
   className?: string;
+  labelClassName?: string;
 }
 
 export const FieldLabel = ({
@@ -22,6 +23,7 @@ export const FieldLabel = ({
   tooltipContent,
   tooltipPopperClassName,
   className,
+  labelClassName,
 }: FieldLabelProps) => {
   const tooltipTargetRef = useRef<HTMLButtonElement>(null);
   const content =
@@ -30,7 +32,10 @@ export const FieldLabel = ({
   if (tooltipContent) {
     return (
       <div className={cn(css.labelRow, className)}>
-        <Label className={labelCss.label_inline} htmlFor={htmlFor}>
+        <Label
+          className={cn(labelCss.label_inline, labelClassName)}
+          htmlFor={htmlFor}
+        >
           {content}
         </Label>
         <button

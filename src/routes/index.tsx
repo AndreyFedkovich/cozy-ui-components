@@ -1296,7 +1296,7 @@ function Index() {
                         id: "main",
                         items: [
                           { id: "home", label: "Главная", icon: <HomeIcon /> },
-                          { id: "structure", label: "Структура БКС", icon: <GridIcon /> },
+                          { id: "structure", label: "Структура", icon: <GridIcon /> },
                         ],
                       },
                       {

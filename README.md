@@ -31,7 +31,7 @@ npm i @andreyfedkovich/cozy-ui
 - [Design tokens](#design-tokens)
 - [Component API](#component-api)
   - [Layout & content](#layout--content) — `BaseBlock`, `Card`, `CollapsableBlock`, `Collapse`, `Carousel`, `EmptyComponent`, `Spinner`
-  - [Inputs & forms](#inputs--forms) — `Button`, `RadioGroupButton`, `Input`, `Calendar`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
+  - [Inputs & forms](#inputs--forms) — `Button`, `RadioGroupButton`, `Input`, `Textarea`, `Calendar`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
   - [Navigation](#navigation) — `Tabs`, `TabsRounded`, `Stepper`
   - [Overlays](#overlays) — `Popover`, `TooltipDark`, `TooltipLight`
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
@@ -357,6 +357,41 @@ const [email, setEmail] = useState("");
   label="Password"
   type="password"
   error="Minimum 8 characters."
+/>;
+```
+
+#### `Textarea`
+
+Accessible multiline text field with optional label and validation message for product forms.
+
+| Prop                     | Type                                       | Default | Description                              |
+| ------------------------ | ------------------------------------------ | ------- | ---------------------------------------- |
+| `label`                  | `ReactNode`                                | —       | Field label above the textarea.          |
+| `tooltipContent`         | `ReactNode`                                | —       | Help tooltip on the «?» icon next to the label. |
+| `tooltipPopperClassName` | `string`                                   | —       | Extra class for the tooltip popper.      |
+| `error`                  | `string \| null`                           | —       | Validation message under the textarea. |
+| `disabled`               | `boolean`                                  | `false` | Disabled state.                          |
+| `className`              | `string`                                   | —       | Wrapper class.                           |
+| `textareaClassName`      | `string`                                   | —       | Native `<textarea>` class.               |
+| `...rest`                | `TextareaHTMLAttributes<HTMLTextAreaElement>` | —    | All native textarea props (`rows`, `placeholder`, `value`, `onChange`, etc.). |
+
+```tsx
+import { Textarea } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
+
+const [comment, setComment] = useState("");
+
+<Textarea
+  label="Comment"
+  placeholder="Write your message…"
+  rows={4}
+  value={comment}
+  onChange={(e) => setComment(e.target.value)}
+/>;
+
+<Textarea
+  label="Description"
+  error="Description is required."
 />;
 ```
 
@@ -950,6 +985,7 @@ PRs are welcome. Please:
 1. Run `bun run lint && bun run format` before pushing.
 2. Add the new component to `src/lib/components/index.ts` and demo it in `src/routes/index.tsx`.
 3. Document any new prop in this README.
+4. Record library changes in `CHANGELOG.md` under **Unreleased**; when publishing to npm, move them into a dated `## X.Y.Z` section and clear **Unreleased**.
 
 ---
 

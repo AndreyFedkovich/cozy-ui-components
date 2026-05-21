@@ -33,6 +33,8 @@ export type { TabItem } from "./Tabs/Tabs";
 export { Tag } from "./Tag/Tag";
 export { Input } from "./Input/Input";
 export type { InputProps } from "./Input/Input";
+export { Textarea } from "./Textarea/Textarea";
+export type { TextareaProps } from "./Textarea/Textarea";
 export { Calendar } from "./Calendar/Calendar";
 export type { CalendarProps } from "./Calendar/Calendar";
 export { Checkbox } from "./Checkbox/Checkbox";

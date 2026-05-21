@@ -14,13 +14,30 @@ $boxSize: 20px;
   display: inline-flex;
   align-items: flex-start;
   gap: 0.75rem;
-  cursor: pointer;
   width: fit-content;
   max-width: 100%;
 
   &.disabled {
     cursor: not-allowed;
   }
+}
+
+.control {
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  .field.disabled & {
+    cursor: not-allowed;
+  }
+}
+
+.labelWithTooltip {
+  margin-bottom: 0;
+  align-items: flex-start;
+  padding-top: 1px;
+  flex: 1;
+  min-width: 0;
 }
 
 .nativeInput {
@@ -51,7 +68,7 @@ $boxSize: 20px;
     background-color 0.15s ease,
     box-shadow 0.15s ease;
 
-  .field:not(.disabled):hover & {
+  .field:not(.disabled) .control:hover & {
     border-color: colorsNew.$blue03;
   }
 
@@ -79,7 +96,7 @@ $boxSize: 20px;
   &.error {
     border-color: colorsNew.$red02;
 
-    .field:not(.disabled):hover & {
+    .field:not(.disabled) .control:hover & {
       border-color: colorsNew.$red02;
     }
   }
@@ -115,8 +132,11 @@ $boxSize: 20px;
   color: colorsNew.$gray05;
   padding-top: 1px;
   user-select: none;
+  cursor: pointer;
+  font-weight: normal;
 
   .field.disabled & {
     color: colorsNew.$gray04;
+    cursor: not-allowed;
   }
 }

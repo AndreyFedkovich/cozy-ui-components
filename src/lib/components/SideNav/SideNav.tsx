@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type FC,
@@ -75,13 +76,17 @@ interface Ctx {
   collapsed: boolean;
   activeId: string | undefined;
   setActive: (id: string) => void;
+  edgeBottomIds: ReadonlySet<string>;
 }
+
+const EMPTY_EDGE_IDS = new Set<string>();
 
 const NavCtx = createContext<Ctx>({
   variant: "classic",
   collapsed: false,
   activeId: undefined,
   setActive: () => {},
+  edgeBottomIds: EMPTY_EDGE_IDS,
 });
 
 const useNavCtx = () => useContext(NavCtx);
@@ -94,6 +99,17 @@ const toCssSize = (v: number | string | undefined, fallback: string): string =>
 const getInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/).slice(0, 2);
   return parts.map((p) => p[0]?.toUpperCase() ?? "").join("");
+};
+
+const SCROLL_OVERFLOW_EDGE = 2;
+const SCROLL_EDGE_ZONE = 24;
+
+const setsEqual = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean => {
+  if (a.size !== b.size) return false;
+  for (const id of a) {
+    if (!b.has(id)) return false;
+  }
+  return true;
 };
 
 /* -------- Item -------- */
@@ -160,6 +176,7 @@ const SideNavItemEl: FC<ItemProps> = ({
       isActive && css.item_active,
       disabled && css.item_disabled,
       level > 0 && css.item_nested,
+      ctx.edgeBottomIds.has(id) && css.item_scrollEdgeBottom,
     ),
     "aria-current": isActive ? ("page" as const) : undefined,
     "aria-expanded": hasChildren ? open : undefined,
@@ -277,10 +294,7 @@ const SideNavBase: FC<SideNavProps> = ({
     onCollapsedChange?.(next);
   }, [collapsed, isCollapsedControlled, onCollapsedChange]);
 
-  const ctxValue = useMemo<Ctx>(
-    () => ({ variant, collapsed, activeId: currentActive, setActive }),
-    [variant, collapsed, currentActive, setActive],
-  );
+  const [edgeBottomIds, setEdgeBottomIds] = useState<ReadonlySet<string>>(EMPTY_EDGE_IDS);
 
   const style = {
     ["--cozy-sidenav-w" as string]: toCssSize(width, "280px"),
@@ -289,6 +303,58 @@ const SideNavBase: FC<SideNavProps> = ({
 
   const hasSections = sections && sections.length > 0;
   const hasChildren = Children.count(children) > 0;
+  const childrenCount = Children.count(children);
+
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const bodyContentRef = useRef<HTMLDivElement>(null);
+
+  const updateScrollEdges = useCallback(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = body;
+    const overflow = scrollHeight > clientHeight + SCROLL_OVERFLOW_EDGE;
+    const canScrollDown = scrollTop + clientHeight < scrollHeight - SCROLL_OVERFLOW_EDGE;
+
+    if (!overflow || !canScrollDown) {
+      setEdgeBottomIds((prev) => (prev.size === 0 ? prev : EMPTY_EDGE_IDS));
+      return;
+    }
+
+    const bodyRect = body.getBoundingClientRect();
+    const bottom = new Set<string>();
+
+    body.querySelectorAll<HTMLElement>(`.${css.item}[data-id]`).forEach((itemEl) => {
+      const id = itemEl.dataset.id;
+      if (!id) return;
+      const r = itemEl.getBoundingClientRect();
+      if (r.bottom > bodyRect.bottom - SCROLL_EDGE_ZONE && r.top < bodyRect.bottom) bottom.add(id);
+    });
+
+    setEdgeBottomIds((prev) => (setsEqual(prev, bottom) ? prev : bottom));
+  }, []);
+
+  useEffect(() => {
+    const el = bodyRef.current;
+    const content = bodyContentRef.current;
+    if (!el) return;
+    updateScrollEdges();
+    const observer = new ResizeObserver(updateScrollEdges);
+    observer.observe(el);
+    if (content) observer.observe(content);
+    return () => observer.disconnect();
+  }, [updateScrollEdges, sections, childrenCount, collapsed, variant]);
+
+  const ctxValue = useMemo<Ctx>(
+    () => ({
+      variant,
+      collapsed,
+      activeId: currentActive,
+      setActive,
+      edgeBottomIds,
+    }),
+    [variant, collapsed, currentActive, setActive, edgeBottomIds],
+  );
 
   const renderUser = () => {
     if (userSlot) return <div className={css.userSlot}>{userSlot}</div>;
@@ -350,16 +416,20 @@ const SideNavBase: FC<SideNavProps> = ({
           )}
         </div>
 
-        <div className={css.body}>
-          {hasSections &&
-            sections!.map((s, i) => (
-              <SideNavSectionEl key={s.id ?? `s-${i}`} {...s} />
-            ))}
-          {hasChildren &&
-            Children.map(children, (child) => {
-              if (!isValidElement(child)) return child;
-              return child;
-            })}
+        <div className={css.bodyWrap}>
+          <div ref={bodyRef} className={css.body} onScroll={updateScrollEdges}>
+            <div ref={bodyContentRef} className={css.bodyContent}>
+              {hasSections &&
+                sections!.map((s, i) => (
+                  <SideNavSectionEl key={s.id ?? `s-${i}`} {...s} />
+                ))}
+              {hasChildren &&
+                Children.map(children, (child) => {
+                  if (!isValidElement(child)) return child;
+                  return child;
+                })}
+            </div>
+          </div>
         </div>
 
         {footer && <div className={css.footer}>{footer}</div>}
