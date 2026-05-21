@@ -325,6 +325,10 @@ function Index() {
   const [namedStep, setNamedStep] = useState(1);
   const tooltipTargetId = "tooltip-light-demo-target";
 
+  const [sideNavVariant, setSideNavVariant] = useState<SideNavVariant>("aurora");
+  const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
+  const [sideNavActive, setSideNavActive] = useState<string>("home");
+
   const [routeEditable, setRouteEditable] = useState("view");
   const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>([
     {
