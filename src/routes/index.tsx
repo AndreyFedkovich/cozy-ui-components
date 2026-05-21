@@ -14,6 +14,7 @@ import {
   Calendar,
   Checkbox,
   Input,
+  Textarea,
   InputCaption,
   todayLocalDay,
   Popover,
@@ -82,6 +83,9 @@ const tabsItems = [
   { value: "data", label: "Данные" },
   { value: "settings", label: "Настройки" },
 ];
+
+const demoTextareaClass = "h-[7.5rem] min-h-[7.5rem] resize-none";
+
 const tabContent: Record<string, string> = {
   overview: "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
   data: "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
@@ -303,6 +307,7 @@ function Index() {
   const [radio, setRadio] = useState("first");
   const [demoEmail, setDemoEmail] = useState("user@company.com");
   const [demoPassword, setDemoPassword] = useState("123");
+  const [demoComment, setDemoComment] = useState("");
   const [demoDate, setDemoDate] = useState<string | null>(null);
   const [demoDateError, setDemoDateError] = useState<string | null>(null);
   const [demoAgreed, setDemoAgreed] = useState(false);
@@ -986,6 +991,44 @@ function Index() {
             </DemoSection>
 
             <DemoSection
+              title="Textarea"
+              description="Многострочное поле для форм с опциональной подписью и сообщением валидации."
+              className="lg:col-span-2"
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <Textarea
+                    label="Комментарий"
+                    placeholder="Введите текст…"
+                    rows={5}
+                    hint="До 500 символов."
+                    textareaClassName={demoTextareaClass}
+                    value={demoComment}
+                    onChange={(e) => setDemoComment(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Textarea
+                    label="Описание"
+                    placeholder="Краткое описание"
+                    rows={5}
+                    error="Укажите описание."
+                    textareaClassName={demoTextareaClass}
+                  />
+                </div>
+                <div>
+                  <Textarea
+                    label="Отключённое поле"
+                    placeholder="Недоступно"
+                    disabled
+                    rows={5}
+                    textareaClassName={demoTextareaClass}
+                  />
+                </div>
+              </div>
+            </DemoSection>
+
+            <DemoSection
               title="Calendar"
               description="Выбор даты в popover. Значение — yyyy-MM-dd, отображение — dd.MM.yyyy."
             >
@@ -1023,6 +1066,7 @@ function Index() {
                 />
                 <Checkbox
                   label="Получать уведомления о статусе заявки"
+                  tooltipContent="Письма приходят только при смене статуса заявки."
                   checked={demoNotify}
                   onChange={(e) => setDemoNotify(e.target.checked)}
                 />
