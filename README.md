@@ -35,7 +35,7 @@ npm i @andreyfedkovich/cozy-ui
   - [Navigation](#navigation) — `Tabs`, `TabsRounded`, `Stepper`
   - [Overlays](#overlays) — `Popover`, `TooltipDark`, `TooltipLight`
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
-  - [Workflow](#workflow) — `ApprovalRoute`
+  - [Workflow](#workflow) — `ApprovalRoute`, `CommentFeed`, `DetailView`, `SideNav`
 - [Hooks & helpers](#hooks--helpers)
 - [Icons](#icons)
 - [TypeScript](#typescript)
@@ -765,6 +765,66 @@ Edit mode:
   onAddApprover={(levelId, stageId, person) => /* ... */ undefined}
   onRemoveApprover={(levelId, stageId, approverId) => /* ... */ undefined}
 />;
+```
+
+---
+
+#### `SideNav`
+
+Premium vertical navigation panel with a user block on top, configurable sections, optional collapse and two visual variants — `classic` (light, reference-style) and `aurora` (deep gradient with glass and glow accents). Composition-first like `DetailView`.
+
+| Prop                | Type                                  | Default     | Description                                                          |
+| ------------------- | ------------------------------------- | ----------- | -------------------------------------------------------------------- |
+| `user`              | `SideNavUser`                         | —           | Built-in user block (avatar + name + role + optional status badge).  |
+| `userSlot`          | `ReactNode`                           | —           | Fully custom header content (overrides `user`).                      |
+| `sections`          | `SideNavSection[]`                    | —           | Declarative sections, each with `title` and `items`.                 |
+| `children`          | `ReactNode`                           | —           | Composition: `SideNav.Section`, `SideNav.Item`, `SideNav.Divider`, `SideNav.Custom`. |
+| `variant`           | `"classic" \| "aurora"`               | `"classic"` | Visual style switch.                                                 |
+| `activeId` / `defaultActiveId` | `string`                   | —           | Controlled / uncontrolled active item.                               |
+| `onActiveChange`    | `(id: string) => void`                | —           | Fires when an item is selected.                                      |
+| `collapsible`       | `boolean`                             | `false`     | Shows a collapse toggle in the header.                               |
+| `collapsed` / `defaultCollapsed` | `boolean`                | `false`     | Controlled / uncontrolled collapsed state.                           |
+| `width` / `collapsedWidth` | `number \| string`             | `280` / `76` | Panel width in expanded / collapsed mode.                            |
+| `footer`            | `ReactNode`                           | —           | Bottom slot (e.g. "Sign out").                                       |
+
+Each `SideNavItem` supports `icon`, `href`, `badge`, `active`, `disabled`, `onClick` and nested `children` (renders as a collapsible submenu).
+
+Declarative usage:
+
+```tsx
+import { SideNav, HomeIcon, ProfileIcon, ClockIcon } from "@andreyfedkovich/cozy-ui";
+
+<SideNav
+  variant="aurora"
+  collapsible
+  user={{ name: "Kate Petrova", role: "Head of Operations", badge: true }}
+  sections={[
+    { items: [{ id: "home", label: "Home", icon: <HomeIcon /> }] },
+    {
+      title: "For me",
+      items: [
+        { id: "profile", label: "My profile", icon: <ProfileIcon /> },
+        { id: "time",    label: "Working time", icon: <ClockIcon />, badge: "3" },
+      ],
+    },
+  ]}
+  onActiveChange={(id) => console.log(id)}
+/>;
+```
+
+Composition-first (like `DetailView`):
+
+```tsx
+<SideNav user={...} variant="classic">
+  <SideNav.Section title="For me">
+    <SideNav.Item id="profile" icon={<ProfileIcon />} label="My profile" />
+    <SideNav.Item id="time"    icon={<ClockIcon />}   label="Working time" badge="3" />
+  </SideNav.Section>
+  <SideNav.Divider />
+  <SideNav.Section title="Custom">
+    <SideNav.Custom>{/* any JSX */}</SideNav.Custom>
+  </SideNav.Section>
+</SideNav>
 ```
 
 ---
