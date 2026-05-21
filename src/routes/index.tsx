@@ -1254,6 +1254,112 @@ function Index() {
                 )}
               />
             </DemoSection>
+
+            <DemoSection
+              title="SideNav"
+              description="Премиальная навигационная панель с блоком пользователя, секциями и переключаемым внешним видом."
+              className="lg:col-span-2"
+              stageClassName="!p-4"
+            >
+              <div className="mb-4 flex flex-wrap items-center gap-4">
+                <RadioGroupButton
+                  selectedChoice={sideNavVariant}
+                  onChange={(c) => setSideNavVariant(c as SideNavVariant)}
+                  options={[
+                    { choice: "classic", label: "Classic" },
+                    { choice: "aurora", label: "Aurora" },
+                  ]}
+                />
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Checkbox
+                    checked={sideNavCollapsed}
+                    onChange={(v) => setSideNavCollapsed(!!v)}
+                  />
+                  Свернуть
+                </label>
+              </div>
+              <div className="flex gap-6">
+                <div style={{ height: 640, flexShrink: 0 }}>
+                  <SideNav
+                    variant={sideNavVariant}
+                    collapsible
+                    collapsed={sideNavCollapsed}
+                    onCollapsedChange={setSideNavCollapsed}
+                    activeId={sideNavActive}
+                    onActiveChange={setSideNavActive}
+                    user={{
+                      name: "Петрова Екатерина",
+                      role: "Начальник управления",
+                      badge: true,
+                      onClick: () => {},
+                    }}
+                    sections={[
+                      {
+                        id: "main",
+                        items: [
+                          { id: "home", label: "Главная", icon: <HomeIcon /> },
+                          { id: "structure", label: "Структура БКС", icon: <GridIcon /> },
+                        ],
+                      },
+                      {
+                        id: "self",
+                        title: "Для меня",
+                        items: [
+                          { id: "profile", label: "Мой профиль", icon: <ProfileIcon /> },
+                          {
+                            id: "time",
+                            label: "Моё рабочее время",
+                            icon: <ClockIcon />,
+                            badge: "3",
+                          },
+                          { id: "vacation", label: "Мои отпуска", icon: <PlaneIcon /> },
+                          { id: "tasks", label: "Мои цели и задачи", icon: <TaskListIcon /> },
+                          { id: "health", label: "Моё здоровье", icon: <HeartIcon /> },
+                        ],
+                      },
+                      {
+                        id: "services",
+                        title: "Сервисы",
+                        items: [
+                          { id: "polls", label: "Опросы", icon: <ChatIcon /> },
+                          { id: "help", label: "Помощники", icon: <HelpIcon /> },
+                          { id: "requests", label: "Заявки", icon: <NotebookIcon />, badge: "12" },
+                          {
+                            id: "positions",
+                            label: "Управление должностями",
+                            icon: <SettingsIcon />,
+                          },
+                          { id: "bank", label: "Мой Банк", icon: <WalletIcon /> },
+                          { id: "reports", label: "Отчёты", icon: <FeedbackIcon /> },
+                        ],
+                      },
+                    ]}
+                    footer={
+                      <Button
+                        variant="text"
+                        onClick={() => {}}
+                        className="flex items-center gap-2"
+                      >
+                        <CancelIcon width={16} height={16} />
+                        {!sideNavCollapsed && <span>Выйти</span>}
+                      </Button>
+                    }
+                  />
+                </div>
+                <div className="flex-1 rounded-xl border border-dashed border-border/70 bg-white/60 p-6 text-sm text-muted-foreground">
+                  <div className="mb-2 text-base font-semibold text-foreground">
+                    Активный пункт:{" "}
+                    <span className="text-primary">{sideNavActive}</span>
+                  </div>
+                  <p>
+                    Конфигурируется через массив <code>sections</code> или composition-first
+                    API: <code>SideNav.Section</code>, <code>SideNav.Item</code>,{" "}
+                    <code>SideNav.Custom</code>. Переключайте Classic / Aurora и свёртывание,
+                    чтобы оценить оба варианта.
+                  </p>
+                </div>
+              </div>
+            </DemoSection>
           </div>
         </section>
 
