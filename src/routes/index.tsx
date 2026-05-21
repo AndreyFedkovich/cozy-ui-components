@@ -1263,11 +1263,11 @@ function Index() {
             >
               <div className="mb-4 flex flex-wrap items-center gap-4">
                 <RadioGroupButton
-                  selectedChoice={sideNavVariant}
-                  onChange={(c) => setSideNavVariant(c as SideNavVariant)}
+                  value={sideNavVariant}
+                  onChange={(c) => setSideNavVariant(c)}
                   options={[
-                    { choice: "classic", label: "Classic" },
-                    { choice: "aurora", label: "Aurora" },
+                    { value: "classic", label: "Classic" },
+                    { value: "aurora", label: "Aurora" },
                   ]}
                 />
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
