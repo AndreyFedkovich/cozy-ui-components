@@ -1270,13 +1270,11 @@ function Index() {
                     { value: "aurora", label: "Aurora" },
                   ]}
                 />
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox
-                    checked={sideNavCollapsed}
-                    onChange={(v) => setSideNavCollapsed(!!v)}
-                  />
-                  Свернуть
-                </label>
+                <Checkbox
+                  checked={sideNavCollapsed}
+                  onChange={(e) => setSideNavCollapsed(e.target.checked)}
+                  label="Свернуть"
+                />
               </div>
               <div className="flex gap-6">
                 <div style={{ height: 640, flexShrink: 0 }}>
