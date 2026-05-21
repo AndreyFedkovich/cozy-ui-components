@@ -1,8 +1,10 @@
 import {
   Children,
+  createContext,
   isValidElement,
   memo,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -75,23 +77,14 @@ interface Ctx {
   setActive: (id: string) => void;
 }
 
-const NavCtx = (() => {
-  // simple module-level context via React
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const React = require("react") as typeof import("react");
-  return React.createContext<Ctx>({
-    variant: "classic",
-    collapsed: false,
-    activeId: undefined,
-    setActive: () => {},
-  });
-})();
+const NavCtx = createContext<Ctx>({
+  variant: "classic",
+  collapsed: false,
+  activeId: undefined,
+  setActive: () => {},
+});
 
-const useNavCtx = () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const React = require("react") as typeof import("react");
-  return React.useContext(NavCtx);
-};
+const useNavCtx = () => useContext(NavCtx);
 
 /* -------- helpers -------- */
 
