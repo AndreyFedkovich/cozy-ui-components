@@ -307,6 +307,7 @@ const SideNavBase: FC<SideNavProps> = ({
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const bodyContentRef = useRef<HTMLDivElement>(null);
+  const scrollEdgesRafRef = useRef<number | null>(null);
 
   const updateScrollEdges = useCallback(() => {
     const body = bodyRef.current;
@@ -334,16 +335,35 @@ const SideNavBase: FC<SideNavProps> = ({
     setEdgeBottomIds((prev) => (setsEqual(prev, bottom) ? prev : bottom));
   }, []);
 
+  const scheduleScrollEdges = useCallback(() => {
+    if (scrollEdgesRafRef.current !== null) {
+      cancelAnimationFrame(scrollEdgesRafRef.current);
+    }
+
+    scrollEdgesRafRef.current = requestAnimationFrame(() => {
+      scrollEdgesRafRef.current = null;
+      updateScrollEdges();
+    });
+  }, [updateScrollEdges]);
+
   useEffect(() => {
-    const el = bodyRef.current;
     const content = bodyContentRef.current;
-    if (!el) return;
-    updateScrollEdges();
-    const observer = new ResizeObserver(updateScrollEdges);
-    observer.observe(el);
-    if (content) observer.observe(content);
-    return () => observer.disconnect();
-  }, [updateScrollEdges, sections, childrenCount, collapsed, variant]);
+    if (!content) return;
+
+    scheduleScrollEdges();
+
+    const observer = new ResizeObserver(scheduleScrollEdges);
+    observer.observe(content);
+
+    return () => {
+      observer.disconnect();
+
+      if (scrollEdgesRafRef.current !== null) {
+        cancelAnimationFrame(scrollEdgesRafRef.current);
+        scrollEdgesRafRef.current = null;
+      }
+    };
+  }, [scheduleScrollEdges, sections, childrenCount, collapsed, variant]);
 
   const ctxValue = useMemo<Ctx>(
     () => ({
@@ -417,7 +437,7 @@ const SideNavBase: FC<SideNavProps> = ({
         </div>
 
         <div className={css.bodyWrap}>
-          <div ref={bodyRef} className={css.body} onScroll={updateScrollEdges}>
+          <div ref={bodyRef} className={css.body} onScroll={scheduleScrollEdges}>
             <div ref={bodyContentRef} className={css.bodyContent}>
               {hasSections &&
                 sections!.map((s, i) => (
