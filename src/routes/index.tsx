@@ -1427,6 +1427,320 @@ function Index() {
           </div>
         </section>
 
+        {/* CATEGORY 3.5: SettingsView */}
+        <section>
+          <CategoryHeader
+            eyebrow="03.5 — Settings"
+            title="SettingsView"
+            description="Композиционный компонент для страниц настроек: секции, строки с описанием, контролы Switch / Select / Button / ImageSegmented, ссылки Open и опасная зона. API в духе DetailView."
+          />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <DemoSection
+              title="SettingsView"
+              description="Premium-страница настроек. Переключайте variant и density."
+              className="lg:col-span-2"
+              stageClassName="bg-gradient-to-b from-[#f4f7fa] to-white"
+            >
+              <div className="mb-5 flex flex-wrap items-center gap-4">
+                <RadioGroupButton
+                  options={[
+                    { value: "classic", label: "Classic" },
+                    { value: "elevated", label: "Elevated" },
+                  ]}
+                  value={settingsVariant}
+                  onChange={(v) => setSettingsVariant(v as SettingsVariant)}
+                />
+                <RadioGroupButton
+                  options={[
+                    { value: "comfortable", label: "Comfortable" },
+                    { value: "compact", label: "Compact" },
+                  ]}
+                  value={settingsDensity}
+                  onChange={(v) => setSettingsDensity(v as SettingsDensity)}
+                />
+              </div>
+
+              <div className="mx-auto max-w-3xl space-y-5">
+                <SettingsView
+                  variant={settingsVariant}
+                  density={settingsDensity}
+                  sections={[
+                    {
+                      id: "general",
+                      title: "General",
+                      items: [
+                        {
+                          id: "account",
+                          icon: <ProfileIcon />,
+                          label: "Cozy Account",
+                          description: "Manage your account and billing",
+                          control: (
+                            <Button
+                              variant="secondary"
+                              size="small"
+                              onClick={() => window.alert("Open account")}
+                            >
+                              Open
+                            </Button>
+                          ),
+                        },
+                      ],
+                    },
+                    {
+                      id: "preferences",
+                      title: "Preferences",
+                      items: [
+                        {
+                          id: "editor",
+                          icon: <SettingsIcon />,
+                          label: "Editor Settings",
+                          description: "Configure font, formatting, minimap and more",
+                          control: (
+                            <Button variant="secondary" size="small">
+                              Open
+                            </Button>
+                          ),
+                        },
+                        {
+                          id: "shortcuts",
+                          icon: <GridIcon />,
+                          label: "Keyboard Shortcuts",
+                          description: "Configure keyboard shortcuts",
+                          control: (
+                            <Button variant="secondary" size="small">
+                              Open
+                            </Button>
+                          ),
+                        },
+                        {
+                          id: "import",
+                          icon: <NotebookIcon />,
+                          label: "Import Settings from VS Code",
+                          description: "Import settings, extensions, and keybindings from VS Code",
+                          badge: "New",
+                          control: (
+                            <Button variant="secondary" size="small">
+                              Import
+                            </Button>
+                          ),
+                        },
+                        {
+                          id: "reset-dialogs",
+                          icon: <HelpIcon />,
+                          label: 'Reset "Don\'t Ask Again" Dialogs',
+                          description: "See warnings and tips that you've hidden",
+                          control: (
+                            <Button variant="secondary" size="small">
+                              Show
+                            </Button>
+                          ),
+                        },
+                      ],
+                    },
+                    {
+                      id: "layout",
+                      title: "Layout",
+                      items: [
+                        {
+                          id: "window-layout",
+                          icon: <GridIcon />,
+                          label: "Window Layout",
+                          description: "Switch between Agent and Editor default layouts",
+                          align: "center",
+                          control: (
+                            <ImageSegmented
+                              ariaLabel="Window layout"
+                              value={windowLayout}
+                              onChange={(v) => setWindowLayout(v as "agent" | "editor")}
+                              options={[
+                                {
+                                  value: "agent",
+                                  label: "Agent",
+                                  image: (
+                                    <svg viewBox="0 0 48 32" aria-hidden>
+                                      <rect width="48" height="32" rx="3" fill="#eef3fb" />
+                                      <rect
+                                        x="3"
+                                        y="3"
+                                        width="18"
+                                        height="26"
+                                        rx="2"
+                                        fill="#4573d9"
+                                        opacity="0.85"
+                                      />
+                                      <rect
+                                        x="23"
+                                        y="3"
+                                        width="22"
+                                        height="26"
+                                        rx="2"
+                                        fill="#fff"
+                                        stroke="#dde5f5"
+                                      />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  value: "editor",
+                                  label: "Editor",
+                                  image: (
+                                    <svg viewBox="0 0 48 32" aria-hidden>
+                                      <rect width="48" height="32" rx="3" fill="#eef3fb" />
+                                      <rect
+                                        x="3"
+                                        y="3"
+                                        width="42"
+                                        height="26"
+                                        rx="2"
+                                        fill="#fff"
+                                        stroke="#dde5f5"
+                                      />
+                                      <rect
+                                        x="3"
+                                        y="3"
+                                        width="42"
+                                        height="5"
+                                        rx="2"
+                                        fill="#4573d9"
+                                        opacity="0.85"
+                                      />
+                                    </svg>
+                                  ),
+                                },
+                              ]}
+                            />
+                          ),
+                        },
+                        {
+                          id: "conv-density",
+                          icon: <ChatIcon />,
+                          label: "Conversation Density",
+                          description: "Choose how much detail Agent tool calls show in the conversation",
+                          control: (
+                            <div style={{ width: 180 }}>
+                              <Select
+                                mode="single"
+                                placeholder="Density"
+                                value={convDensity}
+                                onChange={setConvDensity}
+                                onClear={() => setConvDensity(null)}
+                                options={[
+                                  { value: "detailed", label: "Detailed" },
+                                  { value: "compact", label: "Compact" },
+                                  { value: "minimal", label: "Minimal" },
+                                ]}
+                              />
+                            </div>
+                          ),
+                        },
+                        {
+                          id: "status-bar",
+                          icon: <ListIcon />,
+                          label: "Status Bar",
+                          description: "Show status bar at the bottom of the window",
+                          control: (
+                            <Switch
+                              ariaLabel="Status bar"
+                              checked={statusBar}
+                              onChange={setStatusBar}
+                            />
+                          ),
+                        },
+                        {
+                          id: "review-loc",
+                          icon: <FolderEditIcon />,
+                          label: "Review Control Location",
+                          description:
+                            "Show inline diff review controls in top level breadcrumbs or floating island",
+                          control: (
+                            <div style={{ width: 180 }}>
+                              <Select
+                                mode="single"
+                                placeholder="Location"
+                                value={reviewLoc}
+                                onChange={setReviewLoc}
+                                onClear={() => setReviewLoc(null)}
+                                options={[
+                                  { value: "breadcrumb", label: "Breadcrumb" },
+                                  { value: "island", label: "Floating Island" },
+                                ]}
+                              />
+                            </div>
+                          ),
+                        },
+                        {
+                          id: "auto-hide",
+                          icon: <EmptyIcon />,
+                          label: "Auto-hide editor when empty",
+                          description:
+                            "When all editors are closed, hide the editor area and maximize chat",
+                          control: (
+                            <Switch
+                              ariaLabel="Auto-hide editor"
+                              checked={autoHide}
+                              onChange={setAutoHide}
+                            />
+                          ),
+                        },
+                      ],
+                    },
+                    {
+                      id: "links",
+                      title: "Documentation",
+                      description: "Полезные ссылки — целая строка кликабельна",
+                      items: [
+                        {
+                          id: "docs",
+                          icon: <HelpIcon />,
+                          label: "Read the documentation",
+                          description: "Cozy UI guides, recipes, and component API",
+                          href: "https://cozy-ui-components.vercel.app",
+                          external: true,
+                        },
+                        {
+                          id: "github",
+                          icon: <FeedbackIcon />,
+                          label: "Send feedback",
+                          description: "Report issues or suggest improvements",
+                          href: "https://github.com/andreyfedkovich/cozy-ui",
+                          external: true,
+                        },
+                      ],
+                    },
+                    {
+                      id: "danger",
+                      title: "Опасная зона",
+                      collapsible: true,
+                      defaultOpen: false,
+                      items: [
+                        {
+                          id: "delete",
+                          icon: <CancelIcon />,
+                          label: "Удалить аккаунт",
+                          description: "Действие необратимо. Все данные будут удалены.",
+                          danger: true,
+                          control: (
+                            <Button variant="danger" size="small">
+                              Удалить
+                            </Button>
+                          ),
+                        },
+                      ],
+                    },
+                  ]}
+                />
+
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Composition-first: можно мешать <code>sections</code> и{" "}
+                  <code>SettingsView.Section / Item / Group</code>. Switch — зелёный iOS-style,
+                  ImageSegmented — переключатель с превью (как Agent/Editor), а для строк-ссылок
+                  поддержаны <code>href + external</code> и кнопка Open.
+                </div>
+              </div>
+            </DemoSection>
+          </div>
+        </section>
+
         {/* CATEGORY 4: Feedback & overlays */}
         <section>
           <CategoryHeader
