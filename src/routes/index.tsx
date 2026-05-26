@@ -1311,6 +1311,7 @@ function Index() {
                   onChange={(c) => setSideNavVariant(c)}
                   options={[
                     { value: "classic", label: "Classic" },
+                    { value: "transparent", label: "Transparent" },
                     { value: "aurora", label: "Aurora" },
                   ]}
                 />
