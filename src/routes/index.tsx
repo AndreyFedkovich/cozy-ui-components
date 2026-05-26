@@ -1397,8 +1397,8 @@ function Index() {
                   <p>
                     Конфигурируется через массив <code>sections</code> или composition-first
                     API: <code>SideNav.Section</code>, <code>SideNav.Item</code>,{" "}
-                    <code>SideNav.Custom</code>. Переключайте Classic / Aurora и свёртывание,
-                    чтобы оценить оба варианта.
+                    <code>SideNav.Custom</code>. Переключайте Classic / Transparent / Aurora
+                    и свёртывание, чтобы оценить варианты.
                   </p>
                 </div>
               </div>
