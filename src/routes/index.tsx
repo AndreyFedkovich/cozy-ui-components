@@ -42,6 +42,13 @@ import {
 } from "../lib";
 import { SideNav, type SideNavVariant } from "../lib";
 import {
+  SettingsView,
+  Switch,
+  ImageSegmented,
+  type SettingsVariant,
+  type SettingsDensity,
+} from "../lib";
+import {
   HomeIcon,
   GridIcon,
   ProfileIcon,
@@ -333,6 +340,20 @@ function Index() {
   const [sideNavVariant, setSideNavVariant] = useState<SideNavVariant>("aurora");
   const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
   const [sideNavActive, setSideNavActive] = useState<string>("home");
+
+  const [settingsVariant, setSettingsVariant] = useState<SettingsVariant>("elevated");
+  const [settingsDensity, setSettingsDensity] = useState<SettingsDensity>("comfortable");
+  const [windowLayout, setWindowLayout] = useState<"agent" | "editor">("agent");
+  const [statusBar, setStatusBar] = useState(true);
+  const [autoHide, setAutoHide] = useState(false);
+  const [convDensity, setConvDensity] = useState<CustomOption | null>({
+    value: "detailed",
+    label: "Detailed",
+  });
+  const [reviewLoc, setReviewLoc] = useState<CustomOption | null>({
+    value: "breadcrumb",
+    label: "Breadcrumb",
+  });
 
   const [routeEditable, setRouteEditable] = useState("view");
   const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>([
