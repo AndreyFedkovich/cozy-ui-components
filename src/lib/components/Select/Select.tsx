@@ -63,7 +63,6 @@ type CustomSelectProps<T, S> = {
   onClose?: () => void;
   portalTarget?: Element;
   error?: string | null;
-  fixedHeight?: boolean;
   template?: "list" | "table";
   columns?: SelectColumn<T, S>[];
   total?: number;
@@ -84,7 +83,7 @@ const SelectedOptions = <T, S>({
 
   if (!Array.isArray(value)) {
     return (
-      <span className={css.selectedOption}>
+      <span className={cn(css.selectedOption, "truncate")}>
         {selectedOptionRender ? selectedOptionRender(value) : value.label}
       </span>
     );
@@ -201,7 +200,9 @@ const Dropdown = <T, S>({
                 )}
                 onClick={() => onChange(option)}
               >
-                {optionRender ? optionRender(option) : option.label}
+                <span className="block min-w-0 truncate">
+                  {optionRender ? optionRender(option) : option.label}
+                </span>
               </li>
             );
           })}
@@ -351,7 +352,6 @@ export const Select = <T, S extends string | number>({
   onClose,
   portalTarget,
   error,
-  fixedHeight = true,
   template = "list",
   columns,
   total,
@@ -471,11 +471,23 @@ export const Select = <T, S extends string | number>({
     const dropdownContent = (
       <div
         ref={setFloating}
-        className={cn(css.dropdown, { [css.dropdown_visible]: isOpen }, dropDownClassName)}
+        className={cn(
+          css.dropdown,
+          {
+            [css.dropdown_visible]: isOpen,
+            [css.dropdown_table]: template === "table",
+          },
+          dropDownClassName,
+        )}
         style={floatingStyles}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={css.dropdownContent} style={{ height: fixedHeight ? "300px" : "none" }}>
+        <div
+          className={cn(
+            css.dropdownContent,
+            template === "table" && css.dropdownContent_table,
+          )}
+        >
           {(() => {
             const menu =
               template === "table" ? (
@@ -521,7 +533,6 @@ export const Select = <T, S extends string | number>({
   }, [
     dropDownClassName,
     dropdownRender,
-    fixedHeight,
     floatingStyles,
     handleChange,
     handleSearch,
@@ -571,7 +582,7 @@ export const Select = <T, S extends string | number>({
           ref={setReference}
           className={cn(
             css.input,
-            { [css.input_fixedHeight]: mode === "single", [css.disabled]: disabled },
+            { [css.disabled]: disabled },
             error && css.error,
             inputClassName,
           )}
@@ -592,7 +603,7 @@ export const Select = <T, S extends string | number>({
                 onDelete={onDelete}
               />
             ) : (
-              <span className={css.placeHolder}>{placeholder}</span>
+              <span className={cn(css.placeHolder, "truncate")}>{placeholder}</span>
             )}
           </div>
           <div className={css.iconContainer}>

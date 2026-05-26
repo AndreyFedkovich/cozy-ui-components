@@ -35,7 +35,7 @@ npm i @andreyfedkovich/cozy-ui
   - [Navigation](#navigation) — `Tabs`, `TabsRounded`, `Stepper`
   - [Overlays](#overlays) — `Popover`, `TooltipDark`, `TooltipLight`
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
-  - [Workflow](#workflow) — `ApprovalRoute`, `CommentFeed`, `DetailView`, `SideNav`
+  - [Workflow](#workflow) — `ApprovalRoute`, `CommentFeed`, `DetailView`, `SideNav`, `SettingsView`, `Switch`, `ImageSegmented`
 - [Hooks & helpers](#hooks--helpers)
 - [Icons](#icons)
 - [TypeScript](#typescript)
@@ -860,6 +860,158 @@ Composition-first (like `DetailView`):
     <SideNav.Custom>{/* any JSX */}</SideNav.Custom>
   </SideNav.Section>
 </SideNav>
+```
+
+---
+
+#### `SettingsView`
+
+Composition-first layout for settings pages (like `DetailView`). Supports declarative `sections` or JSX via `SettingsView.Section`, `SettingsView.Group`, `SettingsView.Item`, and `SettingsView.Divider`. Two visual variants (`classic` / `elevated`), two densities (`comfortable` / `compact`), collapsible sections, left icon badges, row badges (e.g. New/Beta), link rows (`href`, `external`), danger styling, and `render` for full row customization.
+
+| Prop          | Type                                      | Default         | Description                                              |
+| ------------- | ----------------------------------------- | --------------- | -------------------------------------------------------- |
+| `sections`    | `SettingsSection[]`                       | —               | Declarative sections with items and optional groups.     |
+| `children`    | `ReactNode`                               | —               | Composition API subcomponents.                           |
+| `variant`     | `"classic" \| "elevated"`                 | `"classic"`     | Visual style.                                            |
+| `density`     | `"comfortable" \| "compact"`              | `"comfortable"` | Row spacing.                                             |
+| `layout`      | `"card" \| "plain"`                       | `"card"`        | Section wrapper style.                                   |
+| `loading`     | `boolean`                                 | —               | Shows a spinner instead of content.                      |
+| `emptyState`  | `ReactNode`                               | —               | Custom empty state when there is no content.             |
+
+Each `SettingsItem` (in `sections` or `<SettingsView.Item />`) supports `icon`, `label`, `description`, `control`, `badge`, `hint`, `href`, `external`, `danger`, `disabled`, `onClick`, and `render` for full row customization.
+
+```tsx
+import { SettingsView, Switch } from "@andreyfedkovich/cozy-ui";
+
+<SettingsView
+  variant="classic"
+  density="comfortable"
+  sections={[
+    {
+      id: "general",
+      title: "General",
+      items: [
+        {
+          id: "notifications",
+          label: "Notifications",
+          description: "Email and push alerts",
+          control: <Switch defaultChecked ariaLabel="Notifications" />,
+        },
+        {
+          id: "import",
+          label: "Import from VS Code",
+          description: "Settings, extensions, and keybindings",
+          badge: "New",
+        },
+        {
+          id: "docs",
+          label: "Documentation",
+          href: "https://example.com/docs",
+          external: true,
+        },
+        {
+          id: "delete",
+          label: "Delete account",
+          description: "Permanently remove your data",
+          danger: true,
+          onClick: () => confirm("Delete account?"),
+        },
+      ],
+    },
+  ]}
+/>;
+```
+
+Composition-first:
+
+```tsx
+<SettingsView variant="elevated">
+  <SettingsView.Section title="Privacy" collapsible defaultOpen>
+    <SettingsView.Item label="Analytics" control={<Switch ariaLabel="Analytics" />} />
+    <SettingsView.Divider />
+    <SettingsView.Group title="Advanced">
+      <SettingsView.Item label="Debug mode" control={<Switch size="sm" ariaLabel="Debug" />} />
+    </SettingsView.Group>
+  </SettingsView.Section>
+</SettingsView>
+```
+
+---
+
+#### `Switch`
+
+iOS-style toggle with a green track by default, white thumb and shadow. Controlled or uncontrolled; sizes `sm` / `md`; optional `blue` accent.
+
+| Prop              | Type                        | Default   | Description                    |
+| ----------------- | --------------------------- | --------- | ------------------------------ |
+| `checked`         | `boolean`                   | —         | Controlled value.              |
+| `defaultChecked`  | `boolean`                   | —         | Initial value (uncontrolled).  |
+| `onChange`        | `(next: boolean) => void`   | —         | Fires when toggled.            |
+| `size`            | `"sm" \| "md"`              | `"md"`    | Track and thumb size.          |
+| `color`           | `"green" \| "blue"`         | `"green"` | Active track color.            |
+| `disabled`        | `boolean`                   | —         | Disables interaction.          |
+| `ariaLabel`       | `string`                    | —         | Accessible name.               |
+
+```tsx
+import { useState } from "react";
+import { Switch } from "@andreyfedkovich/cozy-ui";
+
+// Uncontrolled
+<Switch defaultChecked ariaLabel="Dark mode" onChange={(v) => console.log(v)} />
+
+// Controlled
+const [on, setOn] = useState(true);
+<Switch checked={on} onChange={setOn} size="sm" color="blue" ariaLabel="Sync" />
+```
+
+---
+
+#### `ImageSegmented`
+
+Premium segmented control with image previews (Agent/Editor-style). Each option accepts any `ReactNode` in `image` — SVG, screenshot, or custom markup.
+
+| Prop       | Type                                      | Default | Description                          |
+| ---------- | ----------------------------------------- | ------- | ------------------------------------ |
+| `value`    | `T extends string`                        | —       | Selected option value (controlled).  |
+| `onChange` | `(next: T) => void`                       | —       | Fires when selection changes.        |
+| `options`  | `ImageSegmentedOption<T>[]`               | —       | `value`, `label`, `image`, `disabled?`. |
+| `size`     | `"sm" \| "md"`                            | `"md"`  | Option size.                         |
+| `ariaLabel`| `string`                                  | —       | Accessible name for the radiogroup.  |
+
+```tsx
+import { useState } from "react";
+import { ImageSegmented } from "@andreyfedkovich/cozy-ui";
+
+const [layout, setLayout] = useState<"agent" | "editor">("agent");
+
+<ImageSegmented
+  ariaLabel="Window layout"
+  value={layout}
+  onChange={setLayout}
+  options={[
+    {
+      value: "agent",
+      label: "Agent",
+      image: (
+        <svg viewBox="0 0 48 32" aria-hidden>
+          <rect width="48" height="32" rx="3" fill="#eef3fb" />
+          <rect x="3" y="3" width="18" height="26" rx="2" fill="#4573d9" opacity="0.85" />
+          <rect x="23" y="3" width="22" height="26" rx="2" fill="#fff" stroke="#dde5f5" />
+        </svg>
+      ),
+    },
+    {
+      value: "editor",
+      label: "Editor",
+      image: (
+        <svg viewBox="0 0 48 32" aria-hidden>
+          <rect width="48" height="32" rx="3" fill="#eef3fb" />
+          <rect x="3" y="3" width="42" height="26" rx="2" fill="#fff" stroke="#dde5f5" />
+        </svg>
+      ),
+    },
+  ]}
+/>;
 ```
 
 ---

@@ -3,6 +3,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 0.7.0 - 2026-05-26
+
+- **feat:** `SettingsView` — composition-first layout for settings pages (`SettingsView.Section`, `.Group`, `.Item`, `.Divider`), declarative `sections`, variants `classic` / `elevated`, densities `comfortable` / `compact`, collapsible sections, left icon badges, row badges (e.g. New/Beta), link rows (`href`, `external`), danger styling, and `render` for full row customization.
+- **feat:** `Switch` — iOS-style toggle (green by default, white thumb with shadow), controlled / uncontrolled, sizes `sm` / `md`, optional `blue` color.
+- **feat:** `ImageSegmented` — premium segmented control with image previews (Agent/Editor-style); `image` accepts any `ReactNode`.
+- **feat:** `SideNav` — `transparent` variant (seamless panel, compact rows, no chrome).
+
 ## 0.6.0 - 2026-05-21
 
 - **feat:** `SideNav` — vertical navigation with `classic` and `aurora` variants, optional collapse, declarative `sections`, composition API (`SideNav.Section`, `SideNav.Item`, `SideNav.Divider`, `SideNav.Custom`), user block, and nested submenu items.

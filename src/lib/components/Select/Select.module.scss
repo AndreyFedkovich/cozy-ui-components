@@ -2,6 +2,7 @@
 @use "../../styles/mixinsNew";
 
 $buttonHeight: 48px;
+$dropdown-max-height: 300px;
 
 .wrapper {
   justify-content: center;
@@ -49,23 +50,28 @@ $buttonHeight: 48px;
 
       .selectedOptionContainer {
         display: flex;
-        width: calc(100% - 7.5rem);
+        flex: 1;
+        min-width: 0;
         text-align: left;
 
         .selectedOption {
-          word-break: break-word;
-          text-overflow: ellipsis;
+          min-width: 0;
           overflow: hidden;
+          text-overflow: ellipsis;
           white-space: nowrap;
         }
 
         .placeHolder {
-          width: 100%;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
           color: colorsNew.$gray04;
         }
       }
 
       .iconContainer {
+        flex-shrink: 0;
         position: relative;
         padding: 0 0.3125rem;
         display: flex;
@@ -155,10 +161,22 @@ $buttonHeight: 48px;
     visibility: visible;
   }
 
-  & > div {
+  &_table {
+    padding-right: 12px;
+  }
+
+  .dropdownContent {
+    max-height: $dropdown-max-height;
+    overflow-y: auto;
     padding-right: 6px;
     scrollbar-gutter: stable;
-    overflow: hidden;
+  }
+
+  .dropdownContent_table {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    scrollbar-gutter: auto;
   }
 
   ul {
@@ -168,7 +186,7 @@ $buttonHeight: 48px;
     overflow-y: auto;
 
     &.withSearch {
-      height: calc(300px - 46px);
+      max-height: calc($dropdown-max-height - 46px);
     }
   }
 
@@ -203,13 +221,10 @@ $buttonHeight: 48px;
   }
 
   .option {
+    min-width: 0;
     padding: 10px 12px;
     cursor: default;
     border-radius: 4px;
-
-    .selectedOption {
-      text-overflow: ellipsis;
-    }
 
     &:not(&_active):hover {
       background-color: colorsNew.$gray01;
@@ -255,13 +270,12 @@ $buttonHeight: 48px;
 .tableTemplate {
   display: flex;
   flex-direction: column;
-  height: 100%;
   gap: 12px;
 }
 
 .tableContainer {
-  flex: 1;
-  min-height: 0;
+  flex: 0 1 auto;
+  max-height: calc($dropdown-max-height - 80px);
   overflow: auto;
   border: 1px solid colorsNew.$gray07;
   border-radius: 8px;
