@@ -1,44 +1,132 @@
-## Цель
+## Settings (`SettingsView`) — composition-first компонент настроек
 
-Добавить в `SideNav` третий вариант оформления — `transparent`. В отличие от `classic` он не выглядит как отдельная плашка/панель, а является частью страницы (нет фона, нет правой границы, нет тени). Пункты меню расположены плотнее по вертикали. Визуал — премиальный, спокойный.
+Премиальный компонент страниц настроек по референсу (Cursor settings), но в светлой теме проекта. API в духе `DetailView`: конфиг через `sections` + composition через `<SettingsView.Section/Item/Group/Divider>`. Плюс три новых готовых контрола, удобных для строк настроек: `Switch`, кнопка-ссылка `Open` (через существующий `Button`) и `ImageSegmented` (как Agent/Editor — переключатель в виде картинок).
 
-## Что меняется
+### Файлы
+- `src/lib/components/SettingsView/SettingsView.tsx` — новый
+- `src/lib/components/SettingsView/SettingsView.module.scss` — новый
+- `src/lib/components/SettingsView/index.ts`
+- `src/lib/components/Switch/Switch.tsx` — новый (iOS-style, зелёный с кружком)
+- `src/lib/components/Switch/Switch.module.scss`
+- `src/lib/components/Switch/index.ts`
+- `src/lib/components/ImageSegmented/ImageSegmented.tsx` — новый (segmented control с превью-картинками)
+- `src/lib/components/ImageSegmented/ImageSegmented.module.scss`
+- `src/lib/components/ImageSegmented/index.ts`
+- `src/lib/components/index.ts` — добавить реэкспорты
+- `src/routes/index.tsx` — демо-секция
+- `README.md` — короткое описание
 
-### 1. `src/lib/components/SideNav/SideNav.tsx`
-- Расширить тип `SideNavVariant`: `"classic" | "aurora" | "transparent"`.
-- Прокинуть data-атрибут варианта на корень (уже есть) — никакой логики не меняем, только новый стилевой ключ.
+Для «Open» отдельный компонент не создаём — используем существующий `Button` (с иконкой `arrowRight` или внешней ссылкой). Для dropdown в строке настроек — существующий `Select`.
 
-### 2. `src/lib/components/SideNav/SideNav.module.scss`
-Добавить ветку `&[data-variant="transparent"]`:
-- `background: transparent;`
-- убрать правую границу и любые `box-shadow`;
-- user-блок: без отдельного фона/границы, только аккуратный отступ снизу + тонкий разделитель (`color-mix(... 8%)`);
-- заголовки секций: тот же стиль, что в classic, чуть меньший верхний отступ;
-- пункты меню: уменьшить вертикальный паддинг (например, с `10px 12px` → `6px 10px`), уменьшить `gap` между пунктами (`2px`), уменьшить высоту строки и оставить `border-radius: 8px`;
-- активный пункт: вместо «плашки на всю ширину» — мягкий фон `color-mix(in oklab, var(--primary) 10%, transparent)` + левый вертикальный индикатор 3px `var(--primary)`, текст `var(--primary)`, иконка тон-в-тон;
-- hover: очень лёгкий `color-mix(... 5%)`;
-- иконки: 18px, цвет `currentColor` приглушённый;
-- секции-разделители: ещё тоньше (`1px` 6% контраста), увеличенный отступ только сверху первой секции.
-- collapsed-режим: те же правила (без фона панели), просто уже.
+### Public API `SettingsView`
 
-Плотность: целевая высота строки пункта ≈ 30–32px (сейчас в classic ≈ 40px).
+```ts
+type SettingsLayout = "card" | "plain";
+type SettingsDensity = "comfortable" | "compact";
+type SettingsVariant = "classic" | "elevated"; // одна карточка vs мини-карточки на секцию
 
-### 3. `src/routes/index.tsx` (демо)
-- В `RadioGroupButton` выбора варианта SideNav добавить третий вариант `Transparent`.
-- Для демонстрации «встроенности в страницу» — в transparent-режиме обёртка вокруг сайдбара без рамки/тени (фон страницы виден насквозь).
+interface SettingsItem {
+  id?: string;
+  icon?: ReactNode;          // опц. круглый бейдж слева (40px)
+  label: ReactNode;
+  description?: ReactNode;   // подсказка под label (как в референсе)
+  control?: ReactNode;       // правый слот: Switch / Select / Button "Open" / ImageSegmented / Tag…
+  badge?: ReactNode;         // "New", "Beta"
+  hint?: ReactNode;          // строка под всей строкой
+  href?: string;             // строка-ссылка (рендерится как <a>, целая строка интерактивна)
+  external?: boolean;        // target="_blank" + иконка внешней ссылки
+  onClick?: () => void;      // строка-кнопка
+  disabled?: boolean;
+  danger?: boolean;          // акцент red02
+  hidden?: boolean;
+  align?: "center" | "start"; // вертикальное выравнивание control (для крупных контролов вроде ImageSegmented)
+  render?: (ctx: { label: ReactNode; control: ReactNode }) => ReactNode;
+}
 
-### 4. `README.md`
-- В разделе SideNav дописать третий вариант `transparent` и краткое описание (без отдельной панели, компактные пункты).
+interface SettingsGroup {     // подгруппа внутри секции (необязательная)
+  id?: string;
+  title?: ReactNode;
+  items?: SettingsItem[];
+  children?: ReactNode;
+}
 
-## Технические детали
+interface SettingsSection {
+  id?: string;
+  title?: ReactNode;          // например "General", "Preferences", "Layout"
+  description?: ReactNode;
+  items?: SettingsItem[];
+  groups?: SettingsGroup[];
+  children?: ReactNode;       // полностью кастомное наполнение
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  className?: string;
+}
 
-- Никаких новых пропсов и API — только новое значение существующего `variant`.
-- Никаких изменений в composition-API (`SideNav.Section` / `SideNav.Item` / `SideNav.Custom`).
-- Все цвета через существующие токены (`--primary`, `--foreground`, `color-mix`) — без хардкода.
-- `collapsible`, тултипы, вложенные пункты, бейджи — работают без изменений.
+interface SettingsViewProps {
+  sections?: SettingsSection[];
+  children?: ReactNode;
+  layout?: SettingsLayout;    // card | plain
+  density?: SettingsDensity;
+  variant?: SettingsVariant;
+  loading?: boolean;
+  emptyState?: ReactNode;
+  className?: string;
+  id?: string;
+}
+```
 
-## Что НЕ делаем
+Subcomponents: `SettingsView.Section`, `SettingsView.Group`, `SettingsView.Item`, `SettingsView.Divider`.
+Поддержка и `sections`, и `children` одновременно — как в `DetailView`.
 
-- Не трогаем `classic` и `aurora`.
-- Не меняем TypeScript-контракт пропсов (только union расширяется).
-- Не добавляем зависимостей.
+### Public API `Switch`
+```ts
+interface SwitchProps {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (next: boolean) => void;
+  disabled?: boolean;
+  size?: "sm" | "md";
+  color?: "green" | "blue";   // по умолчанию "green" как на референсе
+  ariaLabel?: string;
+  id?: string;
+}
+```
+Реализация — нативный `<button role="switch">`, плавный transition кружка, тень, focus-ring.
+Цвета: on → `$green02` (#00A582), off → `$gray02`. Кружок — `$white01` с лёгкой тенью.
+
+### Public API `ImageSegmented`
+```ts
+interface ImageSegmentedOption<T extends string = string> {
+  value: T;
+  label: ReactNode;
+  image: ReactNode;     // ReactNode чтобы можно было передавать <img>, svg, или сгенерированную миниатюру
+  disabled?: boolean;
+}
+interface ImageSegmentedProps<T extends string = string> {
+  value: T;
+  onChange: (next: T) => void;
+  options: ImageSegmentedOption<T>[];
+  size?: "sm" | "md";
+  ariaLabel?: string;
+}
+```
+Визуал: горизонтальная капсула `$gray01` с двумя/тремя «карточками-превью», у активной — белый фон, рамка `$blue02`, мягкая тень; снизу подпись (как Agent/Editor).
+
+### Визуал `SettingsView` (на токенах `colorsNew`/`mixinsNew`)
+- **classic** — единая карточка `$white01`, `radius 1.5rem`, тень как у `DetailView`. Секции разделены тонкой линией `$gray07`, заголовок секции — `$blue03` (`text-s-m`).
+- **elevated** — каждая секция — мини-карточка с собственной тенью; зазор 1.25rem (ближе к референсу Cursor).
+- **Item**: левая колонка — опц. круглый icon-badge 40px (`$gray01` фон, активный — `$blue01`); центр — `label` (text-s-m) + `description` (`$gray04`, text-xs); правый слот — control. Hover (для `href`/`onClick`) — `$gray01`, focus-ring `$blue02`, шеврон-стрелка.
+- **danger** → текст и hover-фон в красной гамме; `disabled` → opacity 0.55, pointer-events none.
+- **Density**: comfortable 64px / compact 48px.
+- **Collapsible**: заголовок-кнопка с шевроном, transition по `grid-template-rows: 0fr → 1fr`.
+
+### Демо в `routes/index.tsx`
+Секция «Настройки» с двумя `SettingsView`:
+- **General** — «Аккаунт» с `Button` «Open» (внешняя ссылка).
+- **Preferences** — «Editor Settings», «Keyboard Shortcuts», «Import Settings» — строки-`href` с кнопкой Open справа.
+- **Layout** — «Window Layout» с `ImageSegmented` (Agent/Editor, картинки-плейсхолдеры из `src/lib/icons`), «Conversation Density» — `Select` (Detailed/Compact), «Status Bar» — `Switch` (зелёный, on), «Auto-hide editor» — `Switch` (off).
+- **Danger zone** — `danger` item «Удалить аккаунт» с `Button` red.
+Переключатель `variant` (classic / elevated) и `density` через существующий `RadioGroupButton`.
+
+### Вне scope
+Никаких изменений в `DetailView`, `SideNav`, `Button`, `Select` и других существующих компонентах. Никаких новых npm-зависимостей.
