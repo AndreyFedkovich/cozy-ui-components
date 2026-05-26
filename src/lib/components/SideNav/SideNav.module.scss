@@ -75,6 +75,126 @@
 }
 
 /* ============ AURORA ============ */
+/* ============ TRANSPARENT ============ */
+.variant_transparent {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: colorsNew.$gray05;
+
+  .header {
+    padding: 0.5rem 0.25rem 0.75rem;
+  }
+
+  .user {
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .body {
+    padding: 0.25rem 0.25rem 0.75rem;
+  }
+
+  .bodyContent {
+    gap: 0.5rem;
+  }
+
+  .section {
+    gap: 0;
+  }
+
+  .sectionTitle {
+    color: colorsNew.$gray03;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.75rem 0.625rem 0.25rem;
+  }
+
+  .list {
+    gap: 0;
+  }
+
+  .item {
+    min-height: 30px;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    gap: 0.625rem;
+    color: colorsNew.$gray05;
+
+    .icon,
+    .iconStub {
+      width: 20px;
+      height: 20px;
+      border-radius: 0;
+      background: transparent;
+      color: colorsNew.$gray04;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      background: color-mix(in oklab, #{colorsNew.$blue02} 6%, transparent);
+      color: colorsNew.$blue05;
+
+      .icon {
+        color: colorsNew.$blue02;
+      }
+    }
+
+    &.item_active {
+      background: colorsNew.$blue02;
+      color: colorsNew.$white01;
+      font-weight: 600;
+      box-shadow: 0 6px 16px -8px color-mix(in oklab, #{colorsNew.$blue02} 70%, transparent);
+
+      .icon {
+        color: colorsNew.$white01;
+      }
+
+      &::before {
+        content: none;
+      }
+    }
+  }
+
+  .item_nested {
+    padding-left: 2.25rem;
+    min-height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .badge {
+    background: color-mix(in oklab, #{colorsNew.$blue02} 14%, transparent);
+    color: colorsNew.$blue05;
+  }
+
+  .footer {
+    border-top: 1px solid color-mix(in oklab, #{colorsNew.$gray04} 12%, transparent);
+  }
+
+  .divider {
+    background: color-mix(in oklab, #{colorsNew.$gray04} 10%, transparent);
+  }
+
+  .collapseBtn {
+    background: transparent;
+    border-color: transparent;
+
+    &:hover {
+      background: color-mix(in oklab, #{colorsNew.$blue02} 8%, transparent);
+      color: colorsNew.$blue05;
+    }
+  }
+}
+
+/* ============ AURORA ============ */
 .variant_aurora {
   background:
     radial-gradient(120% 70% at 0% 0%, rgba(120, 140, 255, 0.16), transparent 60%),
