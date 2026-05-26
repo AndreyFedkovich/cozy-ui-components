@@ -84,3 +84,19 @@ export {
   type SideNavUser,
   type SideNavVariant,
 } from "./SideNav/SideNav";
+export { Switch, type SwitchProps } from "./Switch/Switch";
+export {
+  ImageSegmented,
+  type ImageSegmentedProps,
+  type ImageSegmentedOption,
+} from "./ImageSegmented/ImageSegmented";
+export {
+  SettingsView,
+  type SettingsViewProps,
+  type SettingsSection,
+  type SettingsGroup,
+  type SettingsItem,
+  type SettingsLayout,
+  type SettingsDensity,
+  type SettingsVariant,
+} from "./SettingsView/SettingsView";
