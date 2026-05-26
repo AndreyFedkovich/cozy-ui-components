@@ -942,15 +942,19 @@ Composition-first:
 
 iOS-style toggle with a green track by default, white thumb and shadow. Controlled or uncontrolled; sizes `sm` / `md`; optional `blue` accent.
 
-| Prop              | Type                        | Default   | Description                    |
-| ----------------- | --------------------------- | --------- | ------------------------------ |
-| `checked`         | `boolean`                   | —         | Controlled value.              |
-| `defaultChecked`  | `boolean`                   | —         | Initial value (uncontrolled).  |
-| `onChange`        | `(next: boolean) => void`   | —         | Fires when toggled.            |
-| `size`            | `"sm" \| "md"`              | `"md"`    | Track and thumb size.          |
-| `color`           | `"green" \| "blue"`         | `"green"` | Active track color.            |
-| `disabled`        | `boolean`                   | —         | Disables interaction.          |
-| `ariaLabel`       | `string`                    | —         | Accessible name.               |
+| Prop                     | Type                      | Default   | Description                                              |
+| ------------------------ | ------------------------- | --------- | -------------------------------------------------------- |
+| `checked`                | `boolean`                 | —         | Controlled value.                                        |
+| `defaultChecked`         | `boolean`                 | —         | Initial value (uncontrolled).                            |
+| `onChange`               | `(next: boolean) => void` | —         | Fires when toggled.                                      |
+| `size`                   | `"sm" \| "md"`            | `"md"`    | Track and thumb size.                                    |
+| `color`                  | `"green" \| "blue"`       | `"green"` | Active track color.                                      |
+| `disabled`               | `boolean`                 | —         | Disables interaction.                                    |
+| `label`                  | `ReactNode`               | —         | Label text to the right of the switch.                   |
+| `tooltipContent`         | `ReactNode`               | —         | Help tooltip on the «?» icon next to the label.          |
+| `tooltipPopperClassName` | `string`                  | —         | Extra class for the tooltip popper.                      |
+| `ariaLabel`              | `string`                  | —         | Accessible name when `label` is not set.                 |
+| `className`              | `string`                  | —         | Class on the button, or on the wrapper when `label` set. |
 
 ```tsx
 import { useState } from "react";
@@ -962,6 +966,13 @@ import { Switch } from "@andreyfedkovich/cozy-ui";
 // Controlled
 const [on, setOn] = useState(true);
 <Switch checked={on} onChange={setOn} size="sm" color="blue" ariaLabel="Sync" />
+
+// With inline label and tooltip (e.g. standalone form field)
+<Switch
+  label="Уведомления по email"
+  defaultChecked
+  tooltipContent="Письма о важных событиях в аккаунте."
+/>
 ```
 
 ---

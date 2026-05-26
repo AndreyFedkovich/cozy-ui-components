@@ -6,7 +6,7 @@
 ## 0.7.0 - 2026-05-26
 
 - **feat:** `SettingsView` — composition-first layout for settings pages (`SettingsView.Section`, `.Group`, `.Item`, `.Divider`), declarative `sections`, variants `classic` / `elevated`, densities `comfortable` / `compact`, collapsible sections, left icon badges, row badges (e.g. New/Beta), link rows (`href`, `external`), danger styling, and `render` for full row customization.
-- **feat:** `Switch` — iOS-style toggle (green by default, white thumb with shadow), controlled / uncontrolled, sizes `sm` / `md`, optional `blue` color.
+- **feat:** `Switch` — iOS-style toggle (green by default, white thumb with shadow), controlled / uncontrolled, sizes `sm` / `md`, optional `blue` color, optional inline `label` to the right, and label tooltip (`tooltipContent`).
 - **feat:** `ImageSegmented` — premium segmented control with image previews (Agent/Editor-style); `image` accepts any `ReactNode`.
 - **feat:** `SideNav` — `transparent` variant (seamless panel, compact rows, no chrome).
 

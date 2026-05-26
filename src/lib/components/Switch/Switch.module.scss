@@ -1,4 +1,5 @@
 @use "../../styles/colorsNew";
+@use "../../styles/mixinsNew";
 
 .root {
   --switch-w: 2.5rem;
@@ -10,6 +11,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   width: var(--switch-w);
   height: var(--switch-h);
   padding: 0;
@@ -66,4 +68,46 @@
 
 .thumb_checked {
   transform: translateX(calc(var(--switch-w) - var(--switch-h)));
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.field {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: fit-content;
+  max-width: 100%;
+
+  &.disabled {
+    cursor: not-allowed;
+  }
+}
+
+.labelWithTooltip {
+  margin-bottom: 0;
+  align-items: flex-start;
+  padding-top: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.labelText {
+  @include mixinsNew.text();
+  color: colorsNew.$gray05;
+  padding-top: 1px;
+  user-select: none;
+  cursor: pointer;
+  font-weight: normal;
+
+  .field.disabled & {
+    color: colorsNew.$gray04;
+    cursor: not-allowed;
+  }
 }
