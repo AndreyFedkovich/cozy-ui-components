@@ -139,7 +139,7 @@
       }
     }
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not(.item_active) {
       background: color-mix(in oklab, #{colorsNew.$blue02} 6%, transparent);
       color: colorsNew.$blue05;
 
@@ -155,6 +155,11 @@
       box-shadow: 0 6px 16px -8px color-mix(in oklab, #{colorsNew.$blue02} 70%, transparent);
 
       .icon {
+        color: colorsNew.$white01;
+      }
+
+      .badge {
+        background: color-mix(in oklab, #{colorsNew.$white01} 22%, transparent);
         color: colorsNew.$white01;
       }
 
