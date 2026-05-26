@@ -2,7 +2,6 @@ import {
   Children,
   isValidElement,
   memo,
-  useCallback,
   useState,
   type FC,
   type ReactNode,
@@ -317,9 +316,6 @@ const SettingsViewBase: FC<SettingsViewProps> = ({
       </div>
     );
   }
-
-  // suppress unused-import lint via no-op consumer
-  void useCallback;
 
   return (
     <div className={containerClass} id={id}>
