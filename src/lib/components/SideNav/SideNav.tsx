@@ -19,7 +19,7 @@ import { TooltipDark } from "../TooltipDark/Tooltip";
 import ArrowDownIcon from "../../icons/arrowDown.svg?react";
 import css from "./SideNav.module.scss";
 
-export type SideNavVariant = "classic" | "aurora";
+export type SideNavVariant = "classic" | "aurora" | "transparent";
 
 export interface SideNavUser {
   name: string;
