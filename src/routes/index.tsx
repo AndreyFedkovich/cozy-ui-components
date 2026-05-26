@@ -63,6 +63,9 @@ import {
   FeedbackIcon,
   SettingsIcon,
   CancelIcon,
+  ListIcon,
+  FolderEditIcon,
+  EmptyIcon,
 } from "../lib";
 
 export const Route = createFileRoute("/")({
