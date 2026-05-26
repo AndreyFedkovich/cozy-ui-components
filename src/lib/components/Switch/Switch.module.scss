@@ -1,0 +1,69 @@
+@use "../../styles/colorsNew";
+
+.root {
+  --switch-w: 2.5rem;
+  --switch-h: 1.5rem;
+  --switch-pad: 0.125rem;
+  --switch-on: #{colorsNew.$green02};
+  --switch-off: #{colorsNew.$gray02};
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: var(--switch-w);
+  height: var(--switch-h);
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--switch-off);
+  cursor: pointer;
+  transition:
+    background-color 0.22s ease,
+    box-shadow 0.22s ease;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #{colorsNew.$black01} 6%, transparent);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, #{colorsNew.$black01} 6%, transparent),
+      0 0 0 3px color-mix(in oklab, #{colorsNew.$blue02} 35%, transparent);
+  }
+}
+
+.size_sm {
+  --switch-w: 2rem;
+  --switch-h: 1.25rem;
+}
+
+.color_blue {
+  --switch-on: #{colorsNew.$blue02};
+}
+
+.checked {
+  background: var(--switch-on);
+}
+
+.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.thumb {
+  position: absolute;
+  top: var(--switch-pad);
+  left: var(--switch-pad);
+  width: calc(var(--switch-h) - var(--switch-pad) * 2);
+  height: calc(var(--switch-h) - var(--switch-pad) * 2);
+  border-radius: 999px;
+  background: colorsNew.$white01;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.18),
+    0 2px 6px rgba(15, 23, 42, 0.12);
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0.32, 1.2);
+  transform: translateX(0);
+}
+
+.thumb_checked {
+  transform: translateX(calc(var(--switch-w) - var(--switch-h)));
+}
