@@ -806,7 +806,7 @@ Edit mode:
 
 #### `SideNav`
 
-Premium vertical navigation panel with a user block on top, configurable sections, optional collapse and two visual variants — `classic` (light, reference-style) and `aurora` (deep gradient with glass and glow accents). Composition-first like `DetailView`.
+Premium vertical navigation panel with a user block on top, configurable sections, optional collapse and three visual variants — `classic` (light, reference-style panel), `transparent` (seamless, no panel chrome, compact rows — feels like part of the page) and `aurora` (deep gradient with glass and glow accents). Composition-first like `DetailView`.
 
 | Prop                | Type                                  | Default     | Description                                                          |
 | ------------------- | ------------------------------------- | ----------- | -------------------------------------------------------------------- |
@@ -814,7 +814,7 @@ Premium vertical navigation panel with a user block on top, configurable section
 | `userSlot`          | `ReactNode`                           | —           | Fully custom header content (overrides `user`).                      |
 | `sections`          | `SideNavSection[]`                    | —           | Declarative sections, each with `title` and `items`.                 |
 | `children`          | `ReactNode`                           | —           | Composition: `SideNav.Section`, `SideNav.Item`, `SideNav.Divider`, `SideNav.Custom`. |
-| `variant`           | `"classic" \| "aurora"`               | `"classic"` | Visual style switch.                                                 |
+| `variant`           | `"classic" \| "transparent" \| "aurora"` | `"classic"` | Visual style switch.                                                 |
 | `activeId` / `defaultActiveId` | `string`                   | —           | Controlled / uncontrolled active item.                               |
 | `onActiveChange`    | `(id: string) => void`                | —           | Fires when an item is selected.                                      |
 | `collapsible`       | `boolean`                             | `false`     | Shows a collapse toggle in the header.                               |
