@@ -346,11 +346,11 @@ function Index() {
   const [windowLayout, setWindowLayout] = useState<"agent" | "editor">("agent");
   const [statusBar, setStatusBar] = useState(true);
   const [autoHide, setAutoHide] = useState(false);
-  const [convDensity, setConvDensity] = useState<CustomOption | null>({
+  const [convDensity, setConvDensity] = useState<CustomOption<unknown> | null>({
     value: "detailed",
     label: "Detailed",
   });
-  const [reviewLoc, setReviewLoc] = useState<CustomOption | null>({
+  const [reviewLoc, setReviewLoc] = useState<CustomOption<unknown> | null>({
     value: "breadcrumb",
     label: "Breadcrumb",
   });
