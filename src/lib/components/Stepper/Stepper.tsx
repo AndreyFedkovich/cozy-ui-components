@@ -55,16 +55,16 @@ export const Stepper: React.FC<StepperProps> = ({
 
         return (
           <React.Fragment key={index}>
-            {item.label ? (
-              <div className={css.itemBlock} role="listitem">
-                {stepNode}
-                <span className={cn(css.label, { [css.label_active]: isActive })}>
-                  {item.label}
-                </span>
-              </div>
-            ) : (
-              <div role="listitem">{stepNode}</div>
-            )}
+            <div className={css.column} role="listitem">
+              {stepNode}
+              {item.label ? (
+                <div className={css.labelWrap}>
+                  <span className={cn(css.label, { [css.label_active]: isActive })}>
+                    {item.label}
+                  </span>
+                </div>
+              ) : null}
+            </div>
             {!isLast && (
               <span
                 className={cn(css.connector, { [css.connector_active]: index < current })}
