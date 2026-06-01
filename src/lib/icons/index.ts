@@ -27,6 +27,7 @@ import ArrowRightIcon from "./arrowRight.svg?react";
 import ArrowDownIcon from "./arrowDown.svg?react";
 import ArrowDownBlueIcon from "./arrowDownBlue.svg?react";
 import CrossIcon from "./cross.svg?react";
+import CheckIcon from "./check.svg?react";
 import CloseRed from "./closeRed.svg?react";
 import CheckGreen from "./checkGreen.svg?react";
 import HistoryBlue from "./historyBlue.svg?react";
@@ -78,6 +79,7 @@ export {
   ArrowRightIcon,
   ArrowDownIcon,
   CrossIcon,
+  CheckIcon,
   CloseRed,
   CheckGreen,
   HistoryBlue,

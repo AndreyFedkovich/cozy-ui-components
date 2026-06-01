@@ -1,3 +1,7 @@
+:root {
+  --cozy-font-family: inherit;
+}
+
 .ui-library-placeholder {
   --ui-library-surface: oklch(0.985 0.004 247.858);
   --ui-library-surface-strong: oklch(1 0 0);

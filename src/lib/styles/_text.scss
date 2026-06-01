@@ -1,20 +1,20 @@
 @mixin fontLight {
-  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-family: var(--cozy-font-family, inherit);
   font-weight: 300;
 }
 
 @mixin fontNormal {
-  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-family: var(--cozy-font-family, inherit);
   font-weight: normal;
 }
 
 @mixin fontMedium {
-  font-family: "Navigo", "RobotoRegular", sans-serif;
+  font-family: var(--cozy-font-family, inherit);
   font-weight: 500;
 }
 
 @mixin fontBold {
-  font-family: "Navigo", "RobotoBold", sans-serif;
+  font-family: var(--cozy-font-family, inherit);
   font-weight: 900;
 }
 

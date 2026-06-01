@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../Button/Button";
 import { DialogSelect } from "../DialogSelect/DialogSelect";
-import { CrossIcon, DoneIcon, WarnIcon } from "../../icons";
+import { CheckIcon, CrossIcon, WarnIcon } from "../../icons";
 import type { CustomOption } from "../Select/Select";
 import css from "./ApprovalRoute.module.scss";
 
@@ -166,7 +166,7 @@ export const ApprovalRoute: React.FC<ApprovalRouteProps> = ({
                     [css.marker_current]: level.status === "current",
                   })}
                 >
-                  {level.status === "completed" && <DoneIcon />}
+                  {level.status === "completed" && <CheckIcon />}
                 </span>
               </div>
 

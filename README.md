@@ -86,6 +86,35 @@ import "@andreyfedkovich/cozy-ui/styles.css";
 
 Sizing uses CSS `rem` against the browser’s default root font size (commonly **16px**). You **do not** need to set `html { font-size: … }` for components to match the library demo.
 
+### Typography (host application)
+
+Cozy UI **does not ship font files** and **does not hardcode** a brand typeface. Text components inherit the font from your app (`font-family: inherit` / `var(--cozy-font-family, inherit)`).
+
+**Recommended setup in production:**
+
+1. Register your brand fonts with `@font-face` (same as your existing navbar).
+2. Set the app root font once — either on `body`:
+
+```css
+body {
+  font-family: "Navigo", "RobotoRegular", sans-serif;
+}
+```
+
+or via the optional library token in `styles.css`:
+
+```css
+:root {
+  --cozy-font-family: "Navigo", "RobotoRegular", sans-serif;
+}
+```
+
+3. Import `@andreyfedkovich/cozy-ui/styles.css` as usual. All components (`SideNav`, `Input`, `Button`, etc.) will use the same font.
+
+If your navbar already loads Navigo globally on `body`, **no extra step** is required for Cozy UI.
+
+The library demo uses the system / Inter stack from your app shell — that is expected and not a component bug.
+
 ### Tailwind-powered components
 
 Most Cozy UI styles come from SCSS modules bundled into `styles.css`. Components built on shadcn use Tailwind class names in JS; those utilities are **prebuilt into the same** `@andreyfedkovich/cozy-ui/styles.css` when the package is published. You do **not** need Tailwind CSS in your application.

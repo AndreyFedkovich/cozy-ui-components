@@ -1,6 +1,6 @@
 import cn from "classnames";
 import React, { ReactNode, useLayoutEffect, useRef, useState } from "react";
-import { DoneIcon } from "../../icons";
+import { CheckIcon } from "../../icons";
 import css from "./Stepper.module.scss";
 
 const STEP_SIZE = 32;
@@ -129,7 +129,7 @@ export const Stepper: React.FC<StepperProps> = ({
         const isLast = index === items.length - 1;
         const showCheck = showCheckOnCompleted && isCompleted;
 
-        const stepContent = item.content ?? (showCheck ? <DoneIcon /> : index + 1);
+        const stepContent = item.content ?? (showCheck ? <CheckIcon /> : index + 1);
 
         const stepNode = (
           <button
