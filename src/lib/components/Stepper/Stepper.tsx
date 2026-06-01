@@ -1,7 +1,26 @@
 import cn from "classnames";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { DoneIcon } from "../../icons";
 import css from "./Stepper.module.scss";
+
+const STEP_SIZE = 32;
+const STEP_RADIUS = STEP_SIZE / 2;
+
+type ConnectorGeometry = {
+  left: number;
+  width: number;
+};
+
+const buildConnectorGeometry = (centers: number[]): ConnectorGeometry[] =>
+  centers.slice(0, -1).map((center, index) => {
+    const left = center + STEP_RADIUS;
+    const right = centers[index + 1] - STEP_RADIUS;
+
+    return {
+      left,
+      width: Math.max(0, right - left),
+    };
+  });
 
 export type StepperItem = {
   label?: ReactNode;
@@ -24,9 +43,85 @@ export const Stepper: React.FC<StepperProps> = ({
   className,
 }) => {
   const isClickable = Boolean(onChange);
+  const hasAnyLabels = items.some((item) => Boolean(item.label));
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const stepRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [connectorGeometry, setConnectorGeometry] = useState<ConnectorGeometry[]>([]);
+
+  useLayoutEffect(() => {
+    if (!hasAnyLabels || items.length < 2) {
+      setConnectorGeometry([]);
+      return undefined;
+    }
+
+    const measureConnectors = () => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) {
+        return;
+      }
+
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const centers: number[] = [];
+
+      for (const step of stepRefs.current.slice(0, items.length)) {
+        if (!step) {
+          return;
+        }
+
+        const rect = step.getBoundingClientRect();
+        centers.push(rect.left - wrapperRect.left + rect.width / 2);
+      }
+
+      setConnectorGeometry(buildConnectorGeometry(centers));
+    };
+
+    measureConnectors();
+
+    if (typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(measureConnectors);
+
+    if (wrapperRef.current) {
+      observer.observe(wrapperRef.current);
+    }
+
+    stepRefs.current.forEach((step) => {
+      if (step) {
+        observer.observe(step);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [hasAnyLabels, items.length]);
+
+  const renderConnector = (index: number, isActive: boolean) => (
+    <>
+      <span
+        className={cn(css.connector, {
+          [css.connector_active]: isActive,
+          [css.connector_placeholder]: hasAnyLabels,
+        })}
+      />
+      {hasAnyLabels ? (
+        <span
+          className={cn(css.connectorFloating, { [css.connector_active]: isActive })}
+          style={{
+            left: `${connectorGeometry[index]?.left ?? 0}px`,
+            width: `${connectorGeometry[index]?.width ?? 0}px`,
+          }}
+        />
+      ) : null}
+    </>
+  );
 
   return (
-    <div className={cn(css.wrapper, className)} role="list">
+    <div
+      ref={wrapperRef}
+      className={cn(css.wrapper, className, { [css.wrapper_withLabels]: hasAnyLabels })}
+      role="list"
+    >
       {items.map((item, index) => {
         const isCompleted = index < current;
         const isCurrent = index === current;
@@ -39,6 +134,9 @@ export const Stepper: React.FC<StepperProps> = ({
         const stepNode = (
           <button
             type="button"
+            ref={(element) => {
+              stepRefs.current[index] = element;
+            }}
             className={cn(css.step, {
               [css.step_inactive]: !isActive,
               [css.step_current]: isCurrent,
@@ -65,11 +163,7 @@ export const Stepper: React.FC<StepperProps> = ({
                 </div>
               ) : null}
             </div>
-            {!isLast && (
-              <span
-                className={cn(css.connector, { [css.connector_active]: index < current })}
-              />
-            )}
+            {!isLast && renderConnector(index, index < current)}
           </React.Fragment>
         );
       })}

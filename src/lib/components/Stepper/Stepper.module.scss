@@ -7,6 +7,10 @@
   gap: 0;
 }
 
+.wrapper_withLabels {
+  position: relative;
+}
+
 .column {
   flex-shrink: 0;
   display: flex;
@@ -14,6 +18,8 @@
   align-items: center;
   gap: 8px;
   min-width: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .step {
@@ -64,6 +70,20 @@
   height: 1px;
   background: colorsNew.$gray07;
   min-width: 24px;
+}
+
+.connector_placeholder {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.connectorFloating {
+  position: absolute;
+  top: 15.5px;
+  height: 1px;
+  background: colorsNew.$gray07;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .connector_active {
