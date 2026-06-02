@@ -1,38 +1,7 @@
 import cn from "classnames";
-import React, { ReactNode, useLayoutEffect, useRef, useState } from "react";
+import React, { ReactNode, useCallback, useLayoutEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
 import css from "./Stepper.module.scss";
-
-const STEP_SIZE = 32;
-const STEP_RADIUS = STEP_SIZE / 2;
-
-type ConnectorGeometry = {
-  left: number;
-  width: number;
-};
-
-const normalizeCenters = (centers: number[]): number[] => {
-  if (centers.length <= 2) {
-    return centers;
-  }
-
-  const firstCenter = centers[0];
-  const lastCenter = centers[centers.length - 1];
-  const stepDistance = (lastCenter - firstCenter) / (centers.length - 1);
-
-  return centers.map((_, index) => firstCenter + stepDistance * index);
-};
-
-const buildConnectorGeometry = (centers: number[]): ConnectorGeometry[] =>
-  centers.slice(0, -1).map((center, index) => {
-    const left = center + STEP_RADIUS;
-    const right = centers[index + 1] - STEP_RADIUS;
-
-    return {
-      left,
-      width: Math.max(0, right - left),
-    };
-  });
 
 export type StepperItem = {
   label?: ReactNode;
@@ -44,6 +13,7 @@ export interface StepperProps {
   current: number;
   onChange?: (index: number) => void;
   showCheckOnCompleted?: boolean;
+  labelMaxWidth?: number | string;
   className?: string;
 }
 
@@ -52,94 +22,84 @@ export const Stepper: React.FC<StepperProps> = ({
   current,
   onChange,
   showCheckOnCompleted = false,
+  labelMaxWidth = 140,
   className,
 }) => {
   const isClickable = Boolean(onChange);
   const hasAnyLabels = items.some((item) => Boolean(item.label));
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const stepRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const [connectorGeometry, setConnectorGeometry] = useState<ConnectorGeometry[]>([]);
+  const lastIndex = items.length - 1;
+  const labelsRowRef = useRef<HTMLDivElement | null>(null);
+  const labelRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const [safePads, setSafePads] = useState({ left: 0, right: 0 });
+  const labelMaxWidthValue =
+    typeof labelMaxWidth === "number" ? `${labelMaxWidth}px` : labelMaxWidth;
+  const columnsTemplate = items
+    .flatMap((_, index) => (index === lastIndex ? ["32px"] : ["32px", "minmax(0, 1fr)"]))
+    .join(" ");
 
-  useLayoutEffect(() => {
-    if (!hasAnyLabels || items.length < 2) {
-      setConnectorGeometry([]);
-      return undefined;
+  const measureSafePads = useCallback(() => {
+    if (!hasAnyLabels) {
+      setSafePads({ left: 0, right: 0 });
+      return;
     }
 
-    const measureConnectors = () => {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) {
-        return;
-      }
+    const firstLabel = labelRefs.current.find((label) => label !== null) ?? null;
+    const lastLabel =
+      [...labelRefs.current].reverse().find((label) => label !== null) ?? null;
 
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const centers: number[] = [];
-
-      for (const step of stepRefs.current.slice(0, items.length)) {
-        if (!step) {
-          return;
-        }
-
-        const rect = step.getBoundingClientRect();
-        centers.push(rect.left - wrapperRect.left + rect.width / 2);
-      }
-
-      const equalizedCenters = normalizeCenters(centers);
-      setConnectorGeometry(buildConnectorGeometry(equalizedCenters));
+    const leftWidth = firstLabel?.getBoundingClientRect().width ?? 0;
+    const rightWidth = lastLabel?.getBoundingClientRect().width ?? 0;
+    const nextPads = {
+      left: Math.max(0, leftWidth / 2 - 16),
+      right: Math.max(0, rightWidth / 2 - 16),
     };
 
-    measureConnectors();
+    setSafePads((prev) => {
+      const changed =
+        Math.abs(prev.left - nextPads.left) > 0.5 || Math.abs(prev.right - nextPads.right) > 0.5;
 
-    if (typeof ResizeObserver === "undefined") {
+      return changed ? nextPads : prev;
+    });
+  }, [hasAnyLabels]);
+
+  useLayoutEffect(() => {
+    measureSafePads();
+
+    if (!hasAnyLabels || typeof ResizeObserver === "undefined") {
       return undefined;
     }
 
-    const observer = new ResizeObserver(measureConnectors);
-
-    if (wrapperRef.current) {
-      observer.observe(wrapperRef.current);
+    const observer = new ResizeObserver(measureSafePads);
+    if (labelsRowRef.current) {
+      observer.observe(labelsRowRef.current);
     }
 
-    stepRefs.current.forEach((step) => {
-      if (step) {
-        observer.observe(step);
+    labelRefs.current.forEach((label) => {
+      if (label) {
+        observer.observe(label);
       }
     });
 
     return () => observer.disconnect();
-  }, [hasAnyLabels, items.length]);
-
-  const renderConnector = (index: number, isActive: boolean) => (
-    <>
-      <span
-        className={cn(css.connector, {
-          [css.connector_active]: isActive,
-          [css.connector_placeholder]: hasAnyLabels,
-        })}
-      />
-      {hasAnyLabels ? (
-        <span
-          className={cn(css.connectorFloating, { [css.connector_active]: isActive })}
-          style={{
-            left: `${connectorGeometry[index]?.left ?? 0}px`,
-            width: `${connectorGeometry[index]?.width ?? 0}px`,
-          }}
-        />
-      ) : null}
-    </>
-  );
+  }, [hasAnyLabels, items, labelMaxWidthValue, measureSafePads]);
 
   return (
     <div
-      ref={wrapperRef}
       className={cn(css.wrapper, className, { [css.wrapper_withLabels]: hasAnyLabels })}
-      role="list"
+      style={
+        {
+          "--stepper-label-max-width": labelMaxWidthValue,
+          "--stepper-safe-pad-left": `${safePads.left}px`,
+          "--stepper-safe-pad-right": `${safePads.right}px`,
+        } as React.CSSProperties
+      }
     >
+      <div className={css.track} style={{ gridTemplateColumns: columnsTemplate }} role="list">
       {items.map((item, index) => {
         const isCompleted = index < current;
         const isCurrent = index === current;
         const isActive = index <= current;
-        const isLast = index === items.length - 1;
+        const isLast = index === lastIndex;
         const showCheck = showCheckOnCompleted && isCompleted;
 
         const stepContent = item.content ?? (showCheck ? <CheckIcon /> : index + 1);
@@ -147,9 +107,6 @@ export const Stepper: React.FC<StepperProps> = ({
         const stepNode = (
           <button
             type="button"
-            ref={(element) => {
-              stepRefs.current[index] = element;
-            }}
             className={cn(css.step, {
               [css.step_inactive]: !isActive,
               [css.step_current]: isCurrent,
@@ -166,20 +123,52 @@ export const Stepper: React.FC<StepperProps> = ({
 
         return (
           <React.Fragment key={index}>
-            <div className={css.column} role="listitem">
+            <div className={css.stepWrap} role="listitem">
               {stepNode}
-              {item.label ? (
-                <div className={css.labelWrap}>
-                  <span className={cn(css.label, { [css.label_active]: isActive })}>
-                    {item.label}
-                  </span>
-                </div>
-              ) : null}
             </div>
-            {!isLast && renderConnector(index, index < current)}
+            {!isLast ? (
+              <span
+                className={cn(css.connector, { [css.connector_active]: index < current })}
+              />
+            ) : null}
           </React.Fragment>
         );
       })}
+      </div>
+      {hasAnyLabels ? (
+        <div
+          ref={labelsRowRef}
+          className={css.labelsRow}
+          style={{ gridTemplateColumns: columnsTemplate }}
+          aria-hidden
+        >
+          {items.map((item, index) => {
+            const isActive = index <= current;
+            const isLast = index === lastIndex;
+            if (!item.label) {
+              labelRefs.current[index] = null;
+            }
+
+            return (
+              <React.Fragment key={`label-${index}`}>
+                <div className={css.labelAnchor}>
+                  {item.label ? (
+                    <span
+                      ref={(element) => {
+                        labelRefs.current[index] = element;
+                      }}
+                      className={cn(css.label, { [css.label_active]: isActive })}
+                    >
+                      {item.label}
+                    </span>
+                  ) : null}
+                </div>
+                {!isLast ? <span className={css.labelSpacer} /> : null}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 };

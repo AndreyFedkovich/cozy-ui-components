@@ -2,24 +2,31 @@
 
 .wrapper {
   width: 100%;
+  --stepper-label-max-width: 140px;
+  --stepper-safe-pad-left: 0px;
+  --stepper-safe-pad-right: 0px;
   display: flex;
-  align-items: flex-start;
-  gap: 0;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .wrapper_withLabels {
-  position: relative;
+  padding-left: var(--stepper-safe-pad-left);
+  padding-right: var(--stepper-safe-pad-right);
 }
 
-.column {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
+.track {
+  width: 100%;
+  display: grid;
   align-items: center;
-  gap: 8px;
-  min-width: 32px;
-  position: relative;
-  z-index: 1;
+}
+
+.stepWrap {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .step {
@@ -64,45 +71,51 @@
 }
 
 .connector {
-  flex: 1;
-  align-self: flex-start;
-  margin-top: 15.5px;
+  width: 100%;
   height: 1px;
+  align-self: center;
   background: colorsNew.$gray07;
-  min-width: 24px;
-}
-
-.connector_placeholder {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.connectorFloating {
-  position: absolute;
-  top: 15.5px;
-  height: 1px;
-  background: colorsNew.$gray07;
-  z-index: 0;
-  pointer-events: none;
 }
 
 .connector_active {
   background: colorsNew.$blue03;
 }
 
-.labelWrap {
-  display: flex;
-  justify-content: center;
+.labelsRow {
+  width: 100%;
+  display: grid;
+  align-items: start;
+  min-height: 32px;
+}
+
+.labelAnchor {
+  width: 32px;
+  position: relative;
+}
+
+.labelSpacer {
   width: 100%;
 }
 
 .label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: max-content;
+  max-width: var(--stepper-label-max-width);
   font-size: 12px;
   line-height: 16px;
   color: colorsNew.$gray04;
-  white-space: nowrap;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 .label_active {

@@ -1257,6 +1257,22 @@ function Index() {
                   onChange={setStepperStep}
                 />
                 <div>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Статичный пример
+                  </p>
+                  <Stepper
+                    items={[
+                      { label: "Тип изменений" },
+                      { label: "Основные данные" },
+                      { label: "Корпоративная должность" },
+                      { label: "Юридическая должность" },
+                      { label: "Бюджет" },
+                      { label: "ИФ" },
+                    ]}
+                    current={0}
+                  />
+                </div>
+                <div>
                   <Stepper
                     items={[
                       { label: "Контакты" },
