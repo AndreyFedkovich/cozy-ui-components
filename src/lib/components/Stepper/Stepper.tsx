@@ -11,6 +11,18 @@ type ConnectorGeometry = {
   width: number;
 };
 
+const normalizeCenters = (centers: number[]): number[] => {
+  if (centers.length <= 2) {
+    return centers;
+  }
+
+  const firstCenter = centers[0];
+  const lastCenter = centers[centers.length - 1];
+  const stepDistance = (lastCenter - firstCenter) / (centers.length - 1);
+
+  return centers.map((_, index) => firstCenter + stepDistance * index);
+};
+
 const buildConnectorGeometry = (centers: number[]): ConnectorGeometry[] =>
   centers.slice(0, -1).map((center, index) => {
     const left = center + STEP_RADIUS;
@@ -72,7 +84,8 @@ export const Stepper: React.FC<StepperProps> = ({
         centers.push(rect.left - wrapperRect.left + rect.width / 2);
       }
 
-      setConnectorGeometry(buildConnectorGeometry(centers));
+      const equalizedCenters = normalizeCenters(centers);
+      setConnectorGeometry(buildConnectorGeometry(equalizedCenters));
     };
 
     measureConnectors();
