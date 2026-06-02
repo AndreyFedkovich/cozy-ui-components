@@ -62,7 +62,7 @@ export default async function config(env: ConfigEnv) {
               "react-dom": "ReactDOM",
               "react/jsx-runtime": "ReactJSXRuntime",
             },
-            assetFileNames: "styles.[ext]",
+            assetFileNames: "styles.modules.[ext]",
           },
         },
         sourcemap: true,

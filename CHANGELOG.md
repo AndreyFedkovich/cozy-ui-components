@@ -3,6 +3,11 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 0.8.0 - 2026-06-02
+
+- **feat:** Split published CSS into three entry points for Tailwind v3 host compatibility: `styles.css` (full bundle), `styles.modules.css` (SCSS modules only), and `styles.tailwind.css` (Tailwind v4 utilities). Existing `import "@andreyfedkovich/cozy-ui/styles.css"` is unchanged.
+- **build:** `build:lib` now publishes all three files; `verify-lib-styles.mjs` validates each file and the structural bundle concat.
+
 ## 0.7.0 - 2026-05-26
 
 - **feat:** `SettingsView` — composition-first layout for settings pages (`SettingsView.Section`, `.Group`, `.Item`, `.Divider`), declarative `sections`, variants `classic` / `elevated`, densities `comfortable` / `compact`, collapsible sections, left icon badges, row badges (e.g. New/Beta), link rows (`href`, `external`), danger styling, and `render` for full row customization.

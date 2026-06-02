@@ -78,13 +78,53 @@ yarn add @andreyfedkovich/cozy-ui
 
 Peer dependencies: **React ≥ 18** and **react-dom ≥ 18** (React 19 supported).
 
-Import the stylesheet **once** at your app root:
+Import the stylesheet **once** at your app root. Which file depends on your host setup — see [Styling in host apps](#styling-in-host-apps) below.
 
 ```ts
 import "@andreyfedkovich/cozy-ui/styles.css";
 ```
 
 Sizing uses CSS `rem` against the browser’s default root font size (commonly **16px**). You **do not** need to set `html { font-size: … }` for components to match the library demo.
+
+### Styling in host apps
+
+The library publishes three CSS entry points:
+
+| Import | Contents |
+|--------|----------|
+| `@andreyfedkovich/cozy-ui/styles.css` | Full bundle (SCSS modules + Tailwind v4 utilities) |
+| `@andreyfedkovich/cozy-ui/styles.modules.css` | SCSS modules only — safe alongside Tailwind v3 |
+| `@andreyfedkovich/cozy-ui/styles.tailwind.css` | Tailwind v4 utilities and shadcn design tokens |
+
+**A. Host without Tailwind** (greenfield, demo apps):
+
+```ts
+import "@andreyfedkovich/cozy-ui/styles.css";
+```
+
+**B. Host with Tailwind v3 + shadcn** (e.g. existing product apps):
+
+```ts
+// App entry (main.tsx / _app.tsx) — NOT inside your @tailwind index.css
+import "@andreyfedkovich/cozy-ui/styles.modules.css";
+```
+
+Covers SCSS-native components: `SettingsView`, `Switch`, `SideNav`, `Input`, `Select`, `Stepper`, and most other “cozy-native” UI. The modules bundle does not include Tailwind v4 preflight and will not override your host’s Tailwind reset.
+
+**C. You also need Tailwind-based cozy components** (`Calendar`, shadcn wrappers):
+
+```ts
+import "@andreyfedkovich/cozy-ui/styles.modules.css";
+import "@andreyfedkovich/cozy-ui/styles.tailwind.css"; // intentional — may conflict with Tailwind v3
+```
+
+Use this only when you need components that rely on prebuilt Tailwind utilities. **Do not** import `styles.css` or `styles.tailwind.css` in a Tailwind v3 host unless you accept the risk of duplicate preflight and utility conflicts.
+
+**Notes:**
+
+- Several public components combine SCSS with shadcn primitives — `Button`, `Label`, `Calendar`, `Popover`, and dialog-based components (`DialogSelect`, `ApprovalRoute`, …). In scenario B your host shadcn setup may already style them; if classes or tokens differ, use scenario C.
+- shadcn CSS variables (`--primary`, `--background`, …) live in `styles.tailwind.css`, not in `styles.modules.css`. Tailwind v3 + shadcn hosts usually already define these in `:root`.
+- Import cozy styles at your **app entry**, not inside your Tailwind `@tailwind` CSS file.
 
 ### Typography (host application)
 
@@ -117,16 +157,18 @@ The library demo uses the system / Inter stack from your app shell — that is e
 
 ### Tailwind-powered components
 
-Most Cozy UI styles come from SCSS modules bundled into `styles.css`. Components built on shadcn use Tailwind class names in JS; those utilities are **prebuilt into the same** `@andreyfedkovich/cozy-ui/styles.css` when the package is published. You do **not** need Tailwind CSS in your application.
+Most Cozy UI styles come from SCSS modules bundled into `styles.modules.css`. Components built on shadcn use Tailwind class names in JS; those utilities are **prebuilt into** `styles.tailwind.css` (and included in the full `styles.css` bundle). You do **not** need Tailwind CSS in your application unless you choose scenario B above.
 
-If your app already uses Tailwind v4 and you prefer to generate utilities yourself, you may add `@source` pointing at the library bundle — optional, not required.
+If your app already uses **Tailwind v4** and you prefer to generate utilities yourself, you may add `@source` pointing at the library bundle — optional, not required.
+
+If your app uses **Tailwind v3**, import `styles.modules.css` only (scenario B) or add `styles.tailwind.css` when needed (scenario C). Do not import the full `styles.css` bundle — it includes Tailwind v4 preflight that conflicts with v3 hosts.
 
 ### Adding a new Tailwind-based component (library authors)
 
 1. Primitive in `src/components/ui/<name>.tsx` (Tailwind + Radix as needed).
 2. Public API in `src/lib/components/<Name>/` (field label, errors, value; SCSS optional for the trigger shell).
 3. Ensure paths are covered by `@source` in `src/lib/tailwind.css` (`../lib/**/*`, `../components/ui/**/*`).
-4. Run `npm run build:lib` before publish; verify `dist-lib/styles.css` includes the new classes.
+4. Run `npm run build:lib` before publish; verify `dist-lib/styles.css` (and split files) include the new classes.
 
 ---
 
@@ -1151,7 +1193,7 @@ For per-component overrides, every component accepts a `className` prop and uses
 ```bash
 bun install
 bun run dev          # demo playground at http://localhost:5173
-bun run build:lib    # dist-lib/ (ESM + CJS + .d.ts + styles.css with SCSS + Tailwind)
+bun run build:lib    # dist-lib/ (ESM + CJS + .d.ts + styles.css / styles.modules.css / styles.tailwind.css)
 bun run lint
 bun run format
 ```
