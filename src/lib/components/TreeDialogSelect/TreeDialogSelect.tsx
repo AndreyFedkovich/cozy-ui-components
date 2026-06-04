@@ -116,6 +116,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled,
   error,
+  suppressError,
   fieldMeta,
   showErrorPolicy,
   className,
@@ -126,6 +127,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 }: TreeDialogSelectProps<T, S>) => {
   const field = useFieldPresentation({
     error,
+    suppressError,
     fieldMeta,
     showErrorPolicy,
     idPrefix: "tree-dialog-select",

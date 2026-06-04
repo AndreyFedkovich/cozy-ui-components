@@ -41,6 +41,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     {
       label,
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       disabled,
@@ -55,6 +56,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ) => {
     const field = useFieldPresentation({
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       idPrefix: "checkbox",

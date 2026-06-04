@@ -48,6 +48,7 @@ import {
   type SettingsVariant,
   type SettingsDensity,
 } from "../lib";
+import { ValidationDemo } from "./-ValidationDemo";
 import {
   HomeIcon,
   GridIcon,
@@ -1038,6 +1039,14 @@ function Index() {
                   Submit (demo)
                 </Button>
               </div>
+            </DemoSection>
+
+            <DemoSection
+              title="Validation UX (draftFriendly)"
+              description="useFormFields + debounced validate + wizard validate-on-click — без flash при первом символе."
+              className="lg:col-span-2"
+            >
+              <ValidationDemo />
             </DemoSection>
 
             <DemoSection

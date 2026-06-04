@@ -49,6 +49,7 @@ export const Calendar = ({
   onChange,
   minDate,
   error,
+  suppressError,
   fieldMeta,
   showErrorPolicy,
   disabled,
@@ -60,6 +61,7 @@ export const Calendar = ({
 }: CalendarProps) => {
   const field = useFieldPresentation({
     error,
+    suppressError,
     fieldMeta,
     showErrorPolicy,
     idPrefix: "calendar",

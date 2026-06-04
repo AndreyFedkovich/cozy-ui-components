@@ -21,6 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       label,
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       disabled,
@@ -35,6 +36,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const field = useFieldPresentation({
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       idPrefix: "input",

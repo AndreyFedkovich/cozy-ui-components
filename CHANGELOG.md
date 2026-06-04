@@ -3,6 +3,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 0.10.0 - 2026-06-04
+
+- **feat:** New `ShowErrorPolicy` presets — `draftFriendly`, `wizardStep`, `savedInvalid`, `onBlurOrSubmit`. Recommended for ERP/wizard forms; legacy `default` unchanged (shows on `hasValue` alone).
+- **feat:** Extended `FieldMeta` — `stepSubmitted`, `validationPending`, `errorKind`. `resolveDisplayError` suppresses stale `required` when value is non-empty.
+- **feat:** `useFormFields` + `FieldBinding` — replaces per-app binding glue (~188 LOC in erp-hr). `markStepSubmitted`, `markFormSubmitted`, `resetInteraction`.
+- **feat:** `useValidationRequest` — async validate with generation/stale guard and `validationPending`.
+- **feat:** `attemptWizardStep`, `attemptFormSubmit` — validate-on-click for wizard and submit (no `disabled={!isValid}`).
+- **feat:** `suppressError` prop on field components; dev warning when `error={null}` suppresses invalid `fieldMeta`.
+- **feat:** Export `useFieldPresentation`, `FieldErrorCaption`, `FormField`, `hasFieldValue`.
+- **docs:** `docs/validation-recipes.md` — recipes, anti-patterns, erp-hr migration (Задание B), consumer verification snippet.
+
 ## 0.9.0 - 2026-06-04
 
 - **feat:** Единый контракт валидации полей — headless API: `FieldMeta`, `ShowErrorPolicy`, `resolveShowError`, `resolveFieldError`, `resolveFieldMessage`, `useFieldState`, `resolveValueChangeHandler`.

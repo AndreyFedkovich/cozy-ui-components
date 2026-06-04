@@ -4,6 +4,7 @@ import type { FieldMeta, ShowErrorPolicy } from "../validation/types";
 
 export type UseFieldPresentationOptions = {
   error?: string | null;
+  suppressError?: boolean;
   fieldMeta?: FieldMeta;
   showErrorPolicy?: ShowErrorPolicy;
   /** When set and no error, included in aria-describedby */
@@ -14,6 +15,7 @@ export type UseFieldPresentationOptions = {
 export function useFieldPresentation(options: UseFieldPresentationOptions) {
   const {
     error,
+    suppressError,
     fieldMeta,
     showErrorPolicy,
     hintId,
@@ -26,8 +28,8 @@ export function useFieldPresentation(options: UseFieldPresentationOptions) {
   const errorId = `${baseId}-error`;
 
   const errorMessage = useMemo(
-    () => resolveFieldMessage({ error, fieldMeta, showErrorPolicy }),
-    [error, fieldMeta, showErrorPolicy],
+    () => resolveFieldMessage({ error, suppressError, fieldMeta, showErrorPolicy }),
+    [error, suppressError, fieldMeta, showErrorPolicy],
   );
 
   const showError = !!errorMessage;

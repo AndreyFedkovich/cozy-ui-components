@@ -7,10 +7,12 @@ export function useFieldState(
   fieldMeta: FieldMeta | undefined,
   policy: ShowErrorPolicy = "default",
   explicitError?: string | null,
+  suppressError?: boolean,
 ) {
   return useMemo(() => {
     const message = resolveFieldMessage({
       error: explicitError,
+      suppressError,
       fieldMeta,
       showErrorPolicy: policy,
     });
@@ -21,5 +23,5 @@ export function useFieldState(
       errorMessage: message,
       showErrorByPolicy: fieldMeta ? resolveShowError(fieldMeta, policy) : false,
     };
-  }, [explicitError, fieldMeta, policy]);
+  }, [explicitError, suppressError, fieldMeta, policy]);
 }

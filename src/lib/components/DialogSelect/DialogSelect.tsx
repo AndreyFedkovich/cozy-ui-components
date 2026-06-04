@@ -95,6 +95,7 @@ export const DialogSelect = <T, S extends string | number>({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled,
   error,
+  suppressError,
   fieldMeta,
   showErrorPolicy,
   className,
@@ -103,6 +104,7 @@ export const DialogSelect = <T, S extends string | number>({
 }: DialogSelectProps<T, S>) => {
   const field = useFieldPresentation({
     error,
+    suppressError,
     fieldMeta,
     showErrorPolicy,
     idPrefix: "dialog-select",

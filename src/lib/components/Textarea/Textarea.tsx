@@ -25,6 +25,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     {
       label,
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       hint,
@@ -44,6 +45,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     const field = useFieldPresentation({
       error,
+      suppressError,
       fieldMeta,
       showErrorPolicy,
       hintId,

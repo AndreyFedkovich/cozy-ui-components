@@ -362,6 +362,7 @@ export const Select = <T, S extends string | number>({
   onClose,
   portalTarget,
   error,
+  suppressError,
   fieldMeta,
   showErrorPolicy,
   template = "list",
@@ -370,6 +371,7 @@ export const Select = <T, S extends string | number>({
 }: CustomSelectProps<T, S>) => {
   const field = useFieldPresentation({
     error,
+    suppressError,
     fieldMeta,
     showErrorPolicy,
     idPrefix: "select",

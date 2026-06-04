@@ -1,3 +1,4 @@
+import { resolveDisplayErrorFromMeta } from "./resolveDisplayError";
 import { resolveShowError } from "./resolveShowError";
 import type { FieldMeta, ShowErrorPolicy } from "./types";
 
@@ -13,5 +14,5 @@ export function resolveFieldError(
     return null;
   }
 
-  return meta.errorMessage;
+  return resolveDisplayErrorFromMeta(meta);
 }
