@@ -1,14 +1,17 @@
 import cn from "classnames";
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import type { FieldValidationProps } from "../../helpers/validation/types";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
-import { InputCaption } from "../InputCaption/InputCaption";
 import { Label } from "../Label/Label";
 import labelCss from "../Label/Label.module.scss";
 import css from "./Checkbox.module.scss";
 
-export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface CheckboxProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type">,
+    FieldValidationProps {
   label?: ReactNode;
-  error?: string | null;
   checkboxClassName?: string;
   /** Подсказка по наведению на иконку «?» справа от подписи */
   tooltipContent?: ReactNode;
@@ -38,6 +41,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     {
       label,
       error,
+      fieldMeta,
+      showErrorPolicy,
       disabled,
       className,
       checkboxClassName,
@@ -48,10 +53,15 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     },
     ref,
   ) => {
-    const generatedId = useId();
-    const inputId = idProp ?? generatedId;
+    const field = useFieldPresentation({
+      error,
+      fieldMeta,
+      showErrorPolicy,
+      idPrefix: "checkbox",
+    });
+    const inputId = idProp ?? field.controlId;
 
-    const field = (
+    const fieldControl = (
       <div className={cn(css.field, { [css.disabled]: disabled })}>
         <label htmlFor={inputId} className={css.control}>
           <input
@@ -59,12 +69,13 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             id={inputId}
             type="checkbox"
             disabled={disabled}
-            aria-invalid={error ? true : undefined}
+            aria-invalid={field.ariaInvalid}
+            aria-describedby={field.ariaDescribedBy}
             className={css.nativeInput}
             {...rest}
           />
           <span
-            className={cn(css.box, { [css.error]: !!error }, checkboxClassName)}
+            className={cn(css.box, { [css.error]: field.showError }, checkboxClassName)}
           >
             <CheckIcon />
           </span>
@@ -90,8 +101,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
     return (
       <div className={cn(css.wrapper, className)}>
-        {field}
-        {error && <InputCaption>{error}</InputCaption>}
+        {fieldControl}
+        <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
       </div>
     );
   },

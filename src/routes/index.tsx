@@ -320,6 +320,9 @@ function Index() {
   const [demoComment, setDemoComment] = useState("");
   const [demoDate, setDemoDate] = useState<string | null>(null);
   const [demoDateError, setDemoDateError] = useState<string | null>(null);
+  const [demoPolicyEmail, setDemoPolicyEmail] = useState("");
+  const [demoPolicyTouched, setDemoPolicyTouched] = useState(false);
+  const [demoPolicySubmitted, setDemoPolicySubmitted] = useState(false);
   const [demoAgreed, setDemoAgreed] = useState(false);
   const [demoNotify, setDemoNotify] = useState(true);
   const [tab, setTab] = useState<string>("overview");
@@ -1012,6 +1015,29 @@ function Index() {
               <div className="mt-4">
                 <Input label="Отключённое поле" placeholder="Недоступно" disabled />
               </div>
+              <div className="mt-6 grid gap-3 sm:max-w-md">
+                <Input
+                  label="Email (fieldMeta + default policy)"
+                  placeholder="name@company.com"
+                  value={demoPolicyEmail}
+                  onChange={(e) => setDemoPolicyEmail(e.target.value)}
+                  onBlur={() => setDemoPolicyTouched(true)}
+                  fieldMeta={{
+                    touched: demoPolicyTouched,
+                    submitted: demoPolicySubmitted,
+                    hasValue: demoPolicyEmail.trim().length > 0,
+                    invalid: !demoPolicyEmail.includes("@"),
+                    errorMessage: "Укажите корректный email.",
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setDemoPolicySubmitted(true)}
+                >
+                  Submit (demo)
+                </Button>
+              </div>
             </DemoSection>
 
             <DemoSection
@@ -1061,7 +1087,7 @@ function Index() {
                   label="Дата начала"
                   required
                   value={demoDate}
-                  onChange={(v) => {
+                  onValueChange={(v) => {
                     setDemoDate(v);
                     setDemoDateError(v ? null : "Укажите дату.");
                   }}
@@ -1116,7 +1142,7 @@ function Index() {
                   placeholder="Выберите опцию"
                   options={selectOptions}
                   value={selected}
-                  onChange={setSelected}
+                  onValueChange={setSelected}
                   onClear={() => setSelected(null)}
                 />
                 <Select
@@ -1125,7 +1151,7 @@ function Index() {
                   placeholder="Выберите опции"
                   options={selectOptions}
                   value={multiSelected}
-                  onChange={(option) =>
+                  onValueChange={(option) =>
                     setMultiSelected((current) =>
                       current.some((item) => item.value === option.value)
                         ? current
@@ -1168,7 +1194,7 @@ function Index() {
                       render: (option) => option.meta?.code,
                     },
                   ]}
-                  onChange={(option) =>
+                  onValueChange={(option) =>
                     setCfoSelected((current) =>
                       current.some((item) => item.value === option.value)
                         ? current
@@ -1187,7 +1213,7 @@ function Index() {
                   placeholder="Укажите или выберите ФИО кандидата"
                   value={employee}
                   loadOptions={loadEmployees}
-                  onChange={setEmployee}
+                  onValueChange={setEmployee}
                   onClear={() => setEmployee(null)}
                   searchPlaceholder="Введите ФИО сотрудника"
                   columns={[
@@ -1208,7 +1234,7 @@ function Index() {
                   value={department}
                   loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
-                  onChange={setDepartment}
+                  onValueChange={setDepartment}
                   onClear={() => setDepartment(null)}
                 />
               </div>
@@ -1641,7 +1667,7 @@ function Index() {
                                 mode="single"
                                 placeholder="Density"
                                 value={convDensity}
-                                onChange={setConvDensity}
+                                onValueChange={setConvDensity}
                                 onClear={() => setConvDensity(null)}
                                 options={[
                                   { value: "detailed", label: "Detailed" },
@@ -1677,7 +1703,7 @@ function Index() {
                                 mode="single"
                                 placeholder="Location"
                                 value={reviewLoc}
-                                onChange={setReviewLoc}
+                                onValueChange={setReviewLoc}
                                 onClear={() => setReviewLoc(null)}
                                 options={[
                                   { value: "breadcrumb", label: "Breadcrumb" },

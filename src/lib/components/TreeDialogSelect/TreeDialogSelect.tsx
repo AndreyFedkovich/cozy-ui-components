@@ -9,7 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../Button/Button";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
-import { InputCaption } from "../InputCaption/InputCaption";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import {
+  resolveValueChangeHandler,
+  type FieldValidationProps,
+  type ValueFieldCallbacks,
+} from "../../helpers/validation";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { ArrowDownIcon, CrossIcon, SearchIcon } from "../../icons";
@@ -42,12 +48,15 @@ type TreeLoader<T, S extends string | number> = (
   params: TreeLoadParams<S>,
 ) => Promise<TreeLoadResult<T, S>>;
 
-interface TreeDialogSelectShared<T, S extends string | number> {
+interface TreeDialogSelectShared<T, S extends string | number>
+  extends ValueFieldCallbacks<TreeNode<T, S>>,
+    FieldValidationProps {
   value?: TreeNode<T, S> | null;
   placeholder: string;
   searchNodes?: (search: string) => Promise<TreeSearchResult<T, S>>;
-  onChange?: (node: TreeNode<T, S>) => void;
   onClear?: () => void;
+  onBlur?: React.FocusEventHandler<HTMLDivElement>;
+  onFocus?: React.FocusEventHandler<HTMLDivElement>;
   label?: ReactNode;
   /** Подсказка по наведению на иконку «?» справа от подписи */
   tooltipContent?: ReactNode;
@@ -59,7 +68,6 @@ interface TreeDialogSelectShared<T, S extends string | number> {
   confirmButtonText?: string;
   debounceMs?: number;
   disabled?: boolean;
-  error?: string | null;
   className?: string;
   inputClassName?: string;
   selectedOptionRender?: (node: TreeNode<T, S>) => ReactNode;
@@ -92,7 +100,10 @@ export const TreeDialogSelect = <T, S extends string | number>({
   loadChildren: loadChildrenProp,
   loadNodes,
   searchNodes,
+  onValueChange,
   onChange,
+  onBlur,
+  onFocus,
   onClear,
   label,
   tooltipContent,
@@ -105,12 +116,25 @@ export const TreeDialogSelect = <T, S extends string | number>({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled,
   error,
+  fieldMeta,
+  showErrorPolicy,
   className,
   inputClassName,
   selectedOptionRender,
   nodeRender,
   leafConfirmOnly = false,
 }: TreeDialogSelectProps<T, S>) => {
+  const field = useFieldPresentation({
+    error,
+    fieldMeta,
+    showErrorPolicy,
+    idPrefix: "tree-dialog-select",
+  });
+  const handleValueChange = resolveValueChangeHandler<TreeNode<T, S>>({
+    onValueChange,
+    onChange,
+  });
+
   const loadChildren: TreeLoader<T, S> = (loadNodes ?? loadChildrenProp) as TreeLoader<T, S>;
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -309,10 +333,10 @@ export const TreeDialogSelect = <T, S extends string | number>({
       return;
     }
     if (pendingSelection) {
-      onChange?.(pendingSelection);
+      handleValueChange?.(pendingSelection);
     }
     handleOpenChange(false);
-  }, [handleOpenChange, leafConfirmOnly, onChange, pendingSelection]);
+  }, [handleOpenChange, handleValueChange, leafConfirmOnly, pendingSelection]);
 
   const isExpanded = useCallback(
     (nodeValue: S) => expanded.has(nodeValue) || forcedExpanded.has(nodeValue),
@@ -399,7 +423,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
     <div className={cn(css.wrapper, className)}>
       {label && (
         <FieldLabel
-          htmlFor="TreeDialogSelectInput"
+          htmlFor={field.controlId}
           tooltipContent={tooltipContent}
           tooltipPopperClassName={tooltipPopperClassName}
         >
@@ -408,10 +432,18 @@ export const TreeDialogSelect = <T, S extends string | number>({
       )}
 
       <div
-        id="TreeDialogSelectInput"
+        id={field.controlId}
         role="button"
         tabIndex={disabled ? -1 : 0}
-        className={cn(css.input, { [css.disabled]: disabled, [css.error]: error }, inputClassName)}
+        aria-invalid={field.ariaInvalid}
+        aria-describedby={field.ariaDescribedBy}
+        className={cn(
+          css.input,
+          { [css.disabled]: disabled, [css.error]: field.showError },
+          inputClassName,
+        )}
+        onBlur={onBlur}
+        onFocus={onFocus}
         onClick={() => !disabled && handleOpenChange(true)}
         onKeyDown={(event) => {
           if (!disabled && (event.key === "Enter" || event.key === " ")) {
@@ -497,7 +529,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
         </DialogContent>
       </Dialog>
 
-      {error && <InputCaption>{error}</InputCaption>}
+      <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
     </div>
   );
 };

@@ -9,7 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../Button/Button";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
-import { InputCaption } from "../InputCaption/InputCaption";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import {
+  resolveValueChangeHandler,
+  type FieldValidationProps,
+  type ValueFieldCallbacks,
+} from "../../helpers/validation";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { CrossIcon, SearchIcon } from "../../icons";
@@ -38,12 +44,15 @@ export type DialogSelectColumn<T, S extends string | number> = {
   render: (option: CustomOption<T, S>) => ReactNode;
 };
 
-export interface DialogSelectProps<T, S extends string | number> {
+export interface DialogSelectProps<T, S extends string | number>
+  extends ValueFieldCallbacks<CustomOption<T, S>>,
+    FieldValidationProps {
   value?: CustomOption<T, S> | null;
   placeholder: string;
   loadOptions: (params: LoadOptionsParams) => Promise<LoadOptionsResult<T, S>>;
-  onChange?: (option: CustomOption<T, S>) => void;
   onClear?: () => void;
+  onBlur?: React.FocusEventHandler<HTMLDivElement>;
+  onFocus?: React.FocusEventHandler<HTMLDivElement>;
   columns?: DialogSelectColumn<T, S>[];
   label?: ReactNode;
   /** Подсказка по наведению на иконку «?» справа от подписи */
@@ -58,7 +67,6 @@ export interface DialogSelectProps<T, S extends string | number> {
   pageSize?: number;
   debounceMs?: number;
   disabled?: boolean;
-  error?: string | null;
   className?: string;
   inputClassName?: string;
   selectedOptionRender?: (option: CustomOption<T, S>) => ReactNode;
@@ -68,7 +76,10 @@ export const DialogSelect = <T, S extends string | number>({
   value,
   placeholder,
   loadOptions,
+  onValueChange,
   onChange,
+  onBlur,
+  onFocus,
   onClear,
   columns,
   label,
@@ -84,10 +95,23 @@ export const DialogSelect = <T, S extends string | number>({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled,
   error,
+  fieldMeta,
+  showErrorPolicy,
   className,
   inputClassName,
   selectedOptionRender,
 }: DialogSelectProps<T, S>) => {
+  const field = useFieldPresentation({
+    error,
+    fieldMeta,
+    showErrorPolicy,
+    idPrefix: "dialog-select",
+  });
+  const handleValueChange = resolveValueChangeHandler<CustomOption<T, S>>({
+    onValueChange,
+    onChange,
+  });
+
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -169,10 +193,10 @@ export const DialogSelect = <T, S extends string | number>({
 
   const handleSelect = useCallback(
     (option: CustomOption<T, S>) => {
-      onChange?.(option);
+      handleValueChange?.(option);
       handleOpenChange(false);
     },
-    [handleOpenChange, onChange],
+    [handleOpenChange, handleValueChange],
   );
 
   const selectedContent = value
@@ -185,7 +209,7 @@ export const DialogSelect = <T, S extends string | number>({
     <div className={cn(css.wrapper, className)}>
       {label && (
         <FieldLabel
-          htmlFor="DialogSelectInput"
+          htmlFor={field.controlId}
           tooltipContent={tooltipContent}
           tooltipPopperClassName={tooltipPopperClassName}
         >
@@ -194,10 +218,18 @@ export const DialogSelect = <T, S extends string | number>({
       )}
 
       <div
-        id="DialogSelectInput"
+        id={field.controlId}
         role="button"
         tabIndex={disabled ? -1 : 0}
-        className={cn(css.input, { [css.disabled]: disabled, [css.error]: error }, inputClassName)}
+        aria-invalid={field.ariaInvalid}
+        aria-describedby={field.ariaDescribedBy}
+        className={cn(
+          css.input,
+          { [css.disabled]: disabled, [css.error]: field.showError },
+          inputClassName,
+        )}
+        onBlur={onBlur}
+        onFocus={onFocus}
         onClick={() => !disabled && handleOpenChange(true)}
         onKeyDown={(event) => {
           if (!disabled && (event.key === "Enter" || event.key === " ")) {
@@ -334,7 +366,7 @@ export const DialogSelect = <T, S extends string | number>({
         </DialogContent>
       </Dialog>
 
-      {error && <InputCaption>{error}</InputCaption>}
+      <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
     </div>
   );
 };

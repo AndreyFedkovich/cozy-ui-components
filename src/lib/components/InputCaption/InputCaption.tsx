@@ -5,7 +5,7 @@ import css from "./InputCaption.module.scss";
 
 export type InputCaptionVariant = "neutral" | "error" | "success";
 
-interface InputCaptionProps {
+interface InputCaptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
   isFullWidth?: boolean;
   /** Visual tone. Defaults to `error` for backwards compatibility with validation messages. */
   variant?: InputCaptionVariant;
@@ -18,13 +18,16 @@ export const InputCaption: React.FC<PropsWithChildren<InputCaptionProps>> = ({
   isFullWidth,
   variant: variantProp,
   type,
+  className,
+  ...rest
 }) => {
   const variant = variantProp ?? type ?? "error";
   return (
     <p
       className={cn(css.caption, css[`caption_${variant}`], {
         [css.fullWidth]: isFullWidth,
-      })}
+      }, className)}
+      {...rest}
     >
       {children}
     </p>

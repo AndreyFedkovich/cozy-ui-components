@@ -2,7 +2,13 @@ import ReactDOM from "react-dom";
 import { autoUpdate, flip, offset as floatingOffset, size, useFloating } from "@floating-ui/react";
 import cn from "classnames";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { InputCaption } from "../InputCaption/InputCaption";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import {
+  resolveValueChangeHandler,
+  type FieldValidationProps,
+  type ValueFieldCallbacks,
+} from "../../helpers/validation";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
@@ -33,8 +39,8 @@ type ModeProps<T, S> =
     }
   | { mode: "multiple"; value: CustomOption<T, S>[] };
 
-type CustomSelectProps<T, S> = {
-  onChange?: (option: CustomOption<T, S>) => void;
+type CustomSelectProps<T, S> = ValueFieldCallbacks<CustomOption<T, S>> &
+  FieldValidationProps & {
   options?: CustomOption<T, S>[];
   placeholder: string;
   dropdownRender?: (menu: ReactNode) => ReactNode;
@@ -62,7 +68,8 @@ type CustomSelectProps<T, S> = {
   disabled?: boolean;
   onClose?: () => void;
   portalTarget?: Element;
-  error?: string | null;
+  onBlur?: React.FocusEventHandler<HTMLDivElement>;
+  onFocus?: React.FocusEventHandler<HTMLDivElement>;
   template?: "list" | "table";
   columns?: SelectColumn<T, S>[];
   total?: number;
@@ -329,7 +336,10 @@ export const Select = <T, S extends string | number>({
   value,
   mode,
   placeholder,
+  onValueChange,
   onChange,
+  onBlur,
+  onFocus,
   dropdownRender,
   optionRender,
   selectedOptionRender,
@@ -352,10 +362,23 @@ export const Select = <T, S extends string | number>({
   onClose,
   portalTarget,
   error,
+  fieldMeta,
+  showErrorPolicy,
   template = "list",
   columns,
   total,
 }: CustomSelectProps<T, S>) => {
+  const field = useFieldPresentation({
+    error,
+    fieldMeta,
+    showErrorPolicy,
+    idPrefix: "select",
+  });
+  const handleValueChange = resolveValueChangeHandler<CustomOption<T, S>>({
+    onValueChange,
+    onChange,
+  });
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -455,7 +478,7 @@ export const Select = <T, S extends string | number>({
 
   const handleChange = useCallback(
     (newValue: CustomOption<T, S>) => {
-      onChange?.(newValue);
+      handleValueChange?.(newValue);
 
       handleSearch("");
       onClose?.();
@@ -464,7 +487,7 @@ export const Select = <T, S extends string | number>({
         setIsOpen(false);
       }
     },
-    [handleSearch, mode, onChange, onClose],
+    [handleSearch, handleValueChange, mode, onClose],
   );
 
   const renderDropdown = useCallback(() => {
@@ -566,7 +589,7 @@ export const Select = <T, S extends string | number>({
     <div className={css.wrapper}>
       {label && (
         <FieldLabel
-          htmlFor="CustomSelectInput"
+          htmlFor={field.controlId}
           tooltipContent={tooltipContent}
           tooltipPopperClassName={tooltipPopperClassName}
         >
@@ -577,16 +600,23 @@ export const Select = <T, S extends string | number>({
       <div className={css.container} ref={containerRef}>
         <div
           role="button"
-          id="CustomSelectInput"
-          tabIndex={0}
+          id={field.controlId}
+          tabIndex={disabled ? -1 : 0}
           ref={setReference}
+          aria-invalid={field.ariaInvalid}
+          aria-describedby={field.ariaDescribedBy}
           className={cn(
             css.input,
             { [css.disabled]: disabled },
-            error && css.error,
+            field.showError && css.error,
             inputClassName,
           )}
+          onBlur={onBlur}
+          onFocus={onFocus}
           onClick={() => {
+            if (disabled) {
+              return;
+            }
             if (value) {
               handleSearch("");
               onClose?.();
@@ -641,7 +671,7 @@ export const Select = <T, S extends string | number>({
         </div>
         {dropdown}
       </div>
-      {error && <InputCaption>{error}</InputCaption>}
+      <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
     </div>
   );
 };

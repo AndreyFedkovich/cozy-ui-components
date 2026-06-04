@@ -3,6 +3,14 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 0.9.0 - 2026-06-04
+
+- **feat:** Единый контракт валидации полей — headless API: `FieldMeta`, `ShowErrorPolicy`, `resolveShowError`, `resolveFieldError`, `resolveFieldMessage`, `useFieldState`, `resolveValueChangeHandler`.
+- **feat:** `Input`, `Textarea`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `Calendar` — пропсы `fieldMeta` и `showErrorPolicy`; явный `error` по-прежнему переопределяет meta. Дефолтная политика: `invalid && (touched || submitted || hasValue)`.
+- **feat:** Общий A11y для полей — `aria-invalid`, `aria-describedby`, стабильные `id` через `useId()`, сообщение об ошибке с `role="alert"`.
+- **feat:** Value picker’ы (`Select`, `DialogSelect`, `TreeDialogSelect`, `Calendar`) — канонический колбэк `onValueChange`; `onChange` оставлен как deprecated alias. На trigger добавлены `onBlur` / `onFocus` для интеграции с формами.
+- **docs:** README — раздел Field validation, две семьи колбэков (native `onChange` vs picker `onValueChange`).
+
 ## 0.8.0 - 2026-06-02
 
 - **feat:** Split published CSS into three entry points for Tailwind v3 host compatibility: `styles.css` (full bundle), `styles.modules.css` (SCSS modules only), and `styles.tailwind.css` (Tailwind v4 utilities). Existing `import "@andreyfedkovich/cozy-ui/styles.css"` is unchanged.

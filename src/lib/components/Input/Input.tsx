@@ -1,12 +1,15 @@
 import cn from "classnames";
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import type { FieldValidationProps } from "../../helpers/validation/types";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
-import { InputCaption } from "../InputCaption/InputCaption";
 import css from "./Input.module.scss";
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends InputHTMLAttributes<HTMLInputElement>,
+    FieldValidationProps {
   label?: ReactNode;
-  error?: string | null;
   inputClassName?: string;
   /** Подсказка по наведению на иконку «?» справа от подписи */
   tooltipContent?: ReactNode;
@@ -18,6 +21,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       label,
       error,
+      fieldMeta,
+      showErrorPolicy,
       disabled,
       className,
       inputClassName,
@@ -28,8 +33,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const generatedId = useId();
-    const inputId = idProp ?? generatedId;
+    const field = useFieldPresentation({
+      error,
+      fieldMeta,
+      showErrorPolicy,
+      idPrefix: "input",
+    });
+    const inputId = idProp ?? field.controlId;
 
     return (
       <div className={cn(css.wrapper, className)}>
@@ -48,16 +58,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             disabled={disabled}
-            aria-invalid={error ? true : undefined}
+            aria-invalid={field.ariaInvalid}
+            aria-describedby={field.ariaDescribedBy}
             className={cn(
               css.input,
-              { [css.disabled]: disabled, [css.error]: !!error },
+              { [css.disabled]: disabled, [css.error]: field.showError },
               inputClassName,
             )}
             {...rest}
           />
         </div>
-        {error && <InputCaption>{error}</InputCaption>}
+        <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
       </div>
     );
   },

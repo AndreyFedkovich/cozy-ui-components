@@ -1,13 +1,17 @@
 import cn from "classnames";
 import { forwardRef, useId, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { FieldErrorCaption } from "../../helpers/field/FieldErrorCaption";
+import { useFieldPresentation } from "../../helpers/field/useFieldPresentation";
+import type { FieldValidationProps } from "../../helpers/validation/types";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { InputCaption, type InputCaptionVariant } from "../InputCaption/InputCaption";
 import css from "./Textarea.module.scss";
 
-export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement>,
+    FieldValidationProps {
   label?: ReactNode;
-  error?: string | null;
-  /** Neutral helper text under the textarea (hidden when `error` is set). */
+  /** Neutral helper text under the textarea (hidden when error is shown). */
   hint?: ReactNode;
   hintVariant?: InputCaptionVariant;
   textareaClassName?: string;
@@ -21,6 +25,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     {
       label,
       error,
+      fieldMeta,
+      showErrorPolicy,
       hint,
       hintVariant,
       disabled,
@@ -33,8 +39,17 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref,
   ) => {
-    const generatedId = useId();
-    const textareaId = idProp ?? generatedId;
+    const hintReactId = useId();
+    const hintId = hint ? `hint-${hintReactId.replace(/:/g, "")}` : undefined;
+
+    const field = useFieldPresentation({
+      error,
+      fieldMeta,
+      showErrorPolicy,
+      hintId,
+      idPrefix: "textarea",
+    });
+    const textareaId = idProp ?? field.controlId;
 
     return (
       <div className={cn(css.wrapper, className)}>
@@ -53,18 +68,21 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ref={ref}
             id={textareaId}
             disabled={disabled}
-            aria-invalid={error ? true : undefined}
+            aria-invalid={field.ariaInvalid}
+            aria-describedby={field.ariaDescribedBy}
             className={cn(
               css.textarea,
-              { [css.disabled]: disabled, [css.error]: !!error },
+              { [css.disabled]: disabled, [css.error]: field.showError },
               textareaClassName,
             )}
             {...rest}
           />
         </div>
-        {error && <InputCaption>{error}</InputCaption>}
-        {!error && hint && (
-          <InputCaption variant={hintVariant ?? "neutral"}>{hint}</InputCaption>
+        <FieldErrorCaption id={field.errorId} message={field.errorMessage} />
+        {!field.showError && hint && (
+          <InputCaption id={hintId} variant={hintVariant ?? "neutral"}>
+            {hint}
+          </InputCaption>
         )}
       </div>
     );

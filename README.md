@@ -31,7 +31,7 @@ npm i @andreyfedkovich/cozy-ui
 - [Design tokens](#design-tokens)
 - [Component API](#component-api)
   - [Layout & content](#layout--content) — `BaseBlock`, `Card`, `CollapsableBlock`, `Collapse`, `Carousel`, `EmptyComponent`, `Spinner`
-  - [Inputs & forms](#inputs--forms) — `Button`, `RadioGroupButton`, `Input`, `Textarea`, `Calendar`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
+  - [Inputs & forms](#inputs--forms) — field validation helpers, `Button`, `RadioGroupButton`, `Input`, `Textarea`, `Calendar`, `Checkbox`, `Select`, `DialogSelect`, `TreeDialogSelect`, `InputCaption`, `Label`
   - [Navigation](#navigation) — `Tabs`, `TabsRounded`, `Stepper`
   - [Overlays](#overlays) — `Popover`, `TooltipDark`, `TooltipLight`
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
@@ -396,6 +396,59 @@ const [view, setView] = useState<"grid" | "list">("grid");
 />;
 ```
 
+#### Field validation (headless)
+
+Form state stays in your app (React Hook Form, TanStack Form, or `useState`). Cozy UI provides a shared **`FieldMeta`** contract and **`showErrorPolicy`** so all fields resolve “when to show the error” the same way.
+
+| Export | Description |
+| ------ | ----------- |
+| `FieldMeta` | `touched`, `dirty`, `submitted`, `hasValue`, `invalid`, `errorMessage` |
+| `ShowErrorPolicy` | `"default"` \| `"onBlur"` \| `"onSubmit"` \| `"always"` \| custom `(meta) => boolean` |
+| `resolveShowError`, `resolveFieldError`, `resolveFieldMessage` | Pure functions (SSR-safe) |
+| `useFieldState` | React hook wrapping the resolvers |
+
+**Default policy:** `invalid && (touched || submitted || hasValue)`.
+
+**Props on fields:** `error` (explicit override), `fieldMeta`, `showErrorPolicy`.
+
+**Callback families:**
+
+| Family | Components | Value callback | Focus |
+| ------ | ---------- | -------------- | ----- |
+| Native text | `Input`, `Textarea`, `Checkbox` | `onChange(event)` — DOM | `onBlur` / `onFocus` via `...rest` |
+| Value picker | `Select`, `DialogSelect`, `TreeDialogSelect`, `Calendar` | **`onValueChange(value)`** (canonical); `onChange` deprecated alias | `onBlur` / `onFocus` on trigger |
+
+```tsx
+import { Input, resolveFieldError } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
+
+const [email, setEmail] = useState("");
+const [touched, setTouched] = useState(false);
+const [submitted, setSubmitted] = useState(false);
+
+const meta = {
+  touched,
+  submitted,
+  hasValue: email.trim().length > 0,
+  invalid: !email.includes("@"),
+  errorMessage: "Enter a valid email.",
+};
+
+// Optional: resolve message before render
+resolveFieldError(meta, "default");
+
+<Input
+  label="Email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  onBlur={() => setTouched(true)}
+  fieldMeta={meta}
+  showErrorPolicy="default"
+/>;
+```
+
+**React Hook Form (recipe):** use `register` on `Input`; use `Controller` on `Select` with `onValueChange={(opt) => field.onChange(opt)}`.
+
 #### `Input`
 
 Accessible text field with optional label and validation message for product forms.
@@ -405,7 +458,9 @@ Accessible text field with optional label and validation message for product for
 | `label`                  | `ReactNode`      | —       | Field label above the input.                         |
 | `tooltipContent`         | `ReactNode`      | —       | Help tooltip on the «?» icon next to the label.      |
 | `tooltipPopperClassName` | `string`         | —       | Extra class for the tooltip popper.                  |
-| `error`                  | `string \| null` | —       | Validation message under the input.                  |
+| `error`                  | `string \| null` | —       | Validation message (overrides `fieldMeta`).        |
+| `fieldMeta`              | `FieldMeta`      | —       | Form meta for policy-based error display.          |
+| `showErrorPolicy`        | `ShowErrorPolicy`| `"default"` | When to show `fieldMeta.errorMessage`.         |
 | `disabled`       | `boolean`                               | `false` | Disabled state.                      |
 | `className`      | `string`                                | —       | Wrapper class.                       |
 | `inputClassName` | `string`                                | —       | Native `<input>` class.              |
@@ -477,9 +532,13 @@ Date picker field for forms. Value is stored as `yyyy-MM-dd` (or `null`); the tr
 | `label`                   | `string`                          | —       | Field label.                                             |
 | `required`                | `boolean`                         | `false` | Appends ` *` to the label.                               |
 | `value`                   | `string \| null`                  | —       | Selected date as `yyyy-MM-dd`.                           |
-| `onChange`                | `(value: string \| null) => void` | —       | Called when the user picks or clears a date.             |
+| `onValueChange`           | `(value: string \| null) => void` | —       | Called when the user picks or clears a date.             |
+| `onChange`                | `(value: string \| null) => void` | —       | **Deprecated.** Use `onValueChange`.                     |
+| `onBlur` / `onFocus`      | focus handlers                    | —       | Forwarded to the trigger button.                         |
 | `minDate`                 | `Date`                            | —       | Earliest selectable day (inclusive, local calendar).     |
-| `error`                   | `string \| null`                  | —       | Validation message under the field.                      |
+| `error`                   | `string \| null`                  | —       | Validation message (overrides `fieldMeta`).              |
+| `fieldMeta`               | `FieldMeta`                       | —       | Form meta for policy-based error display.                |
+| `showErrorPolicy`         | `ShowErrorPolicy`                 | `"default"` | When to show `fieldMeta.errorMessage`.             |
 | `disabled`                | `boolean`                         | `false` | Disables the trigger.                                    |
 | `tooltipContent`          | `ReactNode`                       | —       | Help tooltip on the «i» icon next to the label.          |
 | `tooltipPopperClassName`  | `string`                          | —       | Extra class for the tooltip popper.                      |
@@ -500,14 +559,14 @@ const [startDate, setStartDate] = useState<string | null>(null);
   label="Дата начала"
   required
   value={startDate}
-  onChange={setStartDate}
+  onValueChange={setStartDate}
   minDate={todayLocalDay()}
 />;
 
 <Calendar
   label="Дедлайн"
   value={startDate}
-  onChange={setStartDate}
+  onValueChange={setStartDate}
   error="Укажите дату."
   tooltipContent="Дата должна быть не раньше сегодня."
 />;
@@ -557,7 +616,10 @@ Powerful, virtualized-friendly select with `single` and `multiple` modes, search
 | `mode`        | `"single" \| "multiple"`              | —          | Selection mode.                      |
 | `value`       | `CustomOption \| CustomOption[]`      | —          | Current value.                       |
 | `options`     | `CustomOption[]`                      | —          | Available options.                   |
-| `onChange`    | `(option) => void`                    | —          | Selection callback.                  |
+| `onValueChange` | `(option) => void`                  | —          | Selection callback (canonical).      |
+| `onChange`    | `(option) => void`                    | —          | **Deprecated.** Use `onValueChange`. |
+| `onBlur` / `onFocus` | focus handlers on trigger      | —          | For `touched` tracking.              |
+| `fieldMeta` / `showErrorPolicy` | see Field validation   | —          | Policy-based error display.          |
 | `onSearch`    | `(value: string) => void`             | —          | Async search hook.                   |
 | `template`    | `"list" \| "table"`                   | `"list"`   | Dropdown layout.                     |
 | `columns`     | `SelectColumn[]`                      | —          | Required when `template="table"`.    |
@@ -584,7 +646,7 @@ const [value, setValue] = useState<CustomOption<unknown, string> | null>(null);
   placeholder="Pick one"
   value={value}
   options={options}
-  onChange={setValue}
+  onValueChange={setValue}
 />;
 ```
 
@@ -609,7 +671,7 @@ import { DialogSelect } from "@andreyfedkovich/cozy-ui";
     const { items, total } = await res.json();
     return { options: items.map((p) => ({ value: p.id, label: p.name })), total };
   }}
-  onChange={(opt) => console.log(opt)}
+  onValueChange={(opt) => console.log(opt)}
 />;
 ```
 
@@ -634,7 +696,7 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
   })}
   searchNodes={async (search) => ({ matches: await searchTreeWithPath(search) })}
   leafConfirmOnly
-  onChange={(node) => console.log(node)}
+  onValueChange={(node) => console.log(node)}
 />;
 ```
 
@@ -1099,6 +1161,19 @@ const [layout, setLayout] = useState<"agent" | "editor">("agent");
 ---
 
 ## Hooks & helpers
+
+### Field validation
+
+```ts
+import {
+  type FieldMeta,
+  type ShowErrorPolicy,
+  resolveFieldError,
+  resolveFieldMessage,
+  resolveShowError,
+  useFieldState,
+} from "@andreyfedkovich/cozy-ui";
+```
 
 ### `useMeasureElement`
 
