@@ -1,86 +1,154 @@
 # Validation recipes
 
-Headless validation for forms with server-side validate, drafts, and wizards — without a custom `fieldMeta` glue layer.
+Cozy UI validation is **headless**: your app owns form state (`useState`, React Hook Form, TanStack Form, etc.). The library answers one question — **when to show an error** — via `fieldMeta` and `showErrorPolicy` on field components (`Input`, `Select`, and others).
 
-## Quick start (erp-hr adapter ≤50 LOC)
+Try it live on the [demo site](https://cozy-ui-components.vercel.app). The reference implementation is [`ValidationDemo`](../src/routes/-ValidationDemo.tsx) in this repo.
+
+---
+
+## Which approach to use
+
+| Scenario | Approach |
+| -------- | -------- |
+| One or few fields, local validation | Build `fieldMeta` manually and pass `showErrorPolicy` |
+| Draft save, wizard steps, server-side validate | `useFormFields` with `showErrorPolicy: "draftFriendly"` (recommended) |
+
+For the full API surface (`FieldMeta`, `resolveShowError`, hooks, etc.) see the [Field validation section in README](../README.md#field-validation-headless).
+
+---
+
+## Recipe: simple form
+
+Use this when validation rules live entirely in the client and you do not need draft/wizard semantics.
+
+1. Keep the field value in state.
+2. Track `touched` on blur and `submitted` on form submit.
+3. Build `fieldMeta` and pass it to the field.
 
 ```tsx
-import { Input, useFormFields } from "@andreyfedkovich/cozy-ui";
+import { Input } from "@andreyfedkovich/cozy-ui";
+import { useState } from "react";
 
-const form = useFormFields({
-  showErrorPolicy: "draftFriendly",
-  validation: liveValidationResult,
-  validationPending: request.validationPending,
-  getFieldError: (v, path) => getFieldError(v, path),
-  getFieldErrorKind: (v, path) => inferErrorKind(v, path),
-  stepForField: getStepForFieldPath,
-});
+const [email, setEmail] = useState("");
+const [touched, setTouched] = useState(false);
+const [submitted, setSubmitted] = useState(false);
 
-const emailBind = form.bindField("email", email);
+const invalid = !email.includes("@");
+const meta = {
+  touched,
+  submitted,
+  hasValue: email.trim().length > 0,
+  invalid,
+  errorMessage: invalid ? "Enter a valid email." : undefined,
+};
 
 <Input
   label="Email"
   value={email}
-  onChange={(e) => {
-    setEmail(e.target.value);
-    emailBind.onDirty?.();
-  }}
-  onBlur={emailBind.onBlur}
-  fieldMeta={emailBind.fieldMeta}
-  showErrorPolicy={emailBind.showErrorPolicy}
+  onChange={(e) => setEmail(e.target.value)}
+  onBlur={() => setTouched(true)}
+  fieldMeta={meta}
+  showErrorPolicy="onBlur"
 />;
 ```
 
-## ShowErrorPolicy presets
+Use `showErrorPolicy="default"` only if you accept legacy behavior (`invalid && hasValue` can flash on the first keystroke).
 
-| Policy | Use when |
-|--------|----------|
-| `draftFriendly` | ERP forms with draft save + live validate (recommended) |
-| `wizardStep` | Wizard steps — highlight on «Next» |
-| `savedInvalid` | Show only loaded invalid values (`hasValue && !dirty && !touched`) |
-| `onBlur` / `onSubmit` | Simple forms |
-| `default` | **Legacy** — shows on `hasValue` alone (flash on first keystroke) |
+---
 
-### draftFriendly
+## Recipe: draft-friendly form with live server validation
 
-```typescript
-invalid && (
-  touched ||
-  submitted ||
-  stepSubmitted ||
-  (dirty && !hasValue) ||
-  (hasValue && !dirty)  // saved invalid on load
-)
+Use this for product forms that save drafts, validate on the server, and may include wizard steps.
+
+### Step 1 — Field values in state
+
+```tsx
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
 ```
 
-Plus `resolveDisplayError`: suppress `required` when `hasValue`.
+### Step 2 — Debounced server validate
 
-## Acceptance scenarios (unit-tested)
+`useValidationRequest` guards against stale responses and exposes `validationPending`.
 
-| # | Scenario | Error visible? |
-|---|----------|----------------|
-| 1 | Open empty form | No |
-| 2 | First keystroke in required (stale API) | No |
-| 3 | Blur empty required | Yes |
-| 4 | Fill → clear without blur | Yes |
-| 5 | Loaded invalid date | Yes |
-| 6 | Wizard «Next» on empty step | Yes (step fields) |
-| 7 | Form Submit invalid | Yes (all invalid) |
-| 8 | Save draft (no markSubmitted) | No mass highlight |
+```tsx
+import { useValidationRequest } from "@andreyfedkovich/cozy-ui";
 
-## Recipes
+type ValidationResult = { name: string | null; email: string | null };
 
-### Draft save without validate
+const validateFn = useCallback(
+  () => api.validateDraft({ name, email }),
+  [name, email],
+);
 
-Do **not** call `markFormSubmitted()` or `markStepSubmitted()`. Use `showErrorPolicy="draftFriendly"`.
+const { validate, validationPending } = useValidationRequest(validateFn);
+const [liveValidation, setLiveValidation] = useState<ValidationResult | null>(null);
+
+useEffect(() => {
+  const t = setTimeout(() => {
+    void validate().then(setLiveValidation);
+  }, 400);
+  return () => clearTimeout(t);
+}, [name, email, validate]);
+```
+
+### Step 3 — `useFormFields` with `draftFriendly`
+
+```tsx
+import { useFormFields } from "@andreyfedkovich/cozy-ui";
+
+function inferErrorKind(error: string | null): "required" | "semantic" | undefined {
+  if (!error) return undefined;
+  if (error.toLowerCase().includes("required")) return "required";
+  return "semantic";
+}
+
+const form = useFormFields<ValidationResult>({
+  showErrorPolicy: "draftFriendly",
+  validation: liveValidation,
+  validationPending,
+  getFieldError: (v, path) => (v ? v[path as keyof ValidationResult] : null),
+  getFieldErrorKind: (_v, path) => {
+    const err = liveValidation?.[path as keyof ValidationResult] ?? null;
+    return inferErrorKind(err);
+  },
+  stepForField: (path) => (path === "email" ? 1 : undefined), // wizard mapping — your domain
+});
+```
+
+Pass `errorKind: "required"` from your validator so stale required errors are suppressed while the user types (via `resolveDisplayError` inside the hook).
+
+### Step 4 — Bind each field
+
+```tsx
+const nameBind = form.bindField("name", name);
+
+<Input
+  label="Name"
+  value={name}
+  onChange={(e) => {
+    setName(e.target.value);
+    nameBind.onDirty?.();
+  }}
+  onBlur={nameBind.onBlur}
+  fieldMeta={nameBind.fieldMeta}
+  showErrorPolicy={nameBind.showErrorPolicy}
+/>;
+```
+
+Call `onDirty` in `onChange` so the hook knows the user edited the field. Call `onBlur` from the field’s blur handler.
+
+### Step 5 — Save draft
+
+Save the form data as usual. **Do not** call `markFormSubmitted()` or `markStepSubmitted()` — errors should not appear on every invalid field after a draft save.
 
 ```tsx
 <Button onClick={saveDraft}>Save draft</Button>
 ```
 
-### Validate-on-click for «Next» and Submit
+### Step 6 — Wizard «Next» and form Submit
 
-Do **not** use `disabled={!isValid}` as primary UX.
+Validate on click instead of disabling buttons with `disabled={!isValid}`.
 
 ```tsx
 import { attemptWizardStep, attemptFormSubmit } from "@andreyfedkovich/cozy-ui";
@@ -88,7 +156,7 @@ import { attemptWizardStep, attemptFormSubmit } from "@andreyfedkovich/cozy-ui";
 async function onNext() {
   const { ok } = await attemptWizardStep({
     markStepSubmitted: form.markStepSubmitted,
-    validate: () => runValidate(),
+    validate: () => validate().then(setLiveValidation),
     step: currentStep,
     hasStepErrors: (v, step) => hasErrorsOnStep(v, step),
   });
@@ -98,91 +166,66 @@ async function onNext() {
 async function onSubmit() {
   const { ok } = await attemptFormSubmit({
     markFormSubmitted: form.markFormSubmitted,
-    validate: () => runValidate(),
-    hasErrors: (v) => !v.isValid,
+    validate: () => validate().then(setLiveValidation),
+    hasErrors: (v) => hasAnyErrors(v),
   });
-  if (ok) await sendForApproval();
+  if (ok) await sendForm();
 }
 ```
 
-### Server-side validate + live debounce
+API message localization, wizard field → step mapping, and save/send workflow stay in your application.
 
-```tsx
-import { useValidationRequest } from "@andreyfedkovich/cozy-ui";
+---
 
-const { validate, validationPending } = useValidationRequest(() =>
-  api.validateDraft(formData),
-);
+## ShowErrorPolicy reference
 
-useEffect(() => {
-  const t = setTimeout(() => void validate(), 400);
-  return () => clearTimeout(t);
-}, [formData, validate]);
+| Policy | Use when |
+| ------ | -------- |
+| `draftFriendly` | Draft save + live validate (recommended for product forms) |
+| `wizardStep` | Wizard — highlight fields when user clicks «Next» |
+| `savedInvalid` | Show only loaded invalid values (`hasValue && !dirty && !touched`) |
+| `onBlur` / `onSubmit` | Simple client-only forms |
+| `default` | **Legacy** — shows on `hasValue` alone (may flash on first keystroke) |
 
-const form = useFormFields({
-  showErrorPolicy: "draftFriendly",
-  validation: liveResult,
-  validationPending,
-  getFieldError,
-  getFieldErrorKind: inferErrorKind,
-});
+### `draftFriendly` logic
+
+```typescript
+invalid && (
+  touched ||
+  submitted ||
+  stepSubmitted ||
+  (dirty && !hasValue) ||
+  (hasValue && !dirty) // saved invalid on load
+)
 ```
 
-Pass `errorKind: "required"` from server errors so stale required is suppressed while typing.
+`resolveDisplayError` additionally suppresses `errorKind: "required"` when the field already has a value.
 
-## Anti-patterns (DO NOT)
+---
 
-```
-DO NOT: show error when invalid && hasValue without touched/submitted/savedInvalid
-DO NOT: use error={null} to mean "fall back to fieldMeta" — use suppressError or omit error
-DO NOT: disabled={!isValid} as primary UX for Next/Submit — use validate-on-click
-DO NOT: mark dirty only on clear if policy uses (hasValue && !dirty) for saved invalid
-DO NOT: rely on formSubmitted if button never clickable (disabled before click)
-DO NOT: ship useFormFields without resolveDisplayError (stale required flash returns)
-```
+## Common mistakes
 
-## Migration: was → now
+- **Showing errors on `invalid && hasValue` without interaction** — the user sees red on the first keystroke when the API still returns a stale required error. Use `showErrorPolicy="draftFriendly"` instead.
 
-| Was (erp-hr glue) | Now (cozy-ui) |
-|-------------------|---------------|
-| `useFormFieldBinding` (~188 LOC) | `useFormFields` |
-| `field-meta.util.ts` | `hasFieldValue` + hook internals |
-| `requestFieldShowErrorPolicy` | `showErrorPolicy="draftFriendly"` |
-| `getFieldErrorForDisplay` | `resolveDisplayError` + `errorKind` |
-| `explicitErrorProps` / `error={null}` | omit `error` or `suppressError` |
+- **Using `error={null}` to mean “fall back to fieldMeta”** — `null` is an explicit override. Omit `error` or use `suppressError` when you want policy-based display.
 
-## Consumer verification (Задание B — erp-hr)
+- **`disabled={!isValid}` on Next / Submit** — users never trigger `submitted`, so errors never appear. Use `attemptWizardStep` / `attemptFormSubmit` and validate on click.
 
-After upgrading to cozy-ui >= 0.10.0:
+- **Marking dirty only on clear** — if the policy uses `(hasValue && !dirty)` for saved-invalid-on-load, you must call `onDirty` on every edit, not only when clearing.
 
-1. Bump `@andreyfedkovich/cozy-ui` in app-budget
-2. Replace `useFormFieldBinding` → `useFormFields` + adapter above
-3. Delete `field-meta.util.ts` (+ tests if covered here)
-4. Remove `*ForDisplay` helpers; pass `errorKind` from `inferErrorKind`
-5. Remove `explicitErrorProps` / `requestFieldShowErrorPolicy`
-6. Keep domain: `document-step-validation`, API message localization, workflow save/send
+- **Skipping `resolveDisplayError` in custom glue** — if you reimplement binding without the library helpers, stale required errors can flash again while typing.
 
-**Files to delete in erp-hr:**
+---
 
-- `use-form-field-binding.hook.ts`
-- `field-meta.util.ts`
-- `field-meta.util.test.ts`
-- `*ForDisplay` blocks in `validation-field-errors.util.ts`
+## Expected behavior (manual QA)
 
-**UI regression checklist:**
-
-- [ ] Empty form — no red (#1)
-- [ ] First keystroke — no flash (#2)
-- [ ] «Next» on empty step — step highlight (#6)
-- [ ] Submit invalid — all errors (#7)
-- [ ] Save draft — no mass highlight (#8)
-- [ ] Loaded draft with invalid date — error immediately (#5)
-
-**DoD:** ≥200 LOC generic glue removed; 39+ position-request unit tests green.
-
-## Non-goals (stay in app)
-
-- API message localization (`MESSAGE_BY_EXACT`)
-- Wizard field → step mapping (domain)
-- Draft save / skip validate on backend
-- Workflow save + sendForApproval
+| # | Scenario | Error visible? |
+| - | -------- | -------------- |
+| 1 | Open empty form | No |
+| 2 | First keystroke in required field (stale API error) | No |
+| 3 | Blur empty required field | Yes |
+| 4 | Fill field, then clear without blur | Yes |
+| 5 | Load form with invalid saved value | Yes |
+| 6 | Wizard «Next» on empty step | Yes (fields on that step) |
+| 7 | Submit invalid form | Yes (all invalid fields) |
+| 8 | Save draft (no `markSubmitted`) | No mass highlight |

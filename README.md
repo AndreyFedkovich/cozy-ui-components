@@ -37,6 +37,7 @@ npm i @andreyfedkovich/cozy-ui
   - [Utility](#utility) — `Tag`, `CopyTextTrigger`
   - [Workflow](#workflow) — `ApprovalRoute`, `CommentFeed`, `DetailView`, `SideNav`, `SettingsView`, `Switch`, `ImageSegmented`
 - [Hooks & helpers](#hooks--helpers)
+- [Validation recipes](https://github.com/AndreyFedkovich/cozy-ui-components/blob/main/docs/validation-recipes.md)
 - [Icons](#icons)
 - [TypeScript](#typescript)
 - [SSR & framework support](#ssr--framework-support)
@@ -408,13 +409,13 @@ Form state stays in your app (React Hook Form, TanStack Form, or `useState`). Co
 | `useFieldState`, `useFormFields`, `useValidationRequest` | React hooks |
 | `attemptWizardStep`, `attemptFormSubmit` | Validate-on-click helpers |
 
-**Recommended policy for ERP/drafts:** `draftFriendly` — no flash on first keystroke; saved invalid visible on load.
+**Recommended policy for draft-friendly forms:** `draftFriendly` — no flash on first keystroke; saved invalid visible on load.
 
 **Legacy `default` policy:** `invalid && (touched || submitted || hasValue)`.
 
 **Props on fields:** `error`, `suppressError`, `fieldMeta`, `showErrorPolicy`.
 
-See [`docs/validation-recipes.md`](docs/validation-recipes.md) for recipes and erp-hr migration.
+See [Validation recipes](https://github.com/AndreyFedkovich/cozy-ui-components/blob/main/docs/validation-recipes.md) for step-by-step recipes and expected form behavior.
 
 **Callback families:**
 
