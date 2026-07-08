@@ -8,7 +8,7 @@ describe("useValidationRequest", () => {
     let resolveSecond: (v: string) => void;
 
     const validateFn = vi
-      .fn()
+      .fn<() => Promise<string>>()
       .mockImplementationOnce(
         () =>
           new Promise<string>((resolve) => {
