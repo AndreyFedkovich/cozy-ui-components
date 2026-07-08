@@ -3,6 +3,10 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 0.10.1 - 2026-07-08
+
+- **fix:** `TreeDialogSelect` — при серверном поиске (`searchNodes`) скрывать ранее загруженные ветки, не входящие в результаты и цепочки предков.
+
 ## 0.10.0 - 2026-06-04
 
 - **feat:** New `ShowErrorPolicy` presets — `draftFriendly`, `wizardStep`, `savedInvalid`, `onBlurOrSubmit`. Recommended for draft-friendly and wizard forms; legacy `default` unchanged (shows on `hasValue` alone).

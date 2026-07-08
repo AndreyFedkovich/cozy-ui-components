@@ -345,14 +345,22 @@ export const TreeDialogSelect = <T, S extends string | number>({
     [expanded, forcedExpanded],
   );
 
-  // Клиентская фильтрация (когда нет searchNodes)
+  // Фильтрация отображаемых узлов:
+  // - если задан searchNodes и активен поиск — показываем только совпадения и их предков
+  // - иначе — фильтруем по label (локально)
   const clientFilter = useCallback(
     (nodes: TreeNode<T, S>[]): TreeNode<T, S>[] => {
-      if (!debouncedSearch || searchNodes) return nodes;
+      if (!debouncedSearch) return nodes;
+
+      if (searchNodes) {
+        return nodes.filter(
+          (n) => searchMatches.has(n.value) || forcedExpanded.has(n.value),
+        );
+      }
       const q = debouncedSearch.toLowerCase();
       return nodes.filter((n) => n.label.toLowerCase().includes(q));
     },
-    [debouncedSearch, searchNodes],
+    [debouncedSearch, forcedExpanded, searchMatches, searchNodes],
   );
 
   const renderNode = (node: TreeNode<T, S>, level: number): ReactNode => {
