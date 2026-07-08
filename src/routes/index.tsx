@@ -76,13 +76,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Cozy UI — премиальная React-библиотека компонентов: типизированная, с SCSS-модулями, SSR-safe и tree-shakeable ESM + CJS.",
+          "Cozy UI — a premium React component library: fully typed, SCSS modules, SSR-safe and tree-shakeable ESM + CJS.",
       },
       { property: "og:title", content: "Cozy UI — Premium React Component Library" },
       {
         property: "og:description",
         content:
-          "Премиальные React-компоненты Cozy UI: типизированы end-to-end, готовы к npm, SSR-safe.",
+          "Premium Cozy UI React components: end-to-end typed, npm-ready, SSR-safe.",
       },
     ],
   }),
@@ -90,17 +90,17 @@ export const Route = createFileRoute("/")({
 });
 
 const tabsItems = [
-  { value: "overview", label: "Обзор" },
-  { value: "data", label: "Данные" },
-  { value: "settings", label: "Настройки" },
+  { value: "overview", label: "Overview" },
+  { value: "data", label: "Data" },
+  { value: "settings", label: "Settings" },
 ];
 
 const demoTextareaClass = "h-[7.5rem] min-h-[7.5rem] resize-none";
 
 const tabContent: Record<string, string> = {
-  overview: "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
-  data: "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
-  settings: "Управление параметрами рабочего пространства и интеграциями.",
+  overview: "Project summary: key metrics and activity for the last 7 days.",
+  data: "Tables and charts with aggregated data by the selected filters.",
+  settings: "Manage workspace settings and integrations.",
 };
 
 const selectOptions: CustomOption<{ group: string }>[] = [
@@ -113,29 +113,29 @@ const cfoOptions: CustomOption<{ code: string }>[] = Array.from({ length: 12 }, 
   const codes = ["0201RP", "0201SN", "0201SP", "0203SN", "0204SN", "0205SN", "0206RP", "0207SP"];
   return {
     value: `cfo-${num}`,
-    label: `ЦФО ${num}`,
+    label: `Cost center ${num}`,
     meta: { code: codes[index % codes.length] },
   };
 });
 const employeeSurnames = [
-  "Бодряков",
-  "Чайников",
-  "Пельменев",
-  "Снежкин",
-  "Лунатиков",
-  "Кнопкин",
-  "Громовик",
-  "Тапочкин",
-  "Зефирцев",
-  "Бубликов",
-  "Ракетин",
-  "Смайлов",
+  "Bodryakov",
+  "Chainikov",
+  "Pelmenev",
+  "Snezhkin",
+  "Lunatikov",
+  "Knopkin",
+  "Gromovik",
+  "Tapochkin",
+  "Zefirtsev",
+  "Bublikov",
+  "Raketin",
+  "Smailov",
 ];
 const employeeNamePatronymics = [
-  { name: "Александр", patronymic: "Александрович" },
-  { name: "Дмитрий", patronymic: "Дмитриевич" },
-  { name: "Сергей", patronymic: "Сергеевич" },
-  { name: "Иван", patronymic: "Иванович" },
+  { name: "Alexander", patronymic: "A." },
+  { name: "Dmitry", patronymic: "D." },
+  { name: "Sergey", patronymic: "S." },
+  { name: "Ivan", patronymic: "I." },
 ];
 const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   { length: 48 },
@@ -170,52 +170,52 @@ type DeptNode = TreeNode<DeptMeta, string> & { children?: DeptNode[] };
 const deptTree: DeptNode[] = [
   {
     value: "co-1",
-    label: "ООО «Лютик»",
+    label: "Buttercup LLC",
     hasChildren: true,
     meta: { kind: "company" },
     children: [
       {
         value: "dep-1",
-        label: "Департамент разработки",
+        label: "Engineering department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
           {
             value: "team-1",
-            label: "Команда фронтенда",
+            label: "Frontend team",
             hasChildren: false,
             meta: { kind: "team" },
           },
-          { value: "team-2", label: "Команда бэкенда", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-2", label: "Backend team", hasChildren: false, meta: { kind: "team" } },
           { value: "team-3", label: "QA", hasChildren: false, meta: { kind: "team" } },
         ],
       },
       {
         value: "dep-2",
-        label: "Департамент продаж",
+        label: "Sales department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
-          { value: "team-4", label: "B2B продажи", hasChildren: false, meta: { kind: "team" } },
-          { value: "team-5", label: "B2C продажи", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-4", label: "B2B sales", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-5", label: "B2C sales", hasChildren: false, meta: { kind: "team" } },
         ],
       },
     ],
   },
   {
     value: "co-2",
-    label: "ООО «Ромашка»",
+    label: "Daisy LLC",
     hasChildren: true,
     meta: { kind: "company" },
     children: [
       {
         value: "dep-3",
-        label: "Финансовый отдел",
+        label: "Finance department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
-          { value: "team-6", label: "Бухгалтерия", hasChildren: false, meta: { kind: "team" } },
-          { value: "team-7", label: "Казначейство", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-6", label: "Accounting", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-7", label: "Treasury", hasChildren: false, meta: { kind: "team" } },
         ],
       },
     ],
