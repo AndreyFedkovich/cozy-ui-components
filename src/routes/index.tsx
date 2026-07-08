@@ -1256,10 +1256,10 @@ function Index() {
           <CategoryHeader
             eyebrow="03 — Navigation"
             title="Navigation & flow"
-            description="Табы, шаги мастера и карусели для перехода между состояниями."
+            description="Tabs, wizard steps, and carousels for moving between states."
           />
           <div className="grid gap-6 lg:grid-cols-2">
-            <DemoSection title="Tabs" description="Классические табы с подчёркиванием активного.">
+            <DemoSection title="Tabs" description="Classic tabs with an underline on the active one.">
               <Tabs
                 items={tabsItems}
                 value={tab}
@@ -1270,7 +1270,7 @@ function Index() {
               <p className="mt-4 text-base text-muted-foreground">{tabContent[tab]}</p>
             </DemoSection>
 
-            <DemoSection title="TabsRounded" description="Скруглённый стиль табов.">
+            <DemoSection title="TabsRounded" description="Rounded tab style.">
               <TabsRounded
                 items={tabsItems}
                 value={roundedTab}
@@ -1282,7 +1282,7 @@ function Index() {
 
             <DemoSection
               title="Stepper"
-              description="Прогресс пошагового процесса с возможностью переключения."
+              description="Step process progress with the ability to switch steps."
               className="lg:col-span-2"
             >
               <div className="flex flex-col gap-8">
@@ -1293,16 +1293,16 @@ function Index() {
                 />
                 <div>
                   <p className="mb-3 text-sm text-muted-foreground">
-                    Статичный пример
+                    Static example
                   </p>
                   <Stepper
                     items={[
-                      { label: "Тип изменений" },
-                      { label: "Основные данные" },
-                      { label: "Корпоративная должность" },
-                      { label: "Юридическая должность" },
-                      { label: "Бюджет" },
-                      { label: "ИФ" },
+                      { label: "Change type" },
+                      { label: "Main data" },
+                      { label: "Corporate position" },
+                      { label: "Legal position" },
+                      { label: "Budget" },
+                      { label: "IF" },
                     ]}
                     current={0}
                   />
@@ -1310,10 +1310,10 @@ function Index() {
                 <div>
                   <Stepper
                     items={[
-                      { label: "Контакты" },
-                      { label: "Документы" },
-                      { label: "Подтверждение" },
-                      { label: "Готово" },
+                      { label: "Contacts" },
+                      { label: "Documents" },
+                      { label: "Confirmation" },
+                      { label: "Done" },
                     ]}
                     current={namedStep}
                     onChange={setNamedStep}
@@ -1324,13 +1324,13 @@ function Index() {
                       variant="secondary"
                       onClick={() => setNamedStep((s) => Math.max(0, s - 1))}
                     >
-                      Назад
+                      Back
                     </Button>
                     <Button
                       variant="primary"
                       onClick={() => setNamedStep((s) => Math.min(3, s + 1))}
                     >
-                      Далее
+                      Next
                     </Button>
                   </div>
                 </div>
@@ -1339,21 +1339,21 @@ function Index() {
 
             <DemoSection
               title="Carousel"
-              description="Слайдер с произвольной разметкой каждого слайда."
+              description="Slider with custom markup per slide."
               className="lg:col-span-2"
             >
               <Carousel
                 items={[
                   {
                     id: 1,
-                    title: "Дизайн-система",
-                    subtitle: "Единая палитра, типографика, отступы",
+                    title: "Design system",
+                    subtitle: "Unified palette, typography, spacing",
                     gradient: "from-[#4573d9] to-[#001a3d]",
                   },
                   {
                     id: 2,
                     title: "Form controls",
-                    subtitle: "Селекты, чекбоксы, инпуты",
+                    subtitle: "Selects, checkboxes, inputs",
                     gradient: "from-[#00a582] to-[#001a3d]",
                   },
                   {
@@ -1376,7 +1376,7 @@ function Index() {
 
             <DemoSection
               title="SideNav"
-              description="Премиальная навигационная панель с блоком пользователя, секциями и переключаемым внешним видом."
+              description="Premium navigation panel with a user block, sections, and switchable appearance."
               className="lg:col-span-2"
               stageClassName="!p-4"
             >
@@ -1393,7 +1393,7 @@ function Index() {
                 <Checkbox
                   checked={sideNavCollapsed}
                   onChange={(e) => setSideNavCollapsed(e.target.checked)}
-                  label="Свернуть"
+                  label="Collapse"
                 />
               </div>
               <div className="flex gap-6">
@@ -1406,8 +1406,8 @@ function Index() {
                     activeId={sideNavActive}
                     onActiveChange={setSideNavActive}
                     user={{
-                      name: "Петрова Екатерина",
-                      role: "Начальник управления",
+                      name: "Ekaterina Petrova",
+                      role: "Head of Department",
                       badge: true,
                       onClick: () => {},
                     }}
@@ -1415,40 +1415,40 @@ function Index() {
                       {
                         id: "main",
                         items: [
-                          { id: "home", label: "Главная", icon: <HomeIcon /> },
-                          { id: "structure", label: "Структура", icon: <GridIcon /> },
+                          { id: "home", label: "Home", icon: <HomeIcon /> },
+                          { id: "structure", label: "Structure", icon: <GridIcon /> },
                         ],
                       },
                       {
                         id: "self",
-                        title: "Для меня",
+                        title: "For me",
                         items: [
-                          { id: "profile", label: "Мой профиль", icon: <ProfileIcon /> },
+                          { id: "profile", label: "My profile", icon: <ProfileIcon /> },
                           {
                             id: "time",
-                            label: "Моё рабочее время",
+                            label: "My working time",
                             icon: <ClockIcon />,
                             badge: "3",
                           },
-                          { id: "vacation", label: "Мои отпуска", icon: <PlaneIcon /> },
-                          { id: "tasks", label: "Мои цели и задачи", icon: <TaskListIcon /> },
-                          { id: "health", label: "Моё здоровье", icon: <HeartIcon /> },
+                          { id: "vacation", label: "My vacations", icon: <PlaneIcon /> },
+                          { id: "tasks", label: "My goals and tasks", icon: <TaskListIcon /> },
+                          { id: "health", label: "My health", icon: <HeartIcon /> },
                         ],
                       },
                       {
                         id: "services",
-                        title: "Сервисы",
+                        title: "Services",
                         items: [
-                          { id: "polls", label: "Опросы", icon: <ChatIcon /> },
-                          { id: "help", label: "Помощники", icon: <HelpIcon /> },
-                          { id: "requests", label: "Заявки", icon: <NotebookIcon />, badge: "12" },
+                          { id: "polls", label: "Surveys", icon: <ChatIcon /> },
+                          { id: "help", label: "Assistants", icon: <HelpIcon /> },
+                          { id: "requests", label: "Requests", icon: <NotebookIcon />, badge: "12" },
                           {
                             id: "positions",
-                            label: "Управление должностями",
+                            label: "Position management",
                             icon: <SettingsIcon />,
                           },
-                          { id: "bank", label: "Мой Банк", icon: <WalletIcon /> },
-                          { id: "reports", label: "Отчёты", icon: <FeedbackIcon /> },
+                          { id: "bank", label: "My Bank", icon: <WalletIcon /> },
+                          { id: "reports", label: "Reports", icon: <FeedbackIcon /> },
                         ],
                       },
                     ]}
@@ -1459,21 +1459,21 @@ function Index() {
                         className="flex items-center gap-2"
                       >
                         <CancelIcon width={16} height={16} />
-                        {!sideNavCollapsed && <span>Выйти</span>}
+                        {!sideNavCollapsed && <span>Log out</span>}
                       </Button>
                     }
                   />
                 </div>
                 <div className="flex-1 rounded-xl border border-dashed border-border/70 bg-white/60 p-6 text-sm text-muted-foreground">
                   <div className="mb-2 text-base font-semibold text-foreground">
-                    Активный пункт:{" "}
+                    Active item:{" "}
                     <span className="text-primary">{sideNavActive}</span>
                   </div>
                   <p>
-                    Конфигурируется через массив <code>sections</code> или composition-first
+                    Configurable via a <code>sections</code> array or the composition-first
                     API: <code>SideNav.Section</code>, <code>SideNav.Item</code>,{" "}
-                    <code>SideNav.Custom</code>. Переключайте Classic / Transparent / Aurora
-                    и свёртывание, чтобы оценить варианты.
+                    <code>SideNav.Custom</code>. Toggle Classic / Transparent / Aurora and
+                    collapse to compare variants.
                   </p>
                 </div>
               </div>
