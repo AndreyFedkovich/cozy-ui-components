@@ -675,10 +675,10 @@ function Index() {
             Cozy UI
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Премиальная, продуманная React-библиотека компонентов из{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>: типизирована
-            end-to-end, на SCSS-модулях с дизайн-токенами, SSR-safe и tree-shakeable (ESM + CJS).
-            Проверьте внешний вид, поведение и npm-экспорты — всё в одном месте.
+            A premium, considered React component library from{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>: end-to-end
+            typed, SCSS modules with design tokens, SSR-safe and tree-shakeable (ESM + CJS).
+            Check the look, behavior, and npm exports — all in one place.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1">
@@ -710,10 +710,10 @@ function Index() {
 
           <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
             {[
-              { label: "Компонентов", value: "20+" },
+              { label: "Components", value: "20+" },
               { label: "TypeScript", value: "100%" },
-              { label: "Дерево-шейкинг", value: "Yes" },
-              { label: "Стили", value: "SCSS modules" },
+              { label: "Tree-shaking", value: "Yes" },
+              { label: "Styles", value: "SCSS modules" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -731,19 +731,19 @@ function Index() {
           <CategoryHeader
             eyebrow="01 — Layout"
             title="Layout & containers"
-            description="Базовые контейнеры для группировки и презентации контента."
+            description="Base containers for grouping and presenting content."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="BaseBlock"
-              description="Универсальный контейнер с заголовком и подзаголовком."
+              description="Universal container with a title and subtitle."
               className="lg:col-span-2"
             >
               <BaseBlock title="Cozy UI v1.0" subtitle="@andreyfedkovich/cozy-ui · MIT License">
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {[
-                    { v: "20+", l: "компонентов" },
-                    { v: "60+", l: "иконок" },
+                    { v: "20+", l: "components" },
+                    { v: "60+", l: "icons" },
                     { v: "≈ 38 KB", l: "gzip" },
                   ].map((m) => (
                     <div key={m.l} className="rounded-lg bg-[#f4f7fa] px-4 py-3">
@@ -754,23 +754,23 @@ function Index() {
                 </div>
                 <div className="mt-5 flex gap-3">
                   <Button variant="primary">View on npm</Button>
-                  <Button variant="text">Документация →</Button>
+                  <Button variant="text">Documentation →</Button>
                 </div>
               </BaseBlock>
             </DemoSection>
 
             <DemoSection
               title="DetailView"
-              description="Премиальная форма просмотра: секции, поля, копирование. В одном экземпляре можно смешивать декларативный sections и composition-first children."
+              description="Premium detail view: sections, fields, copy. In one instance you can mix declarative sections with composition-first children."
               className="lg:col-span-2"
             >
               <DetailView
                 sections={[
                   {
-                    title: "Основные данные",
+                    title: "Main data",
                     fields: [
                       {
-                        label: "Номер и дата заявки",
+                        label: "Request number and date",
                         value: (
                           <span>
                             <a
@@ -779,50 +779,50 @@ function Index() {
                             >
                               ekd-242512
                             </a>{" "}
-                            от 08.05.2026
+                            from 08.05.2026
                           </span>
                         ),
                         copyable: true,
                         copyText: "ekd-242512",
                       },
-                      { label: "Автор заявки", value: "Петрова Е. В." },
+                      { label: "Request author", value: "E. Petrova" },
                       {
-                        label: "Статус",
-                        value: <Tag>На согласовании</Tag>,
+                        label: "Status",
+                        value: <Tag>Under review</Tag>,
                       },
-                      { label: "Срок действия заявки", value: "Нет" },
-                      { label: "Код ШР", value: "66" },
-                      { label: "Комментарий к коду ШР", value: "Замена сотрудника" },
-                      { label: "Название вакансии", value: "Frontend-разработчик" },
-                      { label: "Юридическая должность", value: "Ведущий специалист" },
+                      { label: "Request expiration", value: "None" },
+                      { label: "SR code", value: "66" },
+                      { label: "SR code comment", value: "Employee replacement" },
+                      { label: "Job title", value: "Frontend developer" },
+                      { label: "Legal position", value: "Senior specialist" },
                     ],
                   },
                   {
-                    title: "Формальные признаки должности",
+                    title: "Position formalities",
                     fields: [
-                      { label: "Заказчик по заявке", value: "Иванов И. И." },
-                      { label: "Функциональный руководитель", value: "Руководитель отсутствует" },
-                      { label: "Руководитель L1", value: "Иванов И. И." },
-                      { label: "Корпоративное подразделение", value: "Корпоративное подразделение" },
-                      { label: "Юридическое подразделение", value: "Юридическое подразделение" },
+                      { label: "Requester", value: "I. Ivanov" },
+                      { label: "Functional manager", value: "No manager assigned" },
+                      { label: "L1 manager", value: "I. Ivanov" },
+                      { label: "Corporate division", value: "Corporate division" },
+                      { label: "Legal division", value: "Legal division" },
                     ],
                   },
                 ]}
               >
-                <DetailView.Section title="Контакты">
+                <DetailView.Section title="Contacts">
                   <DetailView.Field label="Email" value="petrova@example.com" copyable />
-                  <DetailView.Field label="Телефон" value="+7 (900) 123-45-67" copyable />
+                  <DetailView.Field label="Phone" value="+1 (555) 123-4567" copyable />
                   <DetailView.Field
-                    label="Адрес"
-                    hint="Основное место работы"
+                    label="Address"
+                    hint="Primary workplace"
                   >
-                    г. Москва, ул. Примерная, д. 1, оф. 42
+                    1 Sample Street, office 42, Springfield
                   </DetailView.Field>
                 </DetailView.Section>
 
-                  <DetailView.Section title="Кастомный шаблон поля">
+                  <DetailView.Section title="Custom field template">
                     <DetailView.Field
-                      label="Прогресс онбординга"
+                      label="Onboarding progress"
                       render={({ label, value: _v }) => (
                         <div
                           className="grid items-center gap-5"
@@ -847,7 +847,7 @@ function Index() {
 
             <DemoSection
               title="Card"
-              description="Простые карточки с фоном, цветом или изображением."
+              description="Simple cards with a background color or image."
               className="lg:col-span-2"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -880,35 +880,35 @@ function Index() {
                 </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
-                Поддерживают `link`, `imageUrl`, кастомные размеры и цвета.
+                Support `link`, `imageUrl`, custom sizes and colors.
               </p>
             </DemoSection>
 
             <DemoSection
               title="CollapsableBlock"
-              description="Блок с заголовком, подсказкой и раскрывающимся контентом."
+              description="Block with a title, tooltip, and expandable content."
             >
               <CollapsableBlock
-                header="Список изменений · v1.0.0"
+                header="Changelog · v1.0.0"
                 defaultOpen
-                infoTooltipContent="Дата релиза: 30 апреля 2026"
+                infoTooltipContent="Release date: April 30, 2026"
                 content={
                   <div className="flex flex-col gap-3 pt-1">
                     <div className="flex items-center gap-3">
                       <Tag>Feature</Tag>
-                      <span className="text-base">Новый компонент Stepper</span>
+                      <span className="text-base">New Stepper component</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Feature</Tag>
-                      <span className="text-base">TreeDialogSelect c lazy-загрузкой</span>
+                      <span className="text-base">TreeDialogSelect with lazy loading</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Fix</Tag>
-                      <span className="text-base">Согласованный border-radius у всех Select</span>
+                      <span className="text-base">Consistent border-radius across all Select</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Fix</Tag>
-                      <span className="text-base">Увеличены контролы внутри Select</span>
+                      <span className="text-base">Larger controls inside Select</span>
                     </div>
                   </div>
                 }
@@ -917,12 +917,12 @@ function Index() {
 
             <DemoSection
               title="Collapse · FAQ"
-              description="Несколько Collapse подряд формируют классический FAQ."
+              description="Multiple Collapse in a row form a classic FAQ."
             >
               <div className="divide-y divide-border/60">
                 <div className="py-2">
                   <Collapse
-                    header="Как установить пакет?"
+                    header="How do I install the package?"
                     defaultOpen
                     content={
                       <code className="mt-2 block rounded-md bg-[#0f172a] px-3 py-2 text-sm text-white">
@@ -933,14 +933,14 @@ function Index() {
                 </div>
                 <div className="py-2">
                   <Collapse
-                    header="Поддерживает ли библиотека SSR?"
-                    content="Да. Все компоненты совместимы с TanStack Start и Next.js."
+                    header="Does the library support SSR?"
+                    content="Yes. All components are compatible with TanStack Start and Next.js."
                   />
                 </div>
                 <div className="py-2">
                   <Collapse
-                    header="Как кастомизировать темы?"
-                    content="Переопределите CSS-переменные палитры в собственном scss-файле и подключите его после стилей библиотеки."
+                    header="How do I customize themes?"
+                    content="Override the CSS palette variables in your own scss file and load it after the library styles."
                   />
                 </div>
               </div>
@@ -948,17 +948,17 @@ function Index() {
 
             <DemoSection
               title="EmptyComponent"
-              description="Состояние «нет данных» с CTA-кнопкой."
+              description="Empty state with a CTA button."
               className="lg:col-span-2"
             >
               <div className="rounded-xl border border-border/50 bg-white p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <h4 className="text-lg font-semibold">Список задач</h4>
-                  <Button variant="text">+ Создать</Button>
+                  <h4 className="text-lg font-semibold">Task list</h4>
+                  <Button variant="text">+ Create</Button>
                 </div>
                 <EmptyComponent
-                  title="Задач пока нет"
-                  description="Создайте первую задачу — она появится здесь."
+                  title="No tasks yet"
+                  description="Create your first task — it will appear here."
                 />
               </div>
             </DemoSection>
