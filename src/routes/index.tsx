@@ -1486,12 +1486,12 @@ function Index() {
           <CategoryHeader
             eyebrow="03.5 — Settings"
             title="SettingsView"
-            description="Композиционный компонент для страниц настроек: секции, строки с описанием, контролы Switch / Select / Button / ImageSegmented, ссылки Open и опасная зона. API в духе DetailView."
+            description="Composable component for settings pages: sections, rows with descriptions, Switch / Select / Button / ImageSegmented controls, Open links, and a danger zone. API in the spirit of DetailView."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="SettingsView"
-              description="Premium-страница настроек. Переключайте variant и density."
+              description="Premium settings page. Toggle variant and density."
               className="lg:col-span-2"
               stageClassName="bg-gradient-to-b from-[#f4f7fa] to-white"
             >
@@ -1741,7 +1741,7 @@ function Index() {
                     {
                       id: "links",
                       title: "Documentation",
-                      description: "Полезные ссылки — целая строка кликабельна",
+                      description: "Useful links — the entire row is clickable",
                       items: [
                         {
                           id: "docs",
@@ -1763,19 +1763,19 @@ function Index() {
                     },
                     {
                       id: "danger",
-                      title: "Опасная зона",
+                      title: "Danger zone",
                       collapsible: true,
                       defaultOpen: false,
                       items: [
                         {
                           id: "delete",
                           icon: <CancelIcon />,
-                          label: "Удалить аккаунт",
-                          description: "Действие необратимо. Все данные будут удалены.",
+                          label: "Delete account",
+                          description: "This action is irreversible. All data will be deleted.",
                           danger: true,
                           control: (
                             <Button variant="danger" size="small">
-                              Удалить
+                              Delete
                             </Button>
                           ),
                         },
@@ -1785,10 +1785,10 @@ function Index() {
                 />
 
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Composition-first: можно мешать <code>sections</code> и{" "}
-                  <code>SettingsView.Section / Item / Group</code>. Switch — зелёный iOS-style,
-                  ImageSegmented — переключатель с превью (как Agent/Editor), а для строк-ссылок
-                  поддержаны <code>href + external</code> и кнопка Open.
+                  Composition-first: you can mix <code>sections</code> with{" "}
+                  <code>SettingsView.Section / Item / Group</code>. Switch is an iOS-style
+                  green toggle, ImageSegmented is a preview-based control (like Agent/Editor),
+                  and row links support <code>href + external</code> and an Open button.
                 </div>
               </div>
             </DemoSection>
