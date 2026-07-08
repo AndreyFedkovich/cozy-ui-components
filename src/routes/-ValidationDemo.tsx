@@ -114,7 +114,7 @@ export function ValidationDemo() {
         <p className="text-sm text-green-700">Step 2 — wizard passed.</p>
       )}
       <Button
-        variant="ghost"
+        variant="text"
         size="small"
         onClick={() => {
           form.resetInteraction();
