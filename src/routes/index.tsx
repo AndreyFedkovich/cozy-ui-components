@@ -1800,12 +1800,12 @@ function Index() {
           <CategoryHeader
             eyebrow="04 — Feedback"
             title="Feedback & overlays"
-            description="Кнопки, теги, тултипы, поповеры, спиннеры и копирование."
+            description="Buttons, tags, tooltips, popovers, spinners, and copy-to-clipboard."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="Button"
-              description="Все варианты кнопок и состояние загрузки."
+              description="All button variants and the loading state."
               className="lg:col-span-2"
             >
               <div className="flex flex-wrap items-center gap-3">
@@ -1821,7 +1821,7 @@ function Index() {
               </div>
             </DemoSection>
 
-            <DemoSection title="Tag" description="Статусные метки разных размеров.">
+            <DemoSection title="Tag" description="Status labels in different sizes.">
               <div className="flex flex-wrap gap-3">
                 <Tag>Readonly</Tag>
                 <Tag isSmall onClick={() => undefined}>
@@ -1836,7 +1836,7 @@ function Index() {
 
             <DemoSection
               title="CopyTextTrigger + TooltipDark"
-              description="Копирование строки и тёмная подсказка."
+              description="Copy-to-clipboard and dark tooltip."
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-4 rounded-lg bg-[#0f172a] px-4 py-3 font-mono text-sm text-white">
@@ -1844,7 +1844,7 @@ function Index() {
                   <CopyTextTrigger
                     copied={copied}
                     onClick={handleCopy}
-                    ariaLabel="Скопировать команду"
+                    ariaLabel="Copy command"
                     className="!text-white"
                   >
                     Copy
@@ -1852,7 +1852,7 @@ function Index() {
                 </div>
                 <div>
                   <TooltipDark
-                    content="Тёмный tooltip с подсказкой"
+                    content="Dark tooltip with a hint"
                     trigger="hover"
                     placement="top"
                   >
@@ -1864,7 +1864,7 @@ function Index() {
 
             <DemoSection
               title="TooltipLight + Popover"
-              description="Светлая подсказка и поповер для расширенного контента."
+              description="Light tooltip and popover for richer content."
               className="lg:col-span-2"
             >
               <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border/50 bg-white p-4">
@@ -1872,23 +1872,23 @@ function Index() {
                   Light tooltip
                 </Button>
                 <TooltipLight placement="top" target={tooltipTargetId}>
-                  Светлый tooltip
+                  Light tooltip
                 </TooltipLight>
                 <Popover
                   trigger={<Button variant="primary">Open popover</Button>}
                   placement="bottom"
                 >
-                  Контент popover-компонента.
+                  Popover component content.
                 </Popover>
                 <span className="ml-auto text-sm text-muted-foreground">
-                  Используется как тулбар: подсказки + действия.
+                  Used as a toolbar: hints + actions.
                 </span>
               </div>
             </DemoSection>
 
             <DemoSection
               title="Spinner"
-              description="Три размера индикатора загрузки в реалистичных карточках."
+              description="Three loader sizes in realistic cards."
               className="lg:col-span-2"
             >
               <div className="grid gap-4 md:grid-cols-3">
@@ -1918,19 +1918,19 @@ function Index() {
           <CategoryHeader
             eyebrow="05 — Workflow"
             title="Workflow & approvals"
-            description="Многоуровневый маршрут с параллельными этапами и режимом редактирования."
+            description="Multi-level route with parallel stages and an edit mode."
           />
           <div className="grid gap-6">
             <DemoSection
-              title="ApprovalRoute · Маршрут согласования"
-              description="Уровни и параллельные этапы со статусами, согласующими, причинами отклонения и редактированием."
+              title="ApprovalRoute · Approval route"
+              description="Levels and parallel stages with statuses, approvers, rejection reasons, and editing."
             >
               <div className="mb-5 flex items-center gap-4">
-                <span className="text-base font-medium text-foreground">Режим:</span>
+                <span className="text-base font-medium text-foreground">Mode:</span>
                 <RadioGroupButton<string>
                   options={[
-                    { value: "view", label: "Просмотр" },
-                    { value: "edit", label: "Редактирование" },
+                    { value: "view", label: "View" },
+                    { value: "edit", label: "Edit" },
                   ]}
                   value={routeEditable}
                   onChange={(v) => setRouteEditable(v)}
@@ -2020,8 +2020,8 @@ function Index() {
             </DemoSection>
 
             <DemoSection
-              title="CommentFeed · Лента комментариев"
-              description="Древовидные обсуждения с ленивой постраничной загрузкой по веткам, вложениями, ознакомителями, окном редактирования 10 минут и системой прав."
+              title="CommentFeed · Comment thread"
+              description="Threaded discussions with lazy per-branch pagination, attachments, mentions, a 10-minute edit window, and a permission system."
             >
               <CommentFeed
                 currentUser={currentDemoUser}
@@ -2033,10 +2033,10 @@ function Index() {
                 onUploadAttachment={onUploadDemoAttachment}
                 onDeleteAttachment={onDeleteDemoAttachment}
                 onDownloadAttachment={(att) =>
-                  window.alert(`Скачать ${att.name} (${att.size} байт)`)
+                  window.alert(`Download ${att.name} (${att.size} bytes)`)
                 }
                 pageSize={5}
-                title="Обсуждение документа"
+                title="Document discussion"
                 eyebrow="Discussion"
               />
             </DemoSection>
