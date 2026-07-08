@@ -970,12 +970,12 @@ function Index() {
           <CategoryHeader
             eyebrow="02 — Inputs"
             title="Inputs & selection"
-            description="Поля ввода, селекты, переключатели и подписи к формам."
+            description="Input fields, selects, toggles, and form captions."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="RadioGroupButton"
-              description="Сегментированный переключатель с одним активным значением."
+              description="Segmented toggle with a single active value."
             >
               <RadioGroupButton
                 options={[
@@ -987,13 +987,13 @@ function Index() {
                 onChange={setRadio}
               />
               <p className="mt-3 text-sm text-muted-foreground">
-                Активный: <span className="font-medium text-foreground">{radio}</span>
+                Active: <span className="font-medium text-foreground">{radio}</span>
               </p>
             </DemoSection>
 
             <DemoSection
               title="Input"
-              description="Текстовое поле для форм с опциональной подписью и сообщением валидации."
+              description="Text field for forms with an optional caption and validation message."
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -1003,18 +1003,18 @@ function Index() {
                     value={demoEmail}
                     onChange={(e) => setDemoEmail(e.target.value)}
                   />
-                  <InputCaption variant="neutral">Используется для входа в систему.</InputCaption>
+                  <InputCaption variant="neutral">Used to sign in.</InputCaption>
                 </div>
                 <Input
-                  label="Пароль"
+                  label="Password"
                   type="password"
                   value={demoPassword}
                   onChange={(e) => setDemoPassword(e.target.value)}
-                  error="Минимум 8 символов."
+                  error="At least 8 characters."
                 />
               </div>
               <div className="mt-4">
-                <Input label="Отключённое поле" placeholder="Недоступно" disabled />
+                <Input label="Disabled field" placeholder="Unavailable" disabled />
               </div>
               <div className="mt-6 grid gap-3 sm:max-w-md">
                 <Input
@@ -1028,7 +1028,7 @@ function Index() {
                     submitted: demoPolicySubmitted,
                     hasValue: demoPolicyEmail.trim().length > 0,
                     invalid: !demoPolicyEmail.includes("@"),
-                    errorMessage: "Укажите корректный email.",
+                    errorMessage: "Enter a valid email.",
                   }}
                 />
                 <Button
@@ -1043,7 +1043,7 @@ function Index() {
 
             <DemoSection
               title="Validation UX (draftFriendly)"
-              description="useFormFields + debounced validate + wizard validate-on-click — без flash при первом символе."
+              description="useFormFields + debounced validate + wizard validate-on-click — no flash on the first character."
               className="lg:col-span-2"
             >
               <ValidationDemo />
@@ -1051,16 +1051,16 @@ function Index() {
 
             <DemoSection
               title="Textarea"
-              description="Многострочное поле для форм с опциональной подписью и сообщением валидации."
+              description="Multi-line field for forms with an optional caption and validation message."
               className="lg:col-span-2"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <Textarea
-                    label="Комментарий"
-                    placeholder="Введите текст…"
+                    label="Comment"
+                    placeholder="Enter text…"
                     rows={5}
-                    hint="До 500 символов."
+                    hint="Up to 500 characters."
                     textareaClassName={demoTextareaClass}
                     value={demoComment}
                     onChange={(e) => setDemoComment(e.target.value)}
@@ -1068,17 +1068,17 @@ function Index() {
                 </div>
                 <div>
                   <Textarea
-                    label="Описание"
-                    placeholder="Краткое описание"
+                    label="Description"
+                    placeholder="Short description"
                     rows={5}
-                    error="Укажите описание."
+                    error="Enter a description."
                     textareaClassName={demoTextareaClass}
                   />
                 </div>
                 <div>
                   <Textarea
-                    label="Отключённое поле"
-                    placeholder="Недоступно"
+                    label="Disabled field"
+                    placeholder="Unavailable"
                     disabled
                     rows={5}
                     textareaClassName={demoTextareaClass}
@@ -1089,25 +1089,25 @@ function Index() {
 
             <DemoSection
               title="Calendar"
-              description="Выбор даты в popover. Значение — yyyy-MM-dd, отображение — dd.MM.yyyy."
+              description="Date picker in a popover. Value is yyyy-MM-dd, display is dd.MM.yyyy."
             >
               <div className="grid gap-4">
                 <Calendar
-                  label="Дата начала"
+                  label="Start date"
                   required
                   value={demoDate}
                   onValueChange={(v) => {
                     setDemoDate(v);
-                    setDemoDateError(v ? null : "Укажите дату.");
+                    setDemoDateError(v ? null : "Select a date.");
                   }}
                   minDate={todayLocalDay()}
                   error={demoDateError}
-                  tooltipContent="Дата не может быть раньше сегодняшнего дня."
+                  tooltipContent="Date cannot be earlier than today."
                 />
                 <p className="text-sm text-muted-foreground">
-                  Значение:{" "}
+                  Value:{" "}
                   <span className="font-medium text-foreground">
-                    {demoDate ?? "не выбрано"}
+                    {demoDate ?? "not selected"}
                   </span>
                 </p>
               </div>
@@ -1115,24 +1115,24 @@ function Index() {
 
             <DemoSection
               title="Checkbox"
-              description="Чекбокс с кастомным боксом, подписью и валидацией."
+              description="Checkbox with a custom box, label, and validation."
             >
               <div className="flex flex-col gap-4">
                 <Checkbox
-                  label="Согласен с условиями обработки персональных данных"
+                  label="I agree to the personal data processing terms"
                   checked={demoAgreed}
                   onChange={(e) => setDemoAgreed(e.target.checked)}
                 />
                 <Checkbox
-                  label="Получать уведомления о статусе заявки"
-                  tooltipContent="Письма приходят только при смене статуса заявки."
+                  label="Receive request status notifications"
+                  tooltipContent="Emails are only sent when the request status changes."
                   checked={demoNotify}
                   onChange={(e) => setDemoNotify(e.target.checked)}
                 />
-                <Checkbox label="Опция недоступна" defaultChecked disabled />
+                <Checkbox label="Option unavailable" defaultChecked disabled />
                 <Checkbox
-                  label="Обязательное согласие"
-                  error={demoAgreed ? null : "Необходимо принять условия."}
+                  label="Required consent"
+                  error={demoAgreed ? null : "You must accept the terms."}
                   checked={demoAgreed}
                   onChange={(e) => setDemoAgreed(e.target.checked)}
                 />
@@ -1141,14 +1141,14 @@ function Index() {
 
             <DemoSection
               title="Basic selects"
-              description="Однозначный и множественный выбор."
+              description="Single and multiple selection."
               className="lg:col-span-2"
             >
               <div className="grid gap-5">
                 <Select
                   mode="single"
                   label="Single select"
-                  placeholder="Выберите опцию"
+                  placeholder="Select an option"
                   options={selectOptions}
                   value={selected}
                   onValueChange={setSelected}
@@ -1157,7 +1157,7 @@ function Index() {
                 <Select
                   mode="multiple"
                   label="Multiple select"
-                  placeholder="Выберите опции"
+                  placeholder="Select options"
                   options={selectOptions}
                   value={multiSelected}
                   onValueChange={(option) =>
@@ -1179,14 +1179,14 @@ function Index() {
 
             <DemoSection
               title="Advanced selects"
-              description="Табличный, диалоговый и иерархический выбор с lazy-загрузкой."
+              description="Table, dialog, and hierarchical selection with lazy loading."
               className="lg:col-span-2"
             >
               <div className="grid gap-5">
                 <Select
                   mode="multiple"
                   label="Table template select"
-                  placeholder="Выберите ЦФО"
+                  placeholder="Select cost center"
                   template="table"
                   options={cfoOptions.filter((option) =>
                     option.meta?.code.toLowerCase().includes(cfoSearch.toLowerCase()),
@@ -1194,12 +1194,12 @@ function Index() {
                   value={cfoSelected}
                   total={cfoOptions.length}
                   onSearch={setCfoSearch}
-                  searchPlaceholder="Поиск по управленческому коду"
+                  searchPlaceholder="Search by management code"
                   columns={[
-                    { key: "name", title: "Наименование", render: (option) => option.label },
+                    { key: "name", title: "Name", render: (option) => option.label },
                     {
                       key: "code",
-                      title: "Управленческий код",
+                      title: "Management code",
                       render: (option) => option.meta?.code,
                     },
                   ]}
@@ -1219,17 +1219,17 @@ function Index() {
                 />
                 <DialogSelect
                   label="Dialog select"
-                  placeholder="Укажите или выберите ФИО кандидата"
+                  placeholder="Enter or pick the candidate's name"
                   value={employee}
                   loadOptions={loadEmployees}
                   onValueChange={setEmployee}
                   onClear={() => setEmployee(null)}
-                  searchPlaceholder="Введите ФИО сотрудника"
+                  searchPlaceholder="Enter employee name"
                   columns={[
-                    { key: "name", title: "ФИО сотрудника", render: (option) => option.label },
+                    { key: "name", title: "Employee name", render: (option) => option.label },
                     {
                       key: "birthDate",
-                      title: "День рождения",
+                      title: "Birthday",
                       render: (option) => option.meta?.birthDate,
                     },
                   ]}
@@ -1237,9 +1237,9 @@ function Index() {
                 />
                 <TreeDialogSelect
                   label="Tree dialog select"
-                  placeholder="Выберите подразделение"
-                  title="Выбор подразделения"
-                  searchPlaceholder="Поиск по названию"
+                  placeholder="Select department"
+                  title="Department selection"
+                  searchPlaceholder="Search by name"
                   value={department}
                   loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
