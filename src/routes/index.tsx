@@ -366,51 +366,51 @@ function Index() {
   const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>([
     {
       id: "lvl-1",
-      name: "Согласование",
+      name: "Review",
       status: "completed",
       stages: [
         {
           id: "stg-1",
-          name: "УОР",
+          name: "OPS",
           approvers: [
-            { id: "a1", fullName: "Кнопкин Т.Ю.", status: "approved", actedAt: "02.03.26 12:05" },
+            { id: "a1", fullName: "T. Knopkin", status: "approved", actedAt: "02.03.26 12:05" },
           ],
         },
         {
           id: "stg-2",
-          name: "УМП",
+          name: "PMO",
           approvers: [
-            { id: "a2", fullName: "Кнопкин Т.Ю.", status: "approved", actedAt: "02.03.26 12:05" },
+            { id: "a2", fullName: "T. Knopkin", status: "approved", actedAt: "02.03.26 12:05" },
           ],
         },
       ],
     },
     {
       id: "lvl-2",
-      name: "Утверждение",
+      name: "Approval",
       status: "current",
-      stages: [{ id: "stg-3", name: "Руководитель L1", approvers: [] }],
+      stages: [{ id: "stg-3", name: "L1 manager", approvers: [] }],
     },
     {
       id: "lvl-3",
-      name: "Исполнение",
+      name: "Execution",
       status: "pending",
       stages: [
         {
           id: "stg-4",
-          name: "УОР",
+          name: "OPS",
           approvers: [
-            { id: "a3", fullName: "Чайников В.Д." },
-            { id: "a4", fullName: "Зефирцева Л.П." },
-            { id: "a5", fullName: "Бубликова Н.Р." },
-            { id: "a6", fullName: "Снежкина М.А." },
-            { id: "a7", fullName: "Тапочкина Е.С." },
-            { id: "a8", fullName: "Ракетина Ю.Г." },
+            { id: "a3", fullName: "V. Chainikov" },
+            { id: "a4", fullName: "L. Zefirtseva" },
+            { id: "a5", fullName: "N. Bublikova" },
+            { id: "a6", fullName: "M. Snezhkina" },
+            { id: "a7", fullName: "E. Tapochkina" },
+            { id: "a8", fullName: "Y. Raketina" },
           ],
         },
       ],
     },
-    { id: "lvl-4", name: "Завершено", status: "pending", stages: [] },
+    { id: "lvl-4", name: "Completed", status: "pending", stages: [] },
   ]);
 
   const loadEmployees = useCallback(
@@ -482,62 +482,62 @@ function Index() {
 
   /* ---------- CommentFeed demo state ---------- */
   const currentDemoUser = useMemo<CommentAuthor>(
-    () => ({ id: "u-me", name: "Андрей Ф." }),
+    () => ({ id: "u-me", name: "Andrew F." }),
     [],
   );
   const commentsRef = useRef<FeedComment[]>([
     {
       id: "c-1",
       parentId: null,
-      author: { id: "u-1", name: "Кнопкин Тимур" },
-      text: "Коллеги, выкладываю первую версию документа на ваше рассмотрение. Жду фидбэк до конца недели.",
+      author: { id: "u-1", name: "Timur Knopkin" },
+      text: "Team, sharing the first draft of the document for your review. Looking forward to feedback by end of week.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
       repliesCount: 2,
       attachments: [
         { id: "f-1", name: "specification-v1.pdf", size: 184_320 },
       ],
       recipients: [
-        { id: "u-2", name: "Снежкина М." },
-        { id: "u-3", name: "Бубликова Н." },
+        { id: "u-2", name: "M. Snezhkina" },
+        { id: "u-3", name: "N. Bublikova" },
       ],
     },
     {
       id: "c-2",
       parentId: null,
-      author: { id: "u-2", name: "Снежкина Мария" },
-      text: "Принято в работу. Вернусь с правками в течение дня.",
+      author: { id: "u-2", name: "Maria Snezhkina" },
+      text: "Got it. I'll come back with edits later today.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-3",
       parentId: null,
-      author: { id: "u-3", name: "Бубликова Надежда" },
-      text: "По разделу 3.2 есть вопросы — нужно синхронизироваться лично.",
+      author: { id: "u-3", name: "Nadezhda Bublikova" },
+      text: "I have questions about section 3.2 — let's sync in person.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
       repliesCount: 1,
     },
     {
       id: "c-4",
       parentId: "c-1",
-      author: { id: "u-me", name: "Андрей Ф." },
-      text: "Спасибо! Подсветил пару моментов в разделе про API.",
+      author: { id: "u-me", name: "Andrew F." },
+      text: "Thanks! I flagged a couple of things in the API section.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-5",
       parentId: "c-1",
-      author: { id: "u-2", name: "Снежкина Мария" },
-      text: "Дополню, что нужно учесть требования безопасности из соседнего проекта.",
+      author: { id: "u-2", name: "Maria Snezhkina" },
+      text: "Also — we should account for the security requirements from the sibling project.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-6",
       parentId: "c-3",
-      author: { id: "u-me", name: "Андрей Ф." },
-      text: "Окей, давай завтра в 11:00.",
+      author: { id: "u-me", name: "Andrew F." },
+      text: "OK, let's meet tomorrow at 11:00.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
       repliesCount: 0,
     },
