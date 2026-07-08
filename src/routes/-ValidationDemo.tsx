@@ -14,7 +14,7 @@ type DemoValidation = {
 
 function inferErrorKind(error: string | null): "required" | "semantic" | undefined {
   if (!error) return undefined;
-  if (error.toLowerCase().includes("required") || error.includes("Укажите")) {
+  if (error.toLowerCase().includes("required") || error.toLowerCase().includes("enter")) {
     return "required";
   }
   return "semantic";
@@ -26,15 +26,15 @@ export function ValidationDemo() {
   const [step1Field, setStep1Field] = useState("");
   const [wizardStep, setWizardStep] = useState(0);
   const [liveValidation, setLiveValidation] = useState<DemoValidation>({
-    name: "Укажите имя.",
-    step1Field: "Укажите значение.",
+    name: "Enter a name.",
+    step1Field: "Enter a value.",
   });
 
   const validateFn = useCallback(async (): Promise<DemoValidation> => {
     await new Promise((r) => setTimeout(r, 400));
     return {
-      name: name.trim() ? null : "Укажите имя.",
-      step1Field: step1Field.trim() ? null : "Укажите значение.",
+      name: name.trim() ? null : "Enter a name.",
+      step1Field: step1Field.trim() ? null : "Enter a value.",
     };
   }, [name, step1Field]);
 
@@ -79,11 +79,11 @@ export function ValidationDemo() {
   return (
     <div className="grid gap-4 sm:max-w-lg">
       <p className="text-sm text-muted-foreground">
-        draftFriendly + debounce 400ms: первый символ не мигает (#2). Wizard «Далее» без
-        disabled.
+        draftFriendly + debounce 400ms: the first character doesn't flash (#2). Wizard
+        "Next" without disabled.
       </p>
       <Input
-        label="Имя (live validate)"
+        label="Name (live validate)"
         value={name}
         onChange={(e) => {
           setName(e.target.value);
@@ -96,7 +96,7 @@ export function ValidationDemo() {
       {wizardStep === 0 ? (
         <>
           <Input
-            label="Шаг 1 — поле wizard"
+            label="Step 1 — wizard field"
             value={step1Field}
             onChange={(e) => {
               setStep1Field(e.target.value);
@@ -107,11 +107,11 @@ export function ValidationDemo() {
             showErrorPolicy={step1Bind.showErrorPolicy}
           />
           <Button variant="secondary" size="small" onClick={() => void handleNext()}>
-            Далее (validate-on-click)
+            Next (validate-on-click)
           </Button>
         </>
       ) : (
-        <p className="text-sm text-green-700">Шаг 2 — wizard passed.</p>
+        <p className="text-sm text-green-700">Step 2 — wizard passed.</p>
       )}
       <Button
         variant="ghost"

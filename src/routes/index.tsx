@@ -76,13 +76,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Cozy UI — премиальная React-библиотека компонентов: типизированная, с SCSS-модулями, SSR-safe и tree-shakeable ESM + CJS.",
+          "Cozy UI — a premium React component library: fully typed, SCSS modules, SSR-safe and tree-shakeable ESM + CJS.",
       },
       { property: "og:title", content: "Cozy UI — Premium React Component Library" },
       {
         property: "og:description",
         content:
-          "Премиальные React-компоненты Cozy UI: типизированы end-to-end, готовы к npm, SSR-safe.",
+          "Premium Cozy UI React components: end-to-end typed, npm-ready, SSR-safe.",
       },
     ],
   }),
@@ -90,17 +90,17 @@ export const Route = createFileRoute("/")({
 });
 
 const tabsItems = [
-  { value: "overview", label: "Обзор" },
-  { value: "data", label: "Данные" },
-  { value: "settings", label: "Настройки" },
+  { value: "overview", label: "Overview" },
+  { value: "data", label: "Data" },
+  { value: "settings", label: "Settings" },
 ];
 
 const demoTextareaClass = "h-[7.5rem] min-h-[7.5rem] resize-none";
 
 const tabContent: Record<string, string> = {
-  overview: "Сводка по проекту: ключевые показатели и активность за последние 7 дней.",
-  data: "Таблицы и графики с агрегированными данными по выбранным фильтрам.",
-  settings: "Управление параметрами рабочего пространства и интеграциями.",
+  overview: "Project summary: key metrics and activity for the last 7 days.",
+  data: "Tables and charts with aggregated data by the selected filters.",
+  settings: "Manage workspace settings and integrations.",
 };
 
 const selectOptions: CustomOption<{ group: string }>[] = [
@@ -113,29 +113,29 @@ const cfoOptions: CustomOption<{ code: string }>[] = Array.from({ length: 12 }, 
   const codes = ["0201RP", "0201SN", "0201SP", "0203SN", "0204SN", "0205SN", "0206RP", "0207SP"];
   return {
     value: `cfo-${num}`,
-    label: `ЦФО ${num}`,
+    label: `Cost center ${num}`,
     meta: { code: codes[index % codes.length] },
   };
 });
 const employeeSurnames = [
-  "Бодряков",
-  "Чайников",
-  "Пельменев",
-  "Снежкин",
-  "Лунатиков",
-  "Кнопкин",
-  "Громовик",
-  "Тапочкин",
-  "Зефирцев",
-  "Бубликов",
-  "Ракетин",
-  "Смайлов",
+  "Bodryakov",
+  "Chainikov",
+  "Pelmenev",
+  "Snezhkin",
+  "Lunatikov",
+  "Knopkin",
+  "Gromovik",
+  "Tapochkin",
+  "Zefirtsev",
+  "Bublikov",
+  "Raketin",
+  "Smailov",
 ];
 const employeeNamePatronymics = [
-  { name: "Александр", patronymic: "Александрович" },
-  { name: "Дмитрий", patronymic: "Дмитриевич" },
-  { name: "Сергей", patronymic: "Сергеевич" },
-  { name: "Иван", patronymic: "Иванович" },
+  { name: "Alexander", patronymic: "A." },
+  { name: "Dmitry", patronymic: "D." },
+  { name: "Sergey", patronymic: "S." },
+  { name: "Ivan", patronymic: "I." },
 ];
 const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
   { length: 48 },
@@ -170,52 +170,52 @@ type DeptNode = TreeNode<DeptMeta, string> & { children?: DeptNode[] };
 const deptTree: DeptNode[] = [
   {
     value: "co-1",
-    label: "ООО «Лютик»",
+    label: "Buttercup LLC",
     hasChildren: true,
     meta: { kind: "company" },
     children: [
       {
         value: "dep-1",
-        label: "Департамент разработки",
+        label: "Engineering department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
           {
             value: "team-1",
-            label: "Команда фронтенда",
+            label: "Frontend team",
             hasChildren: false,
             meta: { kind: "team" },
           },
-          { value: "team-2", label: "Команда бэкенда", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-2", label: "Backend team", hasChildren: false, meta: { kind: "team" } },
           { value: "team-3", label: "QA", hasChildren: false, meta: { kind: "team" } },
         ],
       },
       {
         value: "dep-2",
-        label: "Департамент продаж",
+        label: "Sales department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
-          { value: "team-4", label: "B2B продажи", hasChildren: false, meta: { kind: "team" } },
-          { value: "team-5", label: "B2C продажи", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-4", label: "B2B sales", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-5", label: "B2C sales", hasChildren: false, meta: { kind: "team" } },
         ],
       },
     ],
   },
   {
     value: "co-2",
-    label: "ООО «Ромашка»",
+    label: "Daisy LLC",
     hasChildren: true,
     meta: { kind: "company" },
     children: [
       {
         value: "dep-3",
-        label: "Финансовый отдел",
+        label: "Finance department",
         hasChildren: true,
         meta: { kind: "department" },
         children: [
-          { value: "team-6", label: "Бухгалтерия", hasChildren: false, meta: { kind: "team" } },
-          { value: "team-7", label: "Казначейство", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-6", label: "Accounting", hasChildren: false, meta: { kind: "team" } },
+          { value: "team-7", label: "Treasury", hasChildren: false, meta: { kind: "team" } },
         ],
       },
     ],
@@ -366,51 +366,51 @@ function Index() {
   const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>([
     {
       id: "lvl-1",
-      name: "Согласование",
+      name: "Review",
       status: "completed",
       stages: [
         {
           id: "stg-1",
-          name: "УОР",
+          name: "OPS",
           approvers: [
-            { id: "a1", fullName: "Кнопкин Т.Ю.", status: "approved", actedAt: "02.03.26 12:05" },
+            { id: "a1", fullName: "T. Knopkin", status: "approved", actedAt: "02.03.26 12:05" },
           ],
         },
         {
           id: "stg-2",
-          name: "УМП",
+          name: "PMO",
           approvers: [
-            { id: "a2", fullName: "Кнопкин Т.Ю.", status: "approved", actedAt: "02.03.26 12:05" },
+            { id: "a2", fullName: "T. Knopkin", status: "approved", actedAt: "02.03.26 12:05" },
           ],
         },
       ],
     },
     {
       id: "lvl-2",
-      name: "Утверждение",
+      name: "Approval",
       status: "current",
-      stages: [{ id: "stg-3", name: "Руководитель L1", approvers: [] }],
+      stages: [{ id: "stg-3", name: "L1 manager", approvers: [] }],
     },
     {
       id: "lvl-3",
-      name: "Исполнение",
+      name: "Execution",
       status: "pending",
       stages: [
         {
           id: "stg-4",
-          name: "УОР",
+          name: "OPS",
           approvers: [
-            { id: "a3", fullName: "Чайников В.Д." },
-            { id: "a4", fullName: "Зефирцева Л.П." },
-            { id: "a5", fullName: "Бубликова Н.Р." },
-            { id: "a6", fullName: "Снежкина М.А." },
-            { id: "a7", fullName: "Тапочкина Е.С." },
-            { id: "a8", fullName: "Ракетина Ю.Г." },
+            { id: "a3", fullName: "V. Chainikov" },
+            { id: "a4", fullName: "L. Zefirtseva" },
+            { id: "a5", fullName: "N. Bublikova" },
+            { id: "a6", fullName: "M. Snezhkina" },
+            { id: "a7", fullName: "E. Tapochkina" },
+            { id: "a8", fullName: "Y. Raketina" },
           ],
         },
       ],
     },
-    { id: "lvl-4", name: "Завершено", status: "pending", stages: [] },
+    { id: "lvl-4", name: "Completed", status: "pending", stages: [] },
   ]);
 
   const loadEmployees = useCallback(
@@ -482,62 +482,62 @@ function Index() {
 
   /* ---------- CommentFeed demo state ---------- */
   const currentDemoUser = useMemo<CommentAuthor>(
-    () => ({ id: "u-me", name: "Андрей Ф." }),
+    () => ({ id: "u-me", name: "Andrew F." }),
     [],
   );
   const commentsRef = useRef<FeedComment[]>([
     {
       id: "c-1",
       parentId: null,
-      author: { id: "u-1", name: "Кнопкин Тимур" },
-      text: "Коллеги, выкладываю первую версию документа на ваше рассмотрение. Жду фидбэк до конца недели.",
+      author: { id: "u-1", name: "Timur Knopkin" },
+      text: "Team, sharing the first draft of the document for your review. Looking forward to feedback by end of week.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
       repliesCount: 2,
       attachments: [
         { id: "f-1", name: "specification-v1.pdf", size: 184_320 },
       ],
       recipients: [
-        { id: "u-2", name: "Снежкина М." },
-        { id: "u-3", name: "Бубликова Н." },
+        { id: "u-2", name: "M. Snezhkina" },
+        { id: "u-3", name: "N. Bublikova" },
       ],
     },
     {
       id: "c-2",
       parentId: null,
-      author: { id: "u-2", name: "Снежкина Мария" },
-      text: "Принято в работу. Вернусь с правками в течение дня.",
+      author: { id: "u-2", name: "Maria Snezhkina" },
+      text: "Got it. I'll come back with edits later today.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-3",
       parentId: null,
-      author: { id: "u-3", name: "Бубликова Надежда" },
-      text: "По разделу 3.2 есть вопросы — нужно синхронизироваться лично.",
+      author: { id: "u-3", name: "Nadezhda Bublikova" },
+      text: "I have questions about section 3.2 — let's sync in person.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
       repliesCount: 1,
     },
     {
       id: "c-4",
       parentId: "c-1",
-      author: { id: "u-me", name: "Андрей Ф." },
-      text: "Спасибо! Подсветил пару моментов в разделе про API.",
+      author: { id: "u-me", name: "Andrew F." },
+      text: "Thanks! I flagged a couple of things in the API section.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-5",
       parentId: "c-1",
-      author: { id: "u-2", name: "Снежкина Мария" },
-      text: "Дополню, что нужно учесть требования безопасности из соседнего проекта.",
+      author: { id: "u-2", name: "Maria Snezhkina" },
+      text: "Also — we should account for the security requirements from the sibling project.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(),
       repliesCount: 0,
     },
     {
       id: "c-6",
       parentId: "c-3",
-      author: { id: "u-me", name: "Андрей Ф." },
-      text: "Окей, давай завтра в 11:00.",
+      author: { id: "u-me", name: "Andrew F." },
+      text: "OK, let's meet tomorrow at 11:00.",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
       repliesCount: 0,
     },
@@ -675,10 +675,10 @@ function Index() {
             Cozy UI
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Премиальная, продуманная React-библиотека компонентов из{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>: типизирована
-            end-to-end, на SCSS-модулях с дизайн-токенами, SSR-safe и tree-shakeable (ESM + CJS).
-            Проверьте внешний вид, поведение и npm-экспорты — всё в одном месте.
+            A premium, considered React component library from{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-base">src/lib</code>: end-to-end
+            typed, SCSS modules with design tokens, SSR-safe and tree-shakeable (ESM + CJS).
+            Check the look, behavior, and npm exports — all in one place.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1">
@@ -710,10 +710,10 @@ function Index() {
 
           <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
             {[
-              { label: "Компонентов", value: "20+" },
+              { label: "Components", value: "20+" },
               { label: "TypeScript", value: "100%" },
-              { label: "Дерево-шейкинг", value: "Yes" },
-              { label: "Стили", value: "SCSS modules" },
+              { label: "Tree-shaking", value: "Yes" },
+              { label: "Styles", value: "SCSS modules" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -731,19 +731,19 @@ function Index() {
           <CategoryHeader
             eyebrow="01 — Layout"
             title="Layout & containers"
-            description="Базовые контейнеры для группировки и презентации контента."
+            description="Base containers for grouping and presenting content."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="BaseBlock"
-              description="Универсальный контейнер с заголовком и подзаголовком."
+              description="Universal container with a title and subtitle."
               className="lg:col-span-2"
             >
               <BaseBlock title="Cozy UI v1.0" subtitle="@andreyfedkovich/cozy-ui · MIT License">
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {[
-                    { v: "20+", l: "компонентов" },
-                    { v: "60+", l: "иконок" },
+                    { v: "20+", l: "components" },
+                    { v: "60+", l: "icons" },
                     { v: "≈ 38 KB", l: "gzip" },
                   ].map((m) => (
                     <div key={m.l} className="rounded-lg bg-[#f4f7fa] px-4 py-3">
@@ -754,23 +754,23 @@ function Index() {
                 </div>
                 <div className="mt-5 flex gap-3">
                   <Button variant="primary">View on npm</Button>
-                  <Button variant="text">Документация →</Button>
+                  <Button variant="text">Documentation →</Button>
                 </div>
               </BaseBlock>
             </DemoSection>
 
             <DemoSection
               title="DetailView"
-              description="Премиальная форма просмотра: секции, поля, копирование. В одном экземпляре можно смешивать декларативный sections и composition-first children."
+              description="Premium detail view: sections, fields, copy. In one instance you can mix declarative sections with composition-first children."
               className="lg:col-span-2"
             >
               <DetailView
                 sections={[
                   {
-                    title: "Основные данные",
+                    title: "Main data",
                     fields: [
                       {
-                        label: "Номер и дата заявки",
+                        label: "Request number and date",
                         value: (
                           <span>
                             <a
@@ -779,50 +779,50 @@ function Index() {
                             >
                               ekd-242512
                             </a>{" "}
-                            от 08.05.2026
+                            from 08.05.2026
                           </span>
                         ),
                         copyable: true,
                         copyText: "ekd-242512",
                       },
-                      { label: "Автор заявки", value: "Петрова Е. В." },
+                      { label: "Request author", value: "E. Petrova" },
                       {
-                        label: "Статус",
-                        value: <Tag>На согласовании</Tag>,
+                        label: "Status",
+                        value: <Tag>Under review</Tag>,
                       },
-                      { label: "Срок действия заявки", value: "Нет" },
-                      { label: "Код ШР", value: "66" },
-                      { label: "Комментарий к коду ШР", value: "Замена сотрудника" },
-                      { label: "Название вакансии", value: "Frontend-разработчик" },
-                      { label: "Юридическая должность", value: "Ведущий специалист" },
+                      { label: "Request expiration", value: "None" },
+                      { label: "SR code", value: "66" },
+                      { label: "SR code comment", value: "Employee replacement" },
+                      { label: "Job title", value: "Frontend developer" },
+                      { label: "Legal position", value: "Senior specialist" },
                     ],
                   },
                   {
-                    title: "Формальные признаки должности",
+                    title: "Position formalities",
                     fields: [
-                      { label: "Заказчик по заявке", value: "Иванов И. И." },
-                      { label: "Функциональный руководитель", value: "Руководитель отсутствует" },
-                      { label: "Руководитель L1", value: "Иванов И. И." },
-                      { label: "Корпоративное подразделение", value: "Корпоративное подразделение" },
-                      { label: "Юридическое подразделение", value: "Юридическое подразделение" },
+                      { label: "Requester", value: "I. Ivanov" },
+                      { label: "Functional manager", value: "No manager assigned" },
+                      { label: "L1 manager", value: "I. Ivanov" },
+                      { label: "Corporate division", value: "Corporate division" },
+                      { label: "Legal division", value: "Legal division" },
                     ],
                   },
                 ]}
               >
-                <DetailView.Section title="Контакты">
+                <DetailView.Section title="Contacts">
                   <DetailView.Field label="Email" value="petrova@example.com" copyable />
-                  <DetailView.Field label="Телефон" value="+7 (900) 123-45-67" copyable />
+                  <DetailView.Field label="Phone" value="+1 (555) 123-4567" copyable />
                   <DetailView.Field
-                    label="Адрес"
-                    hint="Основное место работы"
+                    label="Address"
+                    hint="Primary workplace"
                   >
-                    г. Москва, ул. Примерная, д. 1, оф. 42
+                    1 Sample Street, office 42, Springfield
                   </DetailView.Field>
                 </DetailView.Section>
 
-                  <DetailView.Section title="Кастомный шаблон поля">
+                  <DetailView.Section title="Custom field template">
                     <DetailView.Field
-                      label="Прогресс онбординга"
+                      label="Onboarding progress"
                       render={({ label, value: _v }) => (
                         <div
                           className="grid items-center gap-5"
@@ -847,7 +847,7 @@ function Index() {
 
             <DemoSection
               title="Card"
-              description="Простые карточки с фоном, цветом или изображением."
+              description="Simple cards with a background color or image."
               className="lg:col-span-2"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -880,35 +880,35 @@ function Index() {
                 </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
-                Поддерживают `link`, `imageUrl`, кастомные размеры и цвета.
+                Support `link`, `imageUrl`, custom sizes and colors.
               </p>
             </DemoSection>
 
             <DemoSection
               title="CollapsableBlock"
-              description="Блок с заголовком, подсказкой и раскрывающимся контентом."
+              description="Block with a title, tooltip, and expandable content."
             >
               <CollapsableBlock
-                header="Список изменений · v1.0.0"
+                header="Changelog · v1.0.0"
                 defaultOpen
-                infoTooltipContent="Дата релиза: 30 апреля 2026"
+                infoTooltipContent="Release date: April 30, 2026"
                 content={
                   <div className="flex flex-col gap-3 pt-1">
                     <div className="flex items-center gap-3">
                       <Tag>Feature</Tag>
-                      <span className="text-base">Новый компонент Stepper</span>
+                      <span className="text-base">New Stepper component</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Feature</Tag>
-                      <span className="text-base">TreeDialogSelect c lazy-загрузкой</span>
+                      <span className="text-base">TreeDialogSelect with lazy loading</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Fix</Tag>
-                      <span className="text-base">Согласованный border-radius у всех Select</span>
+                      <span className="text-base">Consistent border-radius across all Select</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Tag>Fix</Tag>
-                      <span className="text-base">Увеличены контролы внутри Select</span>
+                      <span className="text-base">Larger controls inside Select</span>
                     </div>
                   </div>
                 }
@@ -917,12 +917,12 @@ function Index() {
 
             <DemoSection
               title="Collapse · FAQ"
-              description="Несколько Collapse подряд формируют классический FAQ."
+              description="Multiple Collapse in a row form a classic FAQ."
             >
               <div className="divide-y divide-border/60">
                 <div className="py-2">
                   <Collapse
-                    header="Как установить пакет?"
+                    header="How do I install the package?"
                     defaultOpen
                     content={
                       <code className="mt-2 block rounded-md bg-[#0f172a] px-3 py-2 text-sm text-white">
@@ -933,14 +933,14 @@ function Index() {
                 </div>
                 <div className="py-2">
                   <Collapse
-                    header="Поддерживает ли библиотека SSR?"
-                    content="Да. Все компоненты совместимы с TanStack Start и Next.js."
+                    header="Does the library support SSR?"
+                    content="Yes. All components are compatible with TanStack Start and Next.js."
                   />
                 </div>
                 <div className="py-2">
                   <Collapse
-                    header="Как кастомизировать темы?"
-                    content="Переопределите CSS-переменные палитры в собственном scss-файле и подключите его после стилей библиотеки."
+                    header="How do I customize themes?"
+                    content="Override the CSS palette variables in your own scss file and load it after the library styles."
                   />
                 </div>
               </div>
@@ -948,17 +948,17 @@ function Index() {
 
             <DemoSection
               title="EmptyComponent"
-              description="Состояние «нет данных» с CTA-кнопкой."
+              description="Empty state with a CTA button."
               className="lg:col-span-2"
             >
               <div className="rounded-xl border border-border/50 bg-white p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <h4 className="text-lg font-semibold">Список задач</h4>
-                  <Button variant="text">+ Создать</Button>
+                  <h4 className="text-lg font-semibold">Task list</h4>
+                  <Button variant="text">+ Create</Button>
                 </div>
                 <EmptyComponent
-                  title="Задач пока нет"
-                  description="Создайте первую задачу — она появится здесь."
+                  title="No tasks yet"
+                  description="Create your first task — it will appear here."
                 />
               </div>
             </DemoSection>
@@ -970,12 +970,12 @@ function Index() {
           <CategoryHeader
             eyebrow="02 — Inputs"
             title="Inputs & selection"
-            description="Поля ввода, селекты, переключатели и подписи к формам."
+            description="Input fields, selects, toggles, and form captions."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="RadioGroupButton"
-              description="Сегментированный переключатель с одним активным значением."
+              description="Segmented toggle with a single active value."
             >
               <RadioGroupButton
                 options={[
@@ -987,13 +987,13 @@ function Index() {
                 onChange={setRadio}
               />
               <p className="mt-3 text-sm text-muted-foreground">
-                Активный: <span className="font-medium text-foreground">{radio}</span>
+                Active: <span className="font-medium text-foreground">{radio}</span>
               </p>
             </DemoSection>
 
             <DemoSection
               title="Input"
-              description="Текстовое поле для форм с опциональной подписью и сообщением валидации."
+              description="Text field for forms with an optional caption and validation message."
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -1003,18 +1003,18 @@ function Index() {
                     value={demoEmail}
                     onChange={(e) => setDemoEmail(e.target.value)}
                   />
-                  <InputCaption variant="neutral">Используется для входа в систему.</InputCaption>
+                  <InputCaption variant="neutral">Used to sign in.</InputCaption>
                 </div>
                 <Input
-                  label="Пароль"
+                  label="Password"
                   type="password"
                   value={demoPassword}
                   onChange={(e) => setDemoPassword(e.target.value)}
-                  error="Минимум 8 символов."
+                  error="At least 8 characters."
                 />
               </div>
               <div className="mt-4">
-                <Input label="Отключённое поле" placeholder="Недоступно" disabled />
+                <Input label="Disabled field" placeholder="Unavailable" disabled />
               </div>
               <div className="mt-6 grid gap-3 sm:max-w-md">
                 <Input
@@ -1028,7 +1028,7 @@ function Index() {
                     submitted: demoPolicySubmitted,
                     hasValue: demoPolicyEmail.trim().length > 0,
                     invalid: !demoPolicyEmail.includes("@"),
-                    errorMessage: "Укажите корректный email.",
+                    errorMessage: "Enter a valid email.",
                   }}
                 />
                 <Button
@@ -1043,7 +1043,7 @@ function Index() {
 
             <DemoSection
               title="Validation UX (draftFriendly)"
-              description="useFormFields + debounced validate + wizard validate-on-click — без flash при первом символе."
+              description="useFormFields + debounced validate + wizard validate-on-click — no flash on the first character."
               className="lg:col-span-2"
             >
               <ValidationDemo />
@@ -1051,16 +1051,16 @@ function Index() {
 
             <DemoSection
               title="Textarea"
-              description="Многострочное поле для форм с опциональной подписью и сообщением валидации."
+              description="Multi-line field for forms with an optional caption and validation message."
               className="lg:col-span-2"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <Textarea
-                    label="Комментарий"
-                    placeholder="Введите текст…"
+                    label="Comment"
+                    placeholder="Enter text…"
                     rows={5}
-                    hint="До 500 символов."
+                    hint="Up to 500 characters."
                     textareaClassName={demoTextareaClass}
                     value={demoComment}
                     onChange={(e) => setDemoComment(e.target.value)}
@@ -1068,17 +1068,17 @@ function Index() {
                 </div>
                 <div>
                   <Textarea
-                    label="Описание"
-                    placeholder="Краткое описание"
+                    label="Description"
+                    placeholder="Short description"
                     rows={5}
-                    error="Укажите описание."
+                    error="Enter a description."
                     textareaClassName={demoTextareaClass}
                   />
                 </div>
                 <div>
                   <Textarea
-                    label="Отключённое поле"
-                    placeholder="Недоступно"
+                    label="Disabled field"
+                    placeholder="Unavailable"
                     disabled
                     rows={5}
                     textareaClassName={demoTextareaClass}
@@ -1089,25 +1089,25 @@ function Index() {
 
             <DemoSection
               title="Calendar"
-              description="Выбор даты в popover. Значение — yyyy-MM-dd, отображение — dd.MM.yyyy."
+              description="Date picker in a popover. Value is yyyy-MM-dd, display is dd.MM.yyyy."
             >
               <div className="grid gap-4">
                 <Calendar
-                  label="Дата начала"
+                  label="Start date"
                   required
                   value={demoDate}
                   onValueChange={(v) => {
                     setDemoDate(v);
-                    setDemoDateError(v ? null : "Укажите дату.");
+                    setDemoDateError(v ? null : "Select a date.");
                   }}
                   minDate={todayLocalDay()}
                   error={demoDateError}
-                  tooltipContent="Дата не может быть раньше сегодняшнего дня."
+                  tooltipContent="Date cannot be earlier than today."
                 />
                 <p className="text-sm text-muted-foreground">
-                  Значение:{" "}
+                  Value:{" "}
                   <span className="font-medium text-foreground">
-                    {demoDate ?? "не выбрано"}
+                    {demoDate ?? "not selected"}
                   </span>
                 </p>
               </div>
@@ -1115,24 +1115,24 @@ function Index() {
 
             <DemoSection
               title="Checkbox"
-              description="Чекбокс с кастомным боксом, подписью и валидацией."
+              description="Checkbox with a custom box, label, and validation."
             >
               <div className="flex flex-col gap-4">
                 <Checkbox
-                  label="Согласен с условиями обработки персональных данных"
+                  label="I agree to the personal data processing terms"
                   checked={demoAgreed}
                   onChange={(e) => setDemoAgreed(e.target.checked)}
                 />
                 <Checkbox
-                  label="Получать уведомления о статусе заявки"
-                  tooltipContent="Письма приходят только при смене статуса заявки."
+                  label="Receive request status notifications"
+                  tooltipContent="Emails are only sent when the request status changes."
                   checked={demoNotify}
                   onChange={(e) => setDemoNotify(e.target.checked)}
                 />
-                <Checkbox label="Опция недоступна" defaultChecked disabled />
+                <Checkbox label="Option unavailable" defaultChecked disabled />
                 <Checkbox
-                  label="Обязательное согласие"
-                  error={demoAgreed ? null : "Необходимо принять условия."}
+                  label="Required consent"
+                  error={demoAgreed ? null : "You must accept the terms."}
                   checked={demoAgreed}
                   onChange={(e) => setDemoAgreed(e.target.checked)}
                 />
@@ -1141,14 +1141,14 @@ function Index() {
 
             <DemoSection
               title="Basic selects"
-              description="Однозначный и множественный выбор."
+              description="Single and multiple selection."
               className="lg:col-span-2"
             >
               <div className="grid gap-5">
                 <Select
                   mode="single"
                   label="Single select"
-                  placeholder="Выберите опцию"
+                  placeholder="Select an option"
                   options={selectOptions}
                   value={selected}
                   onValueChange={setSelected}
@@ -1157,7 +1157,7 @@ function Index() {
                 <Select
                   mode="multiple"
                   label="Multiple select"
-                  placeholder="Выберите опции"
+                  placeholder="Select options"
                   options={selectOptions}
                   value={multiSelected}
                   onValueChange={(option) =>
@@ -1179,14 +1179,14 @@ function Index() {
 
             <DemoSection
               title="Advanced selects"
-              description="Табличный, диалоговый и иерархический выбор с lazy-загрузкой."
+              description="Table, dialog, and hierarchical selection with lazy loading."
               className="lg:col-span-2"
             >
               <div className="grid gap-5">
                 <Select
                   mode="multiple"
                   label="Table template select"
-                  placeholder="Выберите ЦФО"
+                  placeholder="Select cost center"
                   template="table"
                   options={cfoOptions.filter((option) =>
                     option.meta?.code.toLowerCase().includes(cfoSearch.toLowerCase()),
@@ -1194,12 +1194,12 @@ function Index() {
                   value={cfoSelected}
                   total={cfoOptions.length}
                   onSearch={setCfoSearch}
-                  searchPlaceholder="Поиск по управленческому коду"
+                  searchPlaceholder="Search by management code"
                   columns={[
-                    { key: "name", title: "Наименование", render: (option) => option.label },
+                    { key: "name", title: "Name", render: (option) => option.label },
                     {
                       key: "code",
-                      title: "Управленческий код",
+                      title: "Management code",
                       render: (option) => option.meta?.code,
                     },
                   ]}
@@ -1219,17 +1219,17 @@ function Index() {
                 />
                 <DialogSelect
                   label="Dialog select"
-                  placeholder="Укажите или выберите ФИО кандидата"
+                  placeholder="Enter or pick the candidate's name"
                   value={employee}
                   loadOptions={loadEmployees}
                   onValueChange={setEmployee}
                   onClear={() => setEmployee(null)}
-                  searchPlaceholder="Введите ФИО сотрудника"
+                  searchPlaceholder="Enter employee name"
                   columns={[
-                    { key: "name", title: "ФИО сотрудника", render: (option) => option.label },
+                    { key: "name", title: "Employee name", render: (option) => option.label },
                     {
                       key: "birthDate",
-                      title: "День рождения",
+                      title: "Birthday",
                       render: (option) => option.meta?.birthDate,
                     },
                   ]}
@@ -1237,9 +1237,9 @@ function Index() {
                 />
                 <TreeDialogSelect
                   label="Tree dialog select"
-                  placeholder="Выберите подразделение"
-                  title="Выбор подразделения"
-                  searchPlaceholder="Поиск по названию"
+                  placeholder="Select department"
+                  title="Department selection"
+                  searchPlaceholder="Search by name"
                   value={department}
                   loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
@@ -1256,10 +1256,10 @@ function Index() {
           <CategoryHeader
             eyebrow="03 — Navigation"
             title="Navigation & flow"
-            description="Табы, шаги мастера и карусели для перехода между состояниями."
+            description="Tabs, wizard steps, and carousels for moving between states."
           />
           <div className="grid gap-6 lg:grid-cols-2">
-            <DemoSection title="Tabs" description="Классические табы с подчёркиванием активного.">
+            <DemoSection title="Tabs" description="Classic tabs with an underline on the active one.">
               <Tabs
                 items={tabsItems}
                 value={tab}
@@ -1270,7 +1270,7 @@ function Index() {
               <p className="mt-4 text-base text-muted-foreground">{tabContent[tab]}</p>
             </DemoSection>
 
-            <DemoSection title="TabsRounded" description="Скруглённый стиль табов.">
+            <DemoSection title="TabsRounded" description="Rounded tab style.">
               <TabsRounded
                 items={tabsItems}
                 value={roundedTab}
@@ -1282,7 +1282,7 @@ function Index() {
 
             <DemoSection
               title="Stepper"
-              description="Прогресс пошагового процесса с возможностью переключения."
+              description="Step process progress with the ability to switch steps."
               className="lg:col-span-2"
             >
               <div className="flex flex-col gap-8">
@@ -1293,16 +1293,16 @@ function Index() {
                 />
                 <div>
                   <p className="mb-3 text-sm text-muted-foreground">
-                    Статичный пример
+                    Static example
                   </p>
                   <Stepper
                     items={[
-                      { label: "Тип изменений" },
-                      { label: "Основные данные" },
-                      { label: "Корпоративная должность" },
-                      { label: "Юридическая должность" },
-                      { label: "Бюджет" },
-                      { label: "ИФ" },
+                      { label: "Change type" },
+                      { label: "Main data" },
+                      { label: "Corporate position" },
+                      { label: "Legal position" },
+                      { label: "Budget" },
+                      { label: "IF" },
                     ]}
                     current={0}
                   />
@@ -1310,10 +1310,10 @@ function Index() {
                 <div>
                   <Stepper
                     items={[
-                      { label: "Контакты" },
-                      { label: "Документы" },
-                      { label: "Подтверждение" },
-                      { label: "Готово" },
+                      { label: "Contacts" },
+                      { label: "Documents" },
+                      { label: "Confirmation" },
+                      { label: "Done" },
                     ]}
                     current={namedStep}
                     onChange={setNamedStep}
@@ -1324,13 +1324,13 @@ function Index() {
                       variant="secondary"
                       onClick={() => setNamedStep((s) => Math.max(0, s - 1))}
                     >
-                      Назад
+                      Back
                     </Button>
                     <Button
                       variant="primary"
                       onClick={() => setNamedStep((s) => Math.min(3, s + 1))}
                     >
-                      Далее
+                      Next
                     </Button>
                   </div>
                 </div>
@@ -1339,21 +1339,21 @@ function Index() {
 
             <DemoSection
               title="Carousel"
-              description="Слайдер с произвольной разметкой каждого слайда."
+              description="Slider with custom markup per slide."
               className="lg:col-span-2"
             >
               <Carousel
                 items={[
                   {
                     id: 1,
-                    title: "Дизайн-система",
-                    subtitle: "Единая палитра, типографика, отступы",
+                    title: "Design system",
+                    subtitle: "Unified palette, typography, spacing",
                     gradient: "from-[#4573d9] to-[#001a3d]",
                   },
                   {
                     id: 2,
                     title: "Form controls",
-                    subtitle: "Селекты, чекбоксы, инпуты",
+                    subtitle: "Selects, checkboxes, inputs",
                     gradient: "from-[#00a582] to-[#001a3d]",
                   },
                   {
@@ -1376,7 +1376,7 @@ function Index() {
 
             <DemoSection
               title="SideNav"
-              description="Премиальная навигационная панель с блоком пользователя, секциями и переключаемым внешним видом."
+              description="Premium navigation panel with a user block, sections, and switchable appearance."
               className="lg:col-span-2"
               stageClassName="!p-4"
             >
@@ -1393,7 +1393,7 @@ function Index() {
                 <Checkbox
                   checked={sideNavCollapsed}
                   onChange={(e) => setSideNavCollapsed(e.target.checked)}
-                  label="Свернуть"
+                  label="Collapse"
                 />
               </div>
               <div className="flex gap-6">
@@ -1406,8 +1406,8 @@ function Index() {
                     activeId={sideNavActive}
                     onActiveChange={setSideNavActive}
                     user={{
-                      name: "Петрова Екатерина",
-                      role: "Начальник управления",
+                      name: "Ekaterina Petrova",
+                      role: "Head of Department",
                       badge: true,
                       onClick: () => {},
                     }}
@@ -1415,40 +1415,40 @@ function Index() {
                       {
                         id: "main",
                         items: [
-                          { id: "home", label: "Главная", icon: <HomeIcon /> },
-                          { id: "structure", label: "Структура", icon: <GridIcon /> },
+                          { id: "home", label: "Home", icon: <HomeIcon /> },
+                          { id: "structure", label: "Structure", icon: <GridIcon /> },
                         ],
                       },
                       {
                         id: "self",
-                        title: "Для меня",
+                        title: "For me",
                         items: [
-                          { id: "profile", label: "Мой профиль", icon: <ProfileIcon /> },
+                          { id: "profile", label: "My profile", icon: <ProfileIcon /> },
                           {
                             id: "time",
-                            label: "Моё рабочее время",
+                            label: "My working time",
                             icon: <ClockIcon />,
                             badge: "3",
                           },
-                          { id: "vacation", label: "Мои отпуска", icon: <PlaneIcon /> },
-                          { id: "tasks", label: "Мои цели и задачи", icon: <TaskListIcon /> },
-                          { id: "health", label: "Моё здоровье", icon: <HeartIcon /> },
+                          { id: "vacation", label: "My vacations", icon: <PlaneIcon /> },
+                          { id: "tasks", label: "My goals and tasks", icon: <TaskListIcon /> },
+                          { id: "health", label: "My health", icon: <HeartIcon /> },
                         ],
                       },
                       {
                         id: "services",
-                        title: "Сервисы",
+                        title: "Services",
                         items: [
-                          { id: "polls", label: "Опросы", icon: <ChatIcon /> },
-                          { id: "help", label: "Помощники", icon: <HelpIcon /> },
-                          { id: "requests", label: "Заявки", icon: <NotebookIcon />, badge: "12" },
+                          { id: "polls", label: "Surveys", icon: <ChatIcon /> },
+                          { id: "help", label: "Assistants", icon: <HelpIcon /> },
+                          { id: "requests", label: "Requests", icon: <NotebookIcon />, badge: "12" },
                           {
                             id: "positions",
-                            label: "Управление должностями",
+                            label: "Position management",
                             icon: <SettingsIcon />,
                           },
-                          { id: "bank", label: "Мой Банк", icon: <WalletIcon /> },
-                          { id: "reports", label: "Отчёты", icon: <FeedbackIcon /> },
+                          { id: "bank", label: "My Bank", icon: <WalletIcon /> },
+                          { id: "reports", label: "Reports", icon: <FeedbackIcon /> },
                         ],
                       },
                     ]}
@@ -1459,21 +1459,21 @@ function Index() {
                         className="flex items-center gap-2"
                       >
                         <CancelIcon width={16} height={16} />
-                        {!sideNavCollapsed && <span>Выйти</span>}
+                        {!sideNavCollapsed && <span>Log out</span>}
                       </Button>
                     }
                   />
                 </div>
                 <div className="flex-1 rounded-xl border border-dashed border-border/70 bg-white/60 p-6 text-sm text-muted-foreground">
                   <div className="mb-2 text-base font-semibold text-foreground">
-                    Активный пункт:{" "}
+                    Active item:{" "}
                     <span className="text-primary">{sideNavActive}</span>
                   </div>
                   <p>
-                    Конфигурируется через массив <code>sections</code> или composition-first
+                    Configurable via a <code>sections</code> array or the composition-first
                     API: <code>SideNav.Section</code>, <code>SideNav.Item</code>,{" "}
-                    <code>SideNav.Custom</code>. Переключайте Classic / Transparent / Aurora
-                    и свёртывание, чтобы оценить варианты.
+                    <code>SideNav.Custom</code>. Toggle Classic / Transparent / Aurora and
+                    collapse to compare variants.
                   </p>
                 </div>
               </div>
@@ -1486,12 +1486,12 @@ function Index() {
           <CategoryHeader
             eyebrow="03.5 — Settings"
             title="SettingsView"
-            description="Композиционный компонент для страниц настроек: секции, строки с описанием, контролы Switch / Select / Button / ImageSegmented, ссылки Open и опасная зона. API в духе DetailView."
+            description="Composable component for settings pages: sections, rows with descriptions, Switch / Select / Button / ImageSegmented controls, Open links, and a danger zone. API in the spirit of DetailView."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="SettingsView"
-              description="Premium-страница настроек. Переключайте variant и density."
+              description="Premium settings page. Toggle variant and density."
               className="lg:col-span-2"
               stageClassName="bg-gradient-to-b from-[#f4f7fa] to-white"
             >
@@ -1741,7 +1741,7 @@ function Index() {
                     {
                       id: "links",
                       title: "Documentation",
-                      description: "Полезные ссылки — целая строка кликабельна",
+                      description: "Useful links — the entire row is clickable",
                       items: [
                         {
                           id: "docs",
@@ -1763,19 +1763,19 @@ function Index() {
                     },
                     {
                       id: "danger",
-                      title: "Опасная зона",
+                      title: "Danger zone",
                       collapsible: true,
                       defaultOpen: false,
                       items: [
                         {
                           id: "delete",
                           icon: <CancelIcon />,
-                          label: "Удалить аккаунт",
-                          description: "Действие необратимо. Все данные будут удалены.",
+                          label: "Delete account",
+                          description: "This action is irreversible. All data will be deleted.",
                           danger: true,
                           control: (
                             <Button variant="danger" size="small">
-                              Удалить
+                              Delete
                             </Button>
                           ),
                         },
@@ -1785,10 +1785,10 @@ function Index() {
                 />
 
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Composition-first: можно мешать <code>sections</code> и{" "}
-                  <code>SettingsView.Section / Item / Group</code>. Switch — зелёный iOS-style,
-                  ImageSegmented — переключатель с превью (как Agent/Editor), а для строк-ссылок
-                  поддержаны <code>href + external</code> и кнопка Open.
+                  Composition-first: you can mix <code>sections</code> with{" "}
+                  <code>SettingsView.Section / Item / Group</code>. Switch is an iOS-style
+                  green toggle, ImageSegmented is a preview-based control (like Agent/Editor),
+                  and row links support <code>href + external</code> and an Open button.
                 </div>
               </div>
             </DemoSection>
@@ -1800,12 +1800,12 @@ function Index() {
           <CategoryHeader
             eyebrow="04 — Feedback"
             title="Feedback & overlays"
-            description="Кнопки, теги, тултипы, поповеры, спиннеры и копирование."
+            description="Buttons, tags, tooltips, popovers, spinners, and copy-to-clipboard."
           />
           <div className="grid gap-6 lg:grid-cols-2">
             <DemoSection
               title="Button"
-              description="Все варианты кнопок и состояние загрузки."
+              description="All button variants and the loading state."
               className="lg:col-span-2"
             >
               <div className="flex flex-wrap items-center gap-3">
@@ -1821,7 +1821,7 @@ function Index() {
               </div>
             </DemoSection>
 
-            <DemoSection title="Tag" description="Статусные метки разных размеров.">
+            <DemoSection title="Tag" description="Status labels in different sizes.">
               <div className="flex flex-wrap gap-3">
                 <Tag>Readonly</Tag>
                 <Tag isSmall onClick={() => undefined}>
@@ -1836,7 +1836,7 @@ function Index() {
 
             <DemoSection
               title="CopyTextTrigger + TooltipDark"
-              description="Копирование строки и тёмная подсказка."
+              description="Copy-to-clipboard and dark tooltip."
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-4 rounded-lg bg-[#0f172a] px-4 py-3 font-mono text-sm text-white">
@@ -1844,7 +1844,7 @@ function Index() {
                   <CopyTextTrigger
                     copied={copied}
                     onClick={handleCopy}
-                    ariaLabel="Скопировать команду"
+                    ariaLabel="Copy command"
                     className="!text-white"
                   >
                     Copy
@@ -1852,7 +1852,7 @@ function Index() {
                 </div>
                 <div>
                   <TooltipDark
-                    content="Тёмный tooltip с подсказкой"
+                    content="Dark tooltip with a hint"
                     trigger="hover"
                     placement="top"
                   >
@@ -1864,7 +1864,7 @@ function Index() {
 
             <DemoSection
               title="TooltipLight + Popover"
-              description="Светлая подсказка и поповер для расширенного контента."
+              description="Light tooltip and popover for richer content."
               className="lg:col-span-2"
             >
               <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border/50 bg-white p-4">
@@ -1872,23 +1872,23 @@ function Index() {
                   Light tooltip
                 </Button>
                 <TooltipLight placement="top" target={tooltipTargetId}>
-                  Светлый tooltip
+                  Light tooltip
                 </TooltipLight>
                 <Popover
                   trigger={<Button variant="primary">Open popover</Button>}
                   placement="bottom"
                 >
-                  Контент popover-компонента.
+                  Popover component content.
                 </Popover>
                 <span className="ml-auto text-sm text-muted-foreground">
-                  Используется как тулбар: подсказки + действия.
+                  Used as a toolbar: hints + actions.
                 </span>
               </div>
             </DemoSection>
 
             <DemoSection
               title="Spinner"
-              description="Три размера индикатора загрузки в реалистичных карточках."
+              description="Three loader sizes in realistic cards."
               className="lg:col-span-2"
             >
               <div className="grid gap-4 md:grid-cols-3">
@@ -1918,19 +1918,19 @@ function Index() {
           <CategoryHeader
             eyebrow="05 — Workflow"
             title="Workflow & approvals"
-            description="Многоуровневый маршрут с параллельными этапами и режимом редактирования."
+            description="Multi-level route with parallel stages and an edit mode."
           />
           <div className="grid gap-6">
             <DemoSection
-              title="ApprovalRoute · Маршрут согласования"
-              description="Уровни и параллельные этапы со статусами, согласующими, причинами отклонения и редактированием."
+              title="ApprovalRoute · Approval route"
+              description="Levels and parallel stages with statuses, approvers, rejection reasons, and editing."
             >
               <div className="mb-5 flex items-center gap-4">
-                <span className="text-base font-medium text-foreground">Режим:</span>
+                <span className="text-base font-medium text-foreground">Mode:</span>
                 <RadioGroupButton<string>
                   options={[
-                    { value: "view", label: "Просмотр" },
-                    { value: "edit", label: "Редактирование" },
+                    { value: "view", label: "View" },
+                    { value: "edit", label: "Edit" },
                   ]}
                   value={routeEditable}
                   onChange={(v) => setRouteEditable(v)}
@@ -2020,8 +2020,8 @@ function Index() {
             </DemoSection>
 
             <DemoSection
-              title="CommentFeed · Лента комментариев"
-              description="Древовидные обсуждения с ленивой постраничной загрузкой по веткам, вложениями, ознакомителями, окном редактирования 10 минут и системой прав."
+              title="CommentFeed · Comment thread"
+              description="Threaded discussions with lazy per-branch pagination, attachments, mentions, a 10-minute edit window, and a permission system."
             >
               <CommentFeed
                 currentUser={currentDemoUser}
@@ -2033,10 +2033,10 @@ function Index() {
                 onUploadAttachment={onUploadDemoAttachment}
                 onDeleteAttachment={onDeleteDemoAttachment}
                 onDownloadAttachment={(att) =>
-                  window.alert(`Скачать ${att.name} (${att.size} байт)`)
+                  window.alert(`Download ${att.name} (${att.size} bytes)`)
                 }
                 pageSize={5}
-                title="Обсуждение документа"
+                title="Document discussion"
                 eyebrow="Discussion"
               />
             </DemoSection>
