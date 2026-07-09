@@ -7,6 +7,7 @@
 
 - **fix:** `TreeDialogSelect` — при `resolveSelectedPath` догружать siblings для раскрытых уровней через `loadNodes`.
 - **fix:** `TreeDialogSelect` — стабильная прокрутка к выбранному узлу при открытии (retry до появления строки в DOM; без ложного скролла при ручном раскрытии узлов).
+- **fix:** `TreeDialogSelect` — прокрутка к выбранному узлу только после завершения preload siblings и отрисовки дерева (`useLayoutEffect` + `IntersectionObserver`).
 
 ## 1.0.3 - 2026-07-09
 

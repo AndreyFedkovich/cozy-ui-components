@@ -1,5 +1,13 @@
 import cn from "classnames";
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +31,8 @@ import css from "./TreeDialogSelect.module.scss";
 
 const DEFAULT_DEBOUNCE_MS = 350;
 const ROOT_KEY = "__root__" as const;
+const SCROLL_VISIBILITY_TIMEOUT_MS = 500;
+const SCROLL_VISIBILITY_THRESHOLD = 0.9;
 
 export type TreeNode<T, S extends string | number> = {
   value: S;
@@ -395,41 +405,47 @@ export const TreeDialogSelect = <T, S extends string | number>({
     });
   }, [isOpen, value, resolveSelectedPath, debouncedSearch, loadChildren]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen || scrollTarget == null) return;
     if (pendingSelection?.value !== scrollTarget) return;
+    if (loadingNodes.size > 0) return;
 
-    let cancelled = false;
-    let attempts = 0;
-    const maxAttempts = 15;
+    const container = treeContainerRef.current;
+    if (!container) return;
 
-    const tryScroll = () => {
-      if (cancelled) return;
+    const row = container.querySelector(`[data-tree-node-value="${String(scrollTarget)}"]`);
+    if (!row) return;
 
-      const row = treeContainerRef.current?.querySelector(
-        `[data-tree-node-value="${String(scrollTarget)}"]`,
-      );
+    row.scrollIntoView({ block: "nearest" });
 
-      if (row) {
+    let timeoutId = 0;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= SCROLL_VISIBILITY_THRESHOLD) {
+          setScrollTarget(null);
+          observer.disconnect();
+          clearTimeout(timeoutId);
+          return;
+        }
+
         row.scrollIntoView({ block: "nearest" });
-        setScrollTarget(null);
-        return;
-      }
+      },
+      { root: container, threshold: [0, SCROLL_VISIBILITY_THRESHOLD, 1] },
+    );
 
-      if (++attempts < maxAttempts) {
-        requestAnimationFrame(tryScroll);
-      } else {
-        setScrollTarget(null);
-      }
-    };
+    observer.observe(row);
 
-    const frameId = requestAnimationFrame(tryScroll);
+    timeoutId = window.setTimeout(() => {
+      observer.disconnect();
+      setScrollTarget(null);
+    }, SCROLL_VISIBILITY_TIMEOUT_MS);
 
     return () => {
-      cancelled = true;
-      cancelAnimationFrame(frameId);
+      observer.disconnect();
+      clearTimeout(timeoutId);
     };
-  }, [isOpen, scrollTarget, pendingSelection, childrenCache, forcedExpanded, loadingNodes]);
+  }, [isOpen, scrollTarget, pendingSelection, childrenCache, loadingNodes]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
