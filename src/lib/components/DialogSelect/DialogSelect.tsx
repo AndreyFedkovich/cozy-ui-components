@@ -31,6 +31,10 @@ type LoadOptionsParams = {
   pageSize: number;
 };
 
+export type DialogSelectLoadOptionsParams = LoadOptionsParams & {
+  excludeIds?: string[];
+};
+
 type LoadOptionsResult<T, S extends string | number> = {
   options: CustomOption<T, S>[];
   total?: number;
@@ -49,7 +53,9 @@ export interface DialogSelectProps<T, S extends string | number>
     FieldValidationProps {
   value?: CustomOption<T, S> | null;
   placeholder: string;
-  loadOptions: (params: LoadOptionsParams) => Promise<LoadOptionsResult<T, S>>;
+  loadOptions: (params: DialogSelectLoadOptionsParams) => Promise<LoadOptionsResult<T, S>>;
+  /** ID записей, которые не должны попадать в список выбора (передаются в loadOptions). */
+  excludeIds?: string[];
   onClear?: () => void;
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
@@ -76,6 +82,7 @@ export const DialogSelect = <T, S extends string | number>({
   value,
   placeholder,
   loadOptions,
+  excludeIds,
   onValueChange,
   onChange,
   onBlur,
@@ -166,7 +173,7 @@ export const DialogSelect = <T, S extends string | number>({
     requestIdRef.current = requestId;
     setIsLoading(true);
 
-    loadOptions({ search: debouncedSearch, page, pageSize })
+    loadOptions({ search: debouncedSearch, page, pageSize, excludeIds })
       .then((result) => {
         if (requestIdRef.current !== requestId) {
           return;
@@ -181,7 +188,7 @@ export const DialogSelect = <T, S extends string | number>({
           setIsLoading(false);
         }
       });
-  }, [debouncedSearch, isOpen, loadOptions, page, pageSize]);
+  }, [debouncedSearch, excludeIds, isOpen, loadOptions, page, pageSize]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);

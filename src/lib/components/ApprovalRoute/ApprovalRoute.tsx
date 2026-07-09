@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "../Button/Button";
-import { DialogSelect } from "../DialogSelect/DialogSelect";
+import { DialogSelect, type DialogSelectLoadOptionsParams } from "../DialogSelect/DialogSelect";
 import { CheckIcon, CrossIcon, WarnIcon } from "../../icons";
 import type { CustomOption } from "../Select/Select";
 import css from "./ApprovalRoute.module.scss";
@@ -35,7 +35,6 @@ export type ApprovalLevel = {
   stages: ApprovalStage[];
 };
 
-type LoadOptionsParams = { search: string; page: number; pageSize: number };
 type LoadOptionsResult = { options: CustomOption<unknown, string>[]; total?: number };
 
 export interface ApprovalRouteProps {
@@ -44,7 +43,7 @@ export interface ApprovalRouteProps {
   title?: string;
   eyebrow?: string;
   className?: string;
-  loadApprovers?: (params: LoadOptionsParams) => Promise<LoadOptionsResult>;
+  loadApprovers?: (params: DialogSelectLoadOptionsParams) => Promise<LoadOptionsResult>;
   onAddLevel?: (name: string) => void;
   onRemoveLevel?: (levelId: string) => void;
   onAddStage?: (levelId: string, name: string) => void;
@@ -225,6 +224,7 @@ export const ApprovalRoute: React.FC<ApprovalRouteProps> = ({
                                     title="Добавить согласующего"
                                     searchPlaceholder="Поиск сотрудника"
                                     loadOptions={loadApprovers}
+                                    excludeIds={stage.approvers.map((a) => a.id)}
                                     onChange={(person) =>
                                       onAddApprover?.(level.id, stage.id, person)
                                     }

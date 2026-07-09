@@ -16,7 +16,12 @@ export { EmptyComponent } from "./EmptyComponent/EmptyComponent";
 export { CollapsableBlock } from "./CollapsibleBlock/CollapsableBlock";
 export { Collapse } from "./Collapse/Collapse";
 export { Select, type CustomOption, type SelectColumn } from "./Select/Select";
-export { DialogSelect, type DialogSelectColumn, type DialogSelectProps } from "./DialogSelect/DialogSelect";
+export {
+  DialogSelect,
+  type DialogSelectColumn,
+  type DialogSelectLoadOptionsParams,
+  type DialogSelectProps,
+} from "./DialogSelect/DialogSelect";
 export {
   TreeDialogSelect,
   type TreeDialogSelectProps,

@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "../Button/Button";
-import { DialogSelect } from "../DialogSelect/DialogSelect";
+import { DialogSelect, type DialogSelectLoadOptionsParams } from "../DialogSelect/DialogSelect";
 import { EmptyComponent } from "../EmptyComponent/EmptyComponent";
 import { Spinner } from "../Spinner/Spinner";
 import {
@@ -101,11 +101,9 @@ export interface CommentFeedHandle {
 export interface CommentFeedProps {
   loadComments: (p: CommentLoadParams) => Promise<CommentLoadResult>;
   currentUser: CommentAuthor;
-  recipientsSource?: (params: {
-    search: string;
-    page: number;
-    pageSize: number;
-  }) => Promise<{ options: CustomOption<CommentAuthor, string>[]; total?: number }>;
+  recipientsSource?: (
+    params: DialogSelectLoadOptionsParams,
+  ) => Promise<{ options: CustomOption<CommentAuthor, string>[]; total?: number }>;
 
   onCreate?: (input: CommentMutationInput) => Promise<Comment>;
   onEdit?: (input: CommentEditInput) => Promise<Comment>;
@@ -532,6 +530,7 @@ function CommentForm({
               searchPlaceholder="Поиск сотрудника"
               selectButtonText=""
               loadOptions={recipientsSource}
+              excludeIds={recipients.map((item) => item.id)}
               onChange={(opt) => {
                 const meta = opt.meta;
                 const author: CommentAuthor = meta

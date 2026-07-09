@@ -10,6 +10,7 @@ import {
   CollapsableBlock,
   CopyTextTrigger,
   DialogSelect,
+  type DialogSelectLoadOptionsParams,
   EmptyComponent,
   Calendar,
   Checkbox,
@@ -464,10 +465,13 @@ function Index() {
   }, []);
 
   const loadApproversForRoute = useCallback(
-    async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
+    async ({ search, page, pageSize, excludeIds }: DialogSelectLoadOptionsParams) => {
       await new Promise((r) => window.setTimeout(r, 250));
       const q = search.toLowerCase();
-      const filtered = employeeOptions.filter((o) => o.label.toLowerCase().includes(q));
+      const filtered = employeeOptions.filter(
+        (o) =>
+          o.label.toLowerCase().includes(q) && !excludeIds?.includes(String(o.value)),
+      );
       const start = (page - 1) * pageSize;
       return {
         options: filtered.slice(start, start + pageSize) as unknown as CustomOption<
@@ -555,10 +559,13 @@ function Index() {
   );
 
   const loadDemoRecipients = useCallback(
-    async ({ search, page, pageSize }: { search: string; page: number; pageSize: number }) => {
+    async ({ search, page, pageSize, excludeIds }: DialogSelectLoadOptionsParams) => {
       await new Promise((r) => window.setTimeout(r, 200));
       const q = search.toLowerCase();
-      const filtered = employeeOptions.filter((o) => o.label.toLowerCase().includes(q));
+      const filtered = employeeOptions.filter(
+        (o) =>
+          o.label.toLowerCase().includes(q) && !excludeIds?.includes(String(o.value)),
+      );
       const start = (page - 1) * pageSize;
       return {
         options: filtered.slice(start, start + pageSize).map((o) => ({

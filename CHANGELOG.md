@@ -3,6 +3,16 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 1.0.3 - 2026-07-09
+
+- **feat:** `DialogSelect` — проп `excludeIds`; компонент передаёт его в `loadOptions` и перезапрашивает список при изменении исключений.
+- **refactor:** `CommentFeed` и `ApprovalRoute` используют `excludeIds` prop вместо ручных обёрток `loadOptions`.
+
+## 1.0.2 - 2026-07-09
+
+- **feat:** `CommentFeed.recipientsSource` и `ApprovalRoute.loadApprovers` — опциональный параметр `excludeIds` для исключения уже выбранных сотрудников из списка в `DialogSelect`.
+- **feat:** Экспорт типа `DialogSelectLoadOptionsParams`.
+
 ## 0.10.1 - 2026-07-08
 
 - **fix:** `TreeDialogSelect` — при серверном поиске (`searchNodes`) скрывать ранее загруженные ветки, не входящие в результаты и цепочки предков.

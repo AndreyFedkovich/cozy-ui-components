@@ -665,19 +665,25 @@ Dialog-based picker for large datasets — search + paginated loading + multi-se
 | `label`                  | `ReactNode` | Field label above the trigger.                  |
 | `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
+| `excludeIds`             | `string[]`  | IDs to omit from the picker list (passed to `loadOptions`; filtering is done in your callback or API). |
 
 ```tsx
 import { DialogSelect } from "@andreyfedkovich/cozy-ui";
 
+const [reviewers, setReviewers] = useState<{ id: string; name: string }[]>([]);
+
 <DialogSelect
   title="Add reviewer"
   placeholder="Choose a person"
-  loadOptions={async ({ search, page, pageSize }) => {
-    const res = await fetch(`/api/people?q=${search}&page=${page}&size=${pageSize}`);
+  excludeIds={reviewers.map((r) => r.id)}
+  loadOptions={async ({ search, page, pageSize, excludeIds }) => {
+    const res = await fetch(
+      `/api/people?q=${search}&page=${page}&size=${pageSize}&exclude=${excludeIds?.join(",") ?? ""}`,
+    );
     const { items, total } = await res.json();
     return { options: items.map((p) => ({ value: p.id, label: p.name })), total };
   }}
-  onValueChange={(opt) => console.log(opt)}
+  onValueChange={(opt) => setReviewers((prev) => [...prev, { id: String(opt.value), name: String(opt.label) }])}
 />;
 ```
 
