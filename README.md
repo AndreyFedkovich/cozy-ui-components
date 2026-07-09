@@ -696,6 +696,7 @@ Hierarchical picker with lazy-loaded branches and search.
 | `label`                  | `ReactNode` | Field label above the trigger.                  |
 | `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
+| `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. |
 
 ```tsx
 import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
@@ -707,12 +708,15 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
     nodes: await fetchChildren(parentId, search),
   })}
   searchNodes={async (search) => ({ matches: await searchTreeWithPath(search) })}
+  resolveSelectedPath={async (value) => ({ matches: await resolveTreePathById(value) })}
   leafConfirmOnly
   onValueChange={(node) => console.log(node)}
 />;
 ```
 
 With **`leafConfirmOnly`**, the confirm button in the dialog stays disabled until a row is selected and that node’s `hasChildren` is not strictly `true` (only leaves can be confirmed). Omit the prop to allow confirming any selected node, including branches.
+
+With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`.
 
 #### `InputCaption`
 

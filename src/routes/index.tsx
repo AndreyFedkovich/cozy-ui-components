@@ -340,7 +340,12 @@ function Index() {
   const [cfoSelected, setCfoSelected] = useState<CustomOption<{ code: string }>[]>([]);
   const [cfoSearch, setCfoSearch] = useState("");
   const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
-  const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>(null);
+  const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>({
+    value: "team-2",
+    label: "Backend team",
+    hasChildren: false,
+    meta: { kind: "team" },
+  });
   const [stepperStep, setStepperStep] = useState(2);
   const [namedStep, setNamedStep] = useState(1);
   const tooltipTargetId = "tooltip-light-demo-target";
@@ -451,6 +456,20 @@ function Index() {
         path: path.map(stripChildren),
       }));
     return { matches };
+  }, []);
+
+  const resolveDepartmentPath = useCallback(async (id: string) => {
+    await new Promise((resolve) => window.setTimeout(resolve, 300));
+    const found = collectAllWithPaths(deptTree).find(({ node }) => node.value === id);
+    if (!found) return { matches: [] };
+    return {
+      matches: [
+        {
+          node: stripChildren(found.node),
+          path: found.path.map(stripChildren),
+        },
+      ],
+    };
   }, []);
 
   const handleCopy = () => {
@@ -1250,6 +1269,7 @@ function Index() {
                   value={department}
                   loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
+                  resolveSelectedPath={resolveDepartmentPath}
                   onValueChange={setDepartment}
                   onClear={() => setDepartment(null)}
                 />

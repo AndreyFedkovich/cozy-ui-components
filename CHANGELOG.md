@@ -6,6 +6,7 @@
 ## 1.0.3 - 2026-07-09
 
 - **feat:** `DialogSelect` — проп `excludeIds`; компонент передаёт его в `loadOptions` и перезапрашивает список при изменении исключений.
+- **feat:** `TreeDialogSelect` — проп `resolveSelectedPath` для раскрытия дерева до выбранного значения при открытии диалога (с прокруткой к строке).
 - **refactor:** `CommentFeed` и `ApprovalRoute` используют `excludeIds` prop вместо ручных обёрток `loadOptions`.
 
 ## 1.0.2 - 2026-07-09

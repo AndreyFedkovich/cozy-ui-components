@@ -48,12 +48,77 @@ type TreeLoader<T, S extends string | number> = (
   params: TreeLoadParams<S>,
 ) => Promise<TreeLoadResult<T, S>>;
 
+type Key<S extends string | number> = S | typeof ROOT_KEY;
+
+type TreeStateFromMatches<T, S extends string | number> = {
+  searchMatches: Set<S>;
+  ancestorsToExpand: Set<S>;
+  inferredChildren: Map<Key<S>, Map<S, TreeNode<T, S>>>;
+  resolvedNode: TreeNode<T, S> | null;
+};
+
+function buildTreeStateFromMatches<T, S extends string | number>(
+  matches: TreeSearchResult<T, S>["matches"],
+): TreeStateFromMatches<T, S> {
+  const searchMatches = new Set<S>();
+  const ancestorsToExpand = new Set<S>();
+  const inferredChildren = new Map<Key<S>, Map<S, TreeNode<T, S>>>();
+
+  for (const item of matches) {
+    searchMatches.add(item.node.value);
+
+    const fullPath = [...item.path, item.node];
+    for (let i = 0; i < fullPath.length - 1; i++) {
+      const parent = fullPath[i];
+      const child = fullPath[i + 1];
+      ancestorsToExpand.add(parent.value);
+
+      const parentKey: Key<S> = parent.value;
+      if (!inferredChildren.has(parentKey)) {
+        inferredChildren.set(parentKey, new Map());
+      }
+      inferredChildren.get(parentKey)!.set(child.value, child);
+    }
+    if (fullPath.length > 0) {
+      const root = fullPath[0];
+      if (!inferredChildren.has(ROOT_KEY)) {
+        inferredChildren.set(ROOT_KEY, new Map());
+      }
+      inferredChildren.get(ROOT_KEY)!.set(root.value, root);
+    }
+  }
+
+  return {
+    searchMatches,
+    ancestorsToExpand,
+    inferredChildren,
+    resolvedNode: matches[0]?.node ?? null,
+  };
+}
+
+function mergeInferredChildrenIntoCache<T, S extends string | number>(
+  prev: Map<Key<S>, TreeNode<T, S>[]>,
+  inferredChildren: Map<Key<S>, Map<S, TreeNode<T, S>>>,
+): Map<Key<S>, TreeNode<T, S>[]> {
+  const next = new Map(prev);
+  inferredChildren.forEach((map, key) => {
+    const existing = next.get(key) ?? [];
+    const merged = new Map<S, TreeNode<T, S>>();
+    existing.forEach((n) => merged.set(n.value, n));
+    map.forEach((n, k) => merged.set(k, n));
+    next.set(key, Array.from(merged.values()));
+  });
+  return next;
+}
+
 interface TreeDialogSelectShared<T, S extends string | number>
   extends ValueFieldCallbacks<TreeNode<T, S>>,
     FieldValidationProps {
   value?: TreeNode<T, S> | null;
   placeholder: string;
   searchNodes?: (search: string) => Promise<TreeSearchResult<T, S>>;
+  /** Resolves the path to the currently selected value when the dialog opens. */
+  resolveSelectedPath?: (value: S) => Promise<TreeSearchResult<T, S>>;
   onClear?: () => void;
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
@@ -92,14 +157,13 @@ export type TreeDialogSelectProps<T, S extends string | number> = TreeDialogSele
       }
   );
 
-type Key<S extends string | number> = S | typeof ROOT_KEY;
-
 export const TreeDialogSelect = <T, S extends string | number>({
   value,
   placeholder,
   loadChildren: loadChildrenProp,
   loadNodes,
   searchNodes,
+  resolveSelectedPath,
   onValueChange,
   onChange,
   onBlur,
@@ -154,6 +218,9 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
   const rootRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
+  const resolveRequestIdRef = useRef(0);
+  const scrollToNodeValueRef = useRef<S | null>(null);
+  const treeContainerRef = useRef<HTMLDivElement>(null);
 
   // Загрузка корня при открытии
   useEffect(() => {
@@ -212,54 +279,61 @@ export const TreeDialogSelect = <T, S extends string | number>({
       .then((result) => {
         if (searchRequestIdRef.current !== requestId) return;
 
-        const matches = new Set<S>();
-        const ancestorsToExpand = new Set<S>();
-        // Кэшируем path-узлы как «дети» для авто-раскрытия
-        const inferredChildren = new Map<Key<S>, Map<S, TreeNode<T, S>>>();
+        const { searchMatches, ancestorsToExpand, inferredChildren } = buildTreeStateFromMatches(
+          result.matches,
+        );
 
-        for (const item of result.matches) {
-          matches.add(item.node.value);
-
-          const fullPath = [...item.path, item.node];
-          for (let i = 0; i < fullPath.length - 1; i++) {
-            const parent = fullPath[i];
-            const child = fullPath[i + 1];
-            ancestorsToExpand.add(parent.value);
-
-            const parentKey: Key<S> = parent.value;
-            if (!inferredChildren.has(parentKey)) {
-              inferredChildren.set(parentKey, new Map());
-            }
-            inferredChildren.get(parentKey)!.set(child.value, child);
-          }
-          // корневые узлы пути
-          if (fullPath.length > 0) {
-            const root = fullPath[0];
-            if (!inferredChildren.has(ROOT_KEY)) {
-              inferredChildren.set(ROOT_KEY, new Map());
-            }
-            inferredChildren.get(ROOT_KEY)!.set(root.value, root);
-          }
-        }
-
-        setSearchMatches(matches);
+        setSearchMatches(searchMatches);
         setForcedExpanded(ancestorsToExpand);
-        setChildrenCache((prev) => {
-          const next = new Map(prev);
-          inferredChildren.forEach((map, key) => {
-            const existing = next.get(key) ?? [];
-            const merged = new Map<S, TreeNode<T, S>>();
-            existing.forEach((n) => merged.set(n.value, n));
-            map.forEach((n, k) => merged.set(k, n));
-            next.set(key, Array.from(merged.values()));
-          });
-          return next;
-        });
+        setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
       })
       .finally(() => {
         if (searchRequestIdRef.current === requestId) setIsSearching(false);
       });
   }, [debouncedSearch, isOpen, searchNodes]);
+
+  // Раскрытие дерева до выбранного значения при открытии
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!value) return;
+    if (!resolveSelectedPath) return;
+    if (debouncedSearch) return;
+
+    const requestId = resolveRequestIdRef.current + 1;
+    resolveRequestIdRef.current = requestId;
+
+    resolveSelectedPath(value.value).then((result) => {
+      if (resolveRequestIdRef.current !== requestId) return;
+
+      const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
+        buildTreeStateFromMatches(result.matches);
+
+      setSearchMatches(searchMatches);
+      setForcedExpanded(ancestorsToExpand);
+      setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
+
+      if (resolvedNode) {
+        setPendingSelection(resolvedNode);
+        scrollToNodeValueRef.current = resolvedNode.value;
+      }
+    });
+  }, [isOpen, value, resolveSelectedPath, debouncedSearch]);
+
+  useEffect(() => {
+    const targetValue = scrollToNodeValueRef.current;
+    if (!isOpen || targetValue == null || pendingSelection?.value !== targetValue) return;
+
+    const container = treeContainerRef.current;
+    if (!container) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const row = container.querySelector(`[data-tree-node-value="${String(targetValue)}"]`);
+      row?.scrollIntoView({ block: "nearest" });
+      scrollToNodeValueRef.current = null;
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isOpen, pendingSelection, forcedExpanded, childrenCache]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -269,6 +343,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
       setPendingSelection(null);
       setSearchMatches(new Set());
       setForcedExpanded(new Set());
+      scrollToNodeValueRef.current = null;
     }
   }, []);
 
@@ -383,6 +458,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
             [css.row_match]: isMatch,
           })}
           style={{ paddingLeft: 16 + level * 20 }}
+          data-tree-node-value={String(node.value)}
           onClick={() => handleSelectNode(node)}
         >
           {node.hasChildren ? (
@@ -511,7 +587,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
             {showSearchSpinner && <Spinner size="extraSmall" className={css.searchSpinner} />}
           </div>
 
-          <div className={css.treeContainer}>
+          <div ref={treeContainerRef} className={css.treeContainer}>
             {isRootLoading && rootNodes.length === 0 ? (
               <div className={css.loadingState}>
                 <Spinner size="small" />
