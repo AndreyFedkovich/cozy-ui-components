@@ -111,6 +111,38 @@ function mergeInferredChildrenIntoCache<T, S extends string | number>(
   return next;
 }
 
+function mergeNodesAtKey<T, S extends string | number>(
+  cache: Map<Key<S>, TreeNode<T, S>[]>,
+  key: Key<S>,
+  nodes: TreeNode<T, S>[],
+): Map<Key<S>, TreeNode<T, S>[]> {
+  const next = new Map(cache);
+  const existing = next.get(key) ?? [];
+  const merged = new Map<S, TreeNode<T, S>>();
+  existing.forEach((n) => merged.set(n.value, n));
+  nodes.forEach((n) => merged.set(n.value, n));
+  next.set(key, Array.from(merged.values()));
+  return next;
+}
+
+function collectParentIdsForSiblingPreload<T, S extends string | number>(
+  matches: TreeSearchResult<T, S>["matches"],
+  ancestorsToExpand: Set<S>,
+): Array<S | null> {
+  if (matches.length === 0) return [];
+
+  const ids = new Set<S | null>();
+  ids.add(null);
+  ancestorsToExpand.forEach((id) => ids.add(id));
+
+  const path = matches[0]?.path ?? [];
+  if (path.length > 0) {
+    ids.add(path[path.length - 1]!.value);
+  }
+
+  return Array.from(ids);
+}
+
 interface TreeDialogSelectShared<T, S extends string | number>
   extends ValueFieldCallbacks<TreeNode<T, S>>,
     FieldValidationProps {
@@ -302,7 +334,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const requestId = resolveRequestIdRef.current + 1;
     resolveRequestIdRef.current = requestId;
 
-    resolveSelectedPath(value.value).then((result) => {
+    resolveSelectedPath(value.value).then(async (result) => {
       if (resolveRequestIdRef.current !== requestId) return;
 
       const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
@@ -312,12 +344,56 @@ export const TreeDialogSelect = <T, S extends string | number>({
       setForcedExpanded(ancestorsToExpand);
       setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
 
+      const parentIds = collectParentIdsForSiblingPreload(result.matches, ancestorsToExpand);
+
+      if (parentIds.length > 0) {
+        const keys = parentIds.map((parentId) => (parentId ?? ROOT_KEY) as Key<S>);
+
+        setLoadingNodes((prev) => {
+          const next = new Set(prev);
+          keys.forEach((key) => next.add(key));
+          return next;
+        });
+
+        try {
+          const loads = await Promise.all(
+            parentIds.map(async (parentId) => {
+              const loadResult = await loadChildren({ parentId, search: "" });
+              return {
+                key: (parentId ?? ROOT_KEY) as Key<S>,
+                nodes: loadResult.nodes,
+              };
+            }),
+          );
+
+          if (resolveRequestIdRef.current !== requestId) return;
+
+          setChildrenCache((prev) => {
+            let next = prev;
+            for (const { key, nodes } of loads) {
+              next = mergeNodesAtKey(next, key, nodes);
+            }
+            return next;
+          });
+        } finally {
+          if (resolveRequestIdRef.current === requestId) {
+            setLoadingNodes((prev) => {
+              const next = new Set(prev);
+              keys.forEach((key) => next.delete(key));
+              return next;
+            });
+          }
+        }
+      }
+
+      if (resolveRequestIdRef.current !== requestId) return;
+
       if (resolvedNode) {
         setPendingSelection(resolvedNode);
         scrollToNodeValueRef.current = resolvedNode.value;
       }
     });
-  }, [isOpen, value, resolveSelectedPath, debouncedSearch]);
+  }, [isOpen, value, resolveSelectedPath, debouncedSearch, loadChildren]);
 
   useEffect(() => {
     const targetValue = scrollToNodeValueRef.current;
@@ -361,15 +437,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
       loadChildren({ parentId: parent.value, search: "" })
         .then((result) => {
-          setChildrenCache((prev) => {
-            const next = new Map(prev);
-            const existing = next.get(key) ?? [];
-            const merged = new Map<S, TreeNode<T, S>>();
-            existing.forEach((n) => merged.set(n.value, n));
-            result.nodes.forEach((n) => merged.set(n.value, n));
-            next.set(key, Array.from(merged.values()));
-            return next;
-          });
+          setChildrenCache((prev) => mergeNodesAtKey(prev, key, result.nodes));
         })
         .finally(() => {
           setLoadingNodes((prev) => {

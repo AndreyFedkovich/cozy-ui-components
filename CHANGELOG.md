@@ -3,6 +3,10 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## 1.0.5 - 2026-07-09
+
+- **fix:** `TreeDialogSelect` — при `resolveSelectedPath` догружать siblings для раскрытых уровней через `loadNodes`.
+
 ## 1.0.3 - 2026-07-09
 
 - **feat:** `DialogSelect` — проп `excludeIds`; компонент передаёт его в `loadOptions` и перезапрашивает список при изменении исключений.
