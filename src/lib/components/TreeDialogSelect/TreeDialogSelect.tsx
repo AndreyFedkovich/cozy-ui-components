@@ -247,11 +247,11 @@ export const TreeDialogSelect = <T, S extends string | number>({
   const [searchMatches, setSearchMatches] = useState<Set<S>>(() => new Set());
   const [isSearching, setIsSearching] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<TreeNode<T, S> | null>(null);
+  const [scrollTarget, setScrollTarget] = useState<S | null>(null);
 
   const rootRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
   const resolveRequestIdRef = useRef(0);
-  const scrollToNodeValueRef = useRef<S | null>(null);
   const treeContainerRef = useRef<HTMLDivElement>(null);
 
   // Загрузка корня при открытии
@@ -390,26 +390,46 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
       if (resolvedNode) {
         setPendingSelection(resolvedNode);
-        scrollToNodeValueRef.current = resolvedNode.value;
+        setScrollTarget(resolvedNode.value);
       }
     });
   }, [isOpen, value, resolveSelectedPath, debouncedSearch, loadChildren]);
 
   useEffect(() => {
-    const targetValue = scrollToNodeValueRef.current;
-    if (!isOpen || targetValue == null || pendingSelection?.value !== targetValue) return;
+    if (!isOpen || scrollTarget == null) return;
+    if (pendingSelection?.value !== scrollTarget) return;
 
-    const container = treeContainerRef.current;
-    if (!container) return;
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 15;
 
-    const frameId = window.requestAnimationFrame(() => {
-      const row = container.querySelector(`[data-tree-node-value="${String(targetValue)}"]`);
-      row?.scrollIntoView({ block: "nearest" });
-      scrollToNodeValueRef.current = null;
-    });
+    const tryScroll = () => {
+      if (cancelled) return;
 
-    return () => window.cancelAnimationFrame(frameId);
-  }, [isOpen, pendingSelection, forcedExpanded, childrenCache]);
+      const row = treeContainerRef.current?.querySelector(
+        `[data-tree-node-value="${String(scrollTarget)}"]`,
+      );
+
+      if (row) {
+        row.scrollIntoView({ block: "nearest" });
+        setScrollTarget(null);
+        return;
+      }
+
+      if (++attempts < maxAttempts) {
+        requestAnimationFrame(tryScroll);
+      } else {
+        setScrollTarget(null);
+      }
+    };
+
+    const frameId = requestAnimationFrame(tryScroll);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+    };
+  }, [isOpen, scrollTarget, pendingSelection, childrenCache, forcedExpanded, loadingNodes]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -419,7 +439,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
       setPendingSelection(null);
       setSearchMatches(new Set());
       setForcedExpanded(new Set());
-      scrollToNodeValueRef.current = null;
+      setScrollTarget(null);
     }
   }, []);
 
