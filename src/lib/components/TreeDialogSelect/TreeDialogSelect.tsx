@@ -26,6 +26,7 @@ import {
 } from "../../helpers/validation";
 import { FieldLabel } from "../FieldLabel/FieldLabel";
 import { Spinner } from "../Spinner/Spinner";
+import { Tag } from "../Tag/Tag";
 import { ArrowDownIcon, CrossIcon, SearchIcon } from "../../icons";
 import css from "./TreeDialogSelect.module.scss";
 
@@ -145,22 +146,52 @@ function collectParentIdsForSiblingPreload<T, S extends string | number>(
   ids.add(null);
   ancestorsToExpand.forEach((id) => ids.add(id));
 
-  const path = matches[0]?.path ?? [];
-  if (path.length > 0) {
-    ids.add(path[path.length - 1]!.value);
+  for (const match of matches) {
+    const path = match.path ?? [];
+    if (path.length > 0) {
+      ids.add(path[path.length - 1]!.value);
+    }
   }
 
   return Array.from(ids);
 }
 
+function nodesToMap<T, S extends string | number>(
+  nodes: TreeNode<T, S>[],
+): Map<S, TreeNode<T, S>> {
+  return new Map(nodes.map((node) => [node.value, node]));
+}
+
+function hasBranchInPending<T, S extends string | number>(
+  pending: Map<S, TreeNode<T, S>>,
+): boolean {
+  for (const node of pending.values()) {
+    if (node.hasChildren === true) return true;
+  }
+  return false;
+}
+
+type TreeDialogSelectModeProps<T, S extends string | number> =
+  | {
+      mode?: "single";
+      value?: TreeNode<T, S> | null;
+      resolveSelectedPath?: (value: S) => Promise<TreeSearchResult<T, S>>;
+      onDelete?: never;
+      tagRender?: never;
+    }
+  | {
+      mode: "multiple";
+      value?: TreeNode<T, S>[];
+      resolveSelectedPath?: (value: S) => Promise<TreeSearchResult<T, S>>;
+      onDelete?: (node: TreeNode<T, S>) => void;
+      tagRender?: (node: TreeNode<T, S>) => ReactNode;
+    };
+
 interface TreeDialogSelectShared<T, S extends string | number>
   extends ValueFieldCallbacks<TreeNode<T, S>>,
     FieldValidationProps {
-  value?: TreeNode<T, S> | null;
   placeholder: string;
   searchNodes?: (search: string) => Promise<TreeSearchResult<T, S>>;
-  /** Resolves the path to the currently selected value when the dialog opens. */
-  resolveSelectedPath?: (value: S) => Promise<TreeSearchResult<T, S>>;
   onClear?: () => void;
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
@@ -188,6 +219,7 @@ interface TreeDialogSelectShared<T, S extends string | number>
 
 /** Pass either {@link loadNodes} or {@link loadChildren} (deprecated alias). */
 export type TreeDialogSelectProps<T, S extends string | number> = TreeDialogSelectShared<T, S> &
+  TreeDialogSelectModeProps<T, S> &
   (
     | {
         /** Loads nodes for a tree level (`parentId` null = roots). */ loadNodes: TreeLoader<T, S>;
@@ -198,6 +230,10 @@ export type TreeDialogSelectProps<T, S extends string | number> = TreeDialogSele
         loadNodes?: TreeLoader<T, S>;
       }
   );
+
+type TreeDialogSelectComponentProps<T, S extends string | number> = TreeDialogSelectProps<T, S> & {
+  mode?: "single" | "multiple";
+};
 
 export const TreeDialogSelect = <T, S extends string | number>({
   value,
@@ -211,6 +247,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   onBlur,
   onFocus,
   onClear,
+  onDelete,
   label,
   tooltipContent,
   tooltipPopperClassName,
@@ -229,8 +266,14 @@ export const TreeDialogSelect = <T, S extends string | number>({
   inputClassName,
   selectedOptionRender,
   nodeRender,
+  tagRender,
   leafConfirmOnly = false,
-}: TreeDialogSelectProps<T, S>) => {
+  mode = "single",
+}: TreeDialogSelectComponentProps<T, S>) => {
+  const isMultiple = mode === "multiple";
+  const multipleValue = isMultiple ? (value as TreeNode<T, S>[] | undefined) ?? [] : [];
+  const singleValue = !isMultiple ? (value as TreeNode<T, S> | null | undefined) : null;
+
   const field = useFieldPresentation({
     error,
     suppressError,
@@ -256,13 +299,21 @@ export const TreeDialogSelect = <T, S extends string | number>({
   const [forcedExpanded, setForcedExpanded] = useState<Set<S>>(() => new Set());
   const [searchMatches, setSearchMatches] = useState<Set<S>>(() => new Set());
   const [isSearching, setIsSearching] = useState(false);
-  const [pendingSelection, setPendingSelection] = useState<TreeNode<T, S> | null>(null);
+  const [pendingSingle, setPendingSingle] = useState<TreeNode<T, S> | null>(null);
+  const [pendingMultiple, setPendingMultiple] = useState<Map<S, TreeNode<T, S>>>(() => new Map());
   const [scrollTarget, setScrollTarget] = useState<S | null>(null);
 
   const rootRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
   const resolveRequestIdRef = useRef(0);
   const treeContainerRef = useRef<HTMLDivElement>(null);
+
+  const committedValueSet = useMemo(
+    () => new Set(multipleValue.map((node) => node.value)),
+    [multipleValue],
+  );
+
+  const hasSelectedValue = isMultiple ? multipleValue.length > 0 : Boolean(singleValue);
 
   // Загрузка корня при открытии
   useEffect(() => {
@@ -337,77 +388,103 @@ export const TreeDialogSelect = <T, S extends string | number>({
   // Раскрытие дерева до выбранного значения при открытии
   useEffect(() => {
     if (!isOpen) return;
-    if (!value) return;
     if (!resolveSelectedPath) return;
     if (debouncedSearch) return;
+
+    const selectedNodes = isMultiple
+      ? multipleValue
+      : singleValue
+        ? [singleValue]
+        : [];
+
+    if (selectedNodes.length === 0) return;
 
     const requestId = resolveRequestIdRef.current + 1;
     resolveRequestIdRef.current = requestId;
 
-    resolveSelectedPath(value.value).then(async (result) => {
-      if (resolveRequestIdRef.current !== requestId) return;
+    Promise.all(selectedNodes.map((node) => resolveSelectedPath(node.value))).then(
+      async (results) => {
+        if (resolveRequestIdRef.current !== requestId) return;
 
-      const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
-        buildTreeStateFromMatches(result.matches);
+        const allMatches = results.flatMap((result) => result.matches);
+        const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
+          buildTreeStateFromMatches(allMatches);
 
-      setSearchMatches(searchMatches);
-      setForcedExpanded(ancestorsToExpand);
-      setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
+        setSearchMatches(searchMatches);
+        setForcedExpanded(ancestorsToExpand);
+        setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
 
-      const parentIds = collectParentIdsForSiblingPreload(result.matches, ancestorsToExpand);
+        const parentIds = collectParentIdsForSiblingPreload(allMatches, ancestorsToExpand);
 
-      if (parentIds.length > 0) {
-        const keys = parentIds.map((parentId) => (parentId ?? ROOT_KEY) as Key<S>);
+        if (parentIds.length > 0) {
+          const keys = parentIds.map((parentId) => (parentId ?? ROOT_KEY) as Key<S>);
 
-        setLoadingNodes((prev) => {
-          const next = new Set(prev);
-          keys.forEach((key) => next.add(key));
-          return next;
-        });
-
-        try {
-          const loads = await Promise.all(
-            parentIds.map(async (parentId) => {
-              const loadResult = await loadChildren({ parentId, search: "" });
-              return {
-                key: (parentId ?? ROOT_KEY) as Key<S>,
-                nodes: loadResult.nodes,
-              };
-            }),
-          );
-
-          if (resolveRequestIdRef.current !== requestId) return;
-
-          setChildrenCache((prev) => {
-            let next = prev;
-            for (const { key, nodes } of loads) {
-              next = mergeNodesAtKey(next, key, nodes);
-            }
+          setLoadingNodes((prev) => {
+            const next = new Set(prev);
+            keys.forEach((key) => next.add(key));
             return next;
           });
-        } finally {
-          if (resolveRequestIdRef.current === requestId) {
-            setLoadingNodes((prev) => {
-              const next = new Set(prev);
-              keys.forEach((key) => next.delete(key));
+
+          try {
+            const loads = await Promise.all(
+              parentIds.map(async (parentId) => {
+                const loadResult = await loadChildren({ parentId, search: "" });
+                return {
+                  key: (parentId ?? ROOT_KEY) as Key<S>,
+                  nodes: loadResult.nodes,
+                };
+              }),
+            );
+
+            if (resolveRequestIdRef.current !== requestId) return;
+
+            setChildrenCache((prev) => {
+              let next = prev;
+              for (const { key, nodes } of loads) {
+                next = mergeNodesAtKey(next, key, nodes);
+              }
               return next;
             });
+          } finally {
+            if (resolveRequestIdRef.current === requestId) {
+              setLoadingNodes((prev) => {
+                const next = new Set(prev);
+                keys.forEach((key) => next.delete(key));
+                return next;
+              });
+            }
           }
         }
-      }
 
-      if (resolveRequestIdRef.current !== requestId) return;
+        if (resolveRequestIdRef.current !== requestId) return;
 
-      if (resolvedNode) {
-        setPendingSelection(resolvedNode);
-        setScrollTarget(resolvedNode.value);
-      }
-    });
-  }, [isOpen, value, resolveSelectedPath, debouncedSearch, loadChildren]);
+        if (isMultiple) {
+          setPendingMultiple(nodesToMap(selectedNodes));
+          setScrollTarget(selectedNodes[0]?.value ?? null);
+        } else if (resolvedNode) {
+          setPendingSingle(resolvedNode);
+          setScrollTarget(resolvedNode.value);
+        }
+      },
+    );
+  }, [
+    isOpen,
+    isMultiple,
+    multipleValue,
+    singleValue,
+    resolveSelectedPath,
+    debouncedSearch,
+    loadChildren,
+  ]);
 
   useLayoutEffect(() => {
     if (!isOpen || scrollTarget == null) return;
-    if (pendingSelection?.value !== scrollTarget) return;
+
+    const isScrollTargetPending = isMultiple
+      ? pendingMultiple.has(scrollTarget)
+      : pendingSingle?.value === scrollTarget;
+
+    if (!isScrollTargetPending) return;
     if (loadingNodes.size > 0) return;
 
     const container = treeContainerRef.current;
@@ -445,19 +522,34 @@ export const TreeDialogSelect = <T, S extends string | number>({
       observer.disconnect();
       clearTimeout(timeoutId);
     };
-  }, [isOpen, scrollTarget, pendingSelection, childrenCache, loadingNodes]);
+  }, [
+    isOpen,
+    isMultiple,
+    scrollTarget,
+    pendingSingle,
+    pendingMultiple,
+    childrenCache,
+    loadingNodes,
+  ]);
 
-  const handleOpenChange = useCallback((open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      setSearch("");
-      setDebouncedSearch("");
-      setPendingSelection(null);
-      setSearchMatches(new Set());
-      setForcedExpanded(new Set());
-      setScrollTarget(null);
-    }
-  }, []);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      setIsOpen(open);
+      if (open && isMultiple) {
+        setPendingMultiple(nodesToMap(multipleValue));
+      }
+      if (!open) {
+        setSearch("");
+        setDebouncedSearch("");
+        setPendingSingle(null);
+        setPendingMultiple(new Map());
+        setSearchMatches(new Set());
+        setForcedExpanded(new Set());
+        setScrollTarget(null);
+      }
+    },
+    [isMultiple, multipleValue],
+  );
 
   const ensureChildrenLoaded = useCallback(
     (parent: TreeNode<T, S>) => {
@@ -503,30 +595,73 @@ export const TreeDialogSelect = <T, S extends string | number>({
   );
 
   const handleSelectNode = useCallback((node: TreeNode<T, S>) => {
-    setPendingSelection(node);
+    setPendingSingle(node);
   }, []);
 
+  const handleToggleNode = useCallback(
+    (node: TreeNode<T, S>) => {
+      if (leafConfirmOnly && node.hasChildren === true) return;
+
+      setPendingMultiple((prev) => {
+        const next = new Map(prev);
+        if (next.has(node.value)) {
+          next.delete(node.value);
+        } else {
+          next.set(node.value, node);
+        }
+        return next;
+      });
+    },
+    [leafConfirmOnly],
+  );
+
   const handleConfirm = useCallback(() => {
-    if (
-      leafConfirmOnly &&
-      (!pendingSelection || pendingSelection.hasChildren === true)
-    ) {
+    if (isMultiple) {
+      if (leafConfirmOnly && hasBranchInPending(pendingMultiple)) {
+        return;
+      }
+
+      const committedMap = nodesToMap(multipleValue);
+
+      pendingMultiple.forEach((node, nodeValue) => {
+        if (!committedMap.has(nodeValue)) {
+          handleValueChange?.(node);
+        }
+      });
+
+      committedMap.forEach((node, nodeValue) => {
+        if (!pendingMultiple.has(nodeValue)) {
+          onDelete?.(node);
+        }
+      });
+
+      handleOpenChange(false);
       return;
     }
-    if (pendingSelection) {
-      handleValueChange?.(pendingSelection);
+
+    if (leafConfirmOnly && (!pendingSingle || pendingSingle.hasChildren === true)) {
+      return;
+    }
+    if (pendingSingle) {
+      handleValueChange?.(pendingSingle);
     }
     handleOpenChange(false);
-  }, [handleOpenChange, handleValueChange, leafConfirmOnly, pendingSelection]);
+  }, [
+    handleOpenChange,
+    handleValueChange,
+    isMultiple,
+    leafConfirmOnly,
+    multipleValue,
+    onDelete,
+    pendingMultiple,
+    pendingSingle,
+  ]);
 
   const isExpanded = useCallback(
     (nodeValue: S) => expanded.has(nodeValue) || forcedExpanded.has(nodeValue),
     [expanded, forcedExpanded],
   );
 
-  // Фильтрация отображаемых узлов:
-  // - если задан searchNodes и активен поиск — показываем только совпадения и их предков
-  // - иначе — фильтруем по label (локально)
   const clientFilter = useCallback(
     (nodes: TreeNode<T, S>[]): TreeNode<T, S>[] => {
       if (!debouncedSearch) return nodes;
@@ -547,12 +682,26 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const children = childrenCache.get(key);
     const isNodeExpanded = isExpanded(node.value);
     const isNodeLoading = loadingNodes.has(key);
-    const isPending = pendingSelection?.value === node.value;
-    const isCurrent = value?.value === node.value;
     const isMatch = searchMatches.has(node.value);
+    const isCheckboxDisabled = leafConfirmOnly && node.hasChildren === true;
+
+    const isPending = isMultiple
+      ? pendingMultiple.has(node.value)
+      : pendingSingle?.value === node.value;
+    const isCurrent = isMultiple
+      ? committedValueSet.has(node.value)
+      : singleValue?.value === node.value;
 
     const showChildren = isNodeExpanded && children && children.length > 0;
     const visibleChildren = showChildren ? clientFilter(children!) : [];
+
+    const handleRowClick = () => {
+      if (isMultiple) {
+        handleToggleNode(node);
+        return;
+      }
+      handleSelectNode(node);
+    };
 
     return (
       <React.Fragment key={String(node.value)}>
@@ -560,11 +709,25 @@ export const TreeDialogSelect = <T, S extends string | number>({
           className={cn(css.row, {
             [css.row_active]: isPending || isCurrent,
             [css.row_match]: isMatch,
+            [css.row_disabled]: isCheckboxDisabled,
           })}
           style={{ paddingLeft: 16 + level * 20 }}
           data-tree-node-value={String(node.value)}
-          onClick={() => handleSelectNode(node)}
+          onClick={handleRowClick}
         >
+          {isMultiple && (
+            <span className={css.checkboxCell}>
+              <input
+                type="checkbox"
+                className={css.checkbox}
+                checked={isPending}
+                disabled={isCheckboxDisabled}
+                readOnly
+                tabIndex={-1}
+                aria-label={node.label}
+              />
+            </span>
+          )}
           {node.hasChildren ? (
             <button
               type="button"
@@ -592,11 +755,37 @@ export const TreeDialogSelect = <T, S extends string | number>({
   const visibleRoots = clientFilter(rootNodes);
   const isRootLoading = loadingNodes.has(ROOT_KEY);
 
-  const selectedContent = value
-    ? selectedOptionRender
-      ? selectedOptionRender(value)
-      : value.label
-    : placeholder;
+  const selectedContent = isMultiple ? (
+    multipleValue.length > 0 ? (
+      <div className={css.tagContainer}>
+        {multipleValue.map((item) =>
+          tagRender ? (
+            <React.Fragment key={String(item.value)}>{tagRender(item)}</React.Fragment>
+          ) : (
+            <Tag
+              isSmall
+              key={String(item.value)}
+              {...(onDelete && {
+                onClick: () => onDelete(item),
+              })}
+            >
+              {selectedOptionRender ? selectedOptionRender(item) : item.label}
+            </Tag>
+          ),
+        )}
+      </div>
+    ) : (
+      placeholder
+    )
+  ) : singleValue ? (
+    selectedOptionRender ? (
+      selectedOptionRender(singleValue)
+    ) : (
+      singleValue.label
+    )
+  ) : (
+    placeholder
+  );
 
   const showEmpty = !isRootLoading && !isSearching && visibleRoots.length === 0;
 
@@ -605,9 +794,9 @@ export const TreeDialogSelect = <T, S extends string | number>({
     [isSearching, isRootLoading, debouncedSearch],
   );
 
-  const isConfirmDisabled =
-    !pendingSelection ||
-    (leafConfirmOnly && pendingSelection.hasChildren === true);
+  const isConfirmDisabled = isMultiple
+    ? leafConfirmOnly && hasBranchInPending(pendingMultiple)
+    : !pendingSingle || (leafConfirmOnly && pendingSingle.hasChildren === true);
 
   return (
     <div className={cn(css.wrapper, className)}>
@@ -642,11 +831,16 @@ export const TreeDialogSelect = <T, S extends string | number>({
           }
         }}
       >
-        <span className={cn(css.selectedOption, { [css.placeholder]: !value })}>
+        <span
+          className={cn(css.selectedOption, {
+            [css.placeholder]: !hasSelectedValue,
+            [css.selectedOptionMultiple]: isMultiple && multipleValue.length > 0,
+          })}
+        >
           {selectedContent}
         </span>
         <span className={css.actions}>
-          {onClear && value && (
+          {onClear && hasSelectedValue && (
             <Button
               variant="text"
               className={css.clearButton}

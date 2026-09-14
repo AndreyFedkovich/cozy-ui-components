@@ -346,6 +346,20 @@ function Index() {
     hasChildren: false,
     meta: { kind: "team" },
   });
+  const [departments, setDepartments] = useState<TreeNode<DeptMeta, string>[]>([
+    {
+      value: "team-1",
+      label: "Frontend team",
+      hasChildren: false,
+      meta: { kind: "team" },
+    },
+    {
+      value: "team-2",
+      label: "Backend team",
+      hasChildren: false,
+      meta: { kind: "team" },
+    },
+  ]);
   const [stepperStep, setStepperStep] = useState(2);
   const [namedStep, setNamedStep] = useState(1);
   const tooltipTargetId = "tooltip-light-demo-target";
@@ -1272,6 +1286,30 @@ function Index() {
                   resolveSelectedPath={resolveDepartmentPath}
                   onValueChange={setDepartment}
                   onClear={() => setDepartment(null)}
+                />
+                <TreeDialogSelect
+                  mode="multiple"
+                  label="Tree dialog select (multiple)"
+                  placeholder="Select departments"
+                  title="Department selection"
+                  searchPlaceholder="Search by name"
+                  value={departments}
+                  loadNodes={loadDeptChildren}
+                  searchNodes={searchDepartments}
+                  resolveSelectedPath={resolveDepartmentPath}
+                  onValueChange={(node) =>
+                    setDepartments((current) =>
+                      current.some((item) => item.value === node.value)
+                        ? current
+                        : [...current, node],
+                    )
+                  }
+                  onDelete={(node) =>
+                    setDepartments((current) =>
+                      current.filter((item) => item.value !== node.value),
+                    )
+                  }
+                  onClear={() => setDepartments([])}
                 />
               </div>
             </DemoSection>

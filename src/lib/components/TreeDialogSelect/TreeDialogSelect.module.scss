@@ -56,6 +56,17 @@
   line-height: 20px;
 }
 
+.selectedOptionMultiple {
+  overflow: visible;
+  white-space: normal;
+}
+
+.tagContainer {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
 .placeholder {
   color: colorsNew.$gray04;
 }
@@ -193,6 +204,27 @@
 
 .row_match .nodeLabel {
   color: colorsNew.$blue04;
+}
+
+.row_disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.checkboxCell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: colorsNew.$blue03;
+  margin: 0;
 }
 
 .chevron {

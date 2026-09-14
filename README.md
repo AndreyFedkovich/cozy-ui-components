@@ -693,10 +693,13 @@ Hierarchical picker with lazy-loaded branches and search.
 
 | Prop                     | Type        | Description                                     |
 | ------------------------ | ----------- | ----------------------------------------------- |
+| `mode`                   | `"single" \| "multiple"` | Selection mode. Default: `"single"`. |
 | `label`                  | `ReactNode` | Field label above the trigger.                  |
 | `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
-| `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. |
+| `onDelete`               | `(node) => void` | Multiple mode only — remove a selected node (tag click or uncheck in dialog). |
+| `tagRender`              | `(node) => ReactNode` | Multiple mode only — custom tag render in the trigger. |
+| `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. In multiple mode, called for each selected value. |
 
 ```tsx
 import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
@@ -716,7 +719,21 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
 
 With **`leafConfirmOnly`**, the confirm button in the dialog stays disabled until a row is selected and that node’s `hasChildren` is not strictly `true` (only leaves can be confirmed). Omit the prop to allow confirming any selected node, including branches.
 
-With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`.
+With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`. In **`mode="multiple"`**, paths for all selected values are resolved in parallel.
+
+```tsx
+<TreeDialogSelect
+  mode="multiple"
+  title="Pick departments"
+  placeholder="Choose departments"
+  value={selectedDepartments}
+  loadNodes={loadNodes}
+  resolveSelectedPath={resolvePath}
+  onValueChange={(node) => setSelected((current) => [...current, node])}
+  onDelete={(node) => setSelected((current) => current.filter((item) => item.value !== node.value))}
+  onClear={() => setSelected([])}
+/>
+```
 
 #### `InputCaption`
 
