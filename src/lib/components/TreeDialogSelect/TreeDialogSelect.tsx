@@ -538,6 +538,9 @@ export const TreeDialogSelect = <T, S extends string | number>({
       if (open && isMultiple) {
         setPendingMultiple(nodesToMap(multipleValue));
       }
+      if (open && !isMultiple && singleValue) {
+        setPendingSingle(singleValue);
+      }
       if (!open) {
         setSearch("");
         setDebouncedSearch("");
@@ -548,7 +551,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
         setScrollTarget(null);
       }
     },
-    [isMultiple, multipleValue],
+    [isMultiple, multipleValue, singleValue],
   );
 
   const ensureChildrenLoaded = useCallback(
@@ -707,7 +710,11 @@ export const TreeDialogSelect = <T, S extends string | number>({
       <React.Fragment key={String(node.value)}>
         <div
           className={cn(css.row, {
-            [css.row_active]: isPending || isCurrent,
+            [css.row_active]: isMultiple
+              ? isPending || isCurrent
+              : pendingSingle
+                ? isPending
+                : isCurrent,
             [css.row_match]: isMatch,
             [css.row_disabled]: isCheckboxDisabled,
           })}
