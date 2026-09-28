@@ -42,6 +42,9 @@ export type TreeNode<T, S extends string | number> = {
   meta?: T;
 };
 
+/** Stable empty list — never allocate `[]` per render (breaks effect deps in single mode). */
+const EMPTY_TREE_NODES: TreeNode<never, never>[] = [];
+
 export type TreeLoadParams<S extends string | number> = {
   parentId: S | null;
   search: string;
@@ -271,8 +274,21 @@ export const TreeDialogSelect = <T, S extends string | number>({
   mode = "single",
 }: TreeDialogSelectComponentProps<T, S>) => {
   const isMultiple = mode === "multiple";
-  const multipleValue = isMultiple ? (value as TreeNode<T, S>[] | undefined) ?? [] : [];
+  const multipleValue = (
+    isMultiple
+      ? ((value as TreeNode<T, S>[] | undefined) ?? EMPTY_TREE_NODES)
+      : EMPTY_TREE_NODES
+  ) as TreeNode<T, S>[];
   const singleValue = !isMultiple ? (value as TreeNode<T, S> | null | undefined) : null;
+  /** Primitive key so resolve effect does not re-run on value object identity churn. */
+  const selectedIdKey = isMultiple
+    ? multipleValue
+        .map((node) => String(node.value))
+        .sort()
+        .join("\0")
+    : singleValue == null
+      ? ""
+      : String(singleValue.value);
 
   const field = useFieldPresentation({
     error,
@@ -311,11 +327,21 @@ export const TreeDialogSelect = <T, S extends string | number>({
   const loadChildrenRef = useRef(loadChildren);
   const searchNodesRef = useRef(searchNodes);
   const resolveSelectedPathRef = useRef(resolveSelectedPath);
+  const valueRef = useRef(value);
+  const isOpenRef = useRef(isOpen);
+  const pendingSingleRef = useRef(pendingSingle);
+  const pendingMultipleRef = useRef(pendingMultiple);
 
   childrenCacheRef.current = childrenCache;
   loadChildrenRef.current = loadChildren;
   searchNodesRef.current = searchNodes;
   resolveSelectedPathRef.current = resolveSelectedPath;
+  valueRef.current = value;
+  isOpenRef.current = isOpen;
+  pendingSingleRef.current = pendingSingle;
+  pendingMultipleRef.current = pendingMultiple;
+
+  const loadingCount = loadingNodes.size;
 
   const committedValueSet = useMemo(
     () => new Set(multipleValue.map((node) => node.value)),
@@ -323,6 +349,9 @@ export const TreeDialogSelect = <T, S extends string | number>({
   );
 
   const hasSelectedValue = isMultiple ? multipleValue.length > 0 : Boolean(singleValue);
+
+  const isResolveRequestActive = (requestId: number) =>
+    isOpenRef.current && resolveRequestIdRef.current === requestId;
 
   // Загрузка корня при открытии
   useEffect(() => {
@@ -340,7 +369,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
     loadChildrenRef.current({ parentId: null, search: "" })
       .then((result) => {
-        if (rootRequestIdRef.current !== requestId) return;
+        if (rootRequestIdRef.current !== requestId || !isOpenRef.current) return;
         setChildrenCache((prev) => {
           const next = new Map(prev);
           next.set(ROOT_KEY, result.nodes);
@@ -380,7 +409,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
     searchFn(debouncedSearch)
       .then((result) => {
-        if (searchRequestIdRef.current !== requestId) return;
+        if (searchRequestIdRef.current !== requestId || !isOpenRef.current) return;
 
         const { searchMatches, ancestorsToExpand, inferredChildren } = buildTreeStateFromMatches(
           result.matches,
@@ -401,11 +430,13 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const resolveFn = resolveSelectedPathRef.current;
     if (!resolveFn) return;
     if (debouncedSearch) return;
+    if (!selectedIdKey) return;
 
+    const currentValue = valueRef.current;
     const selectedNodes = isMultiple
-      ? multipleValue
-      : singleValue
-        ? [singleValue]
+      ? ((currentValue as TreeNode<T, S>[] | undefined) ?? (EMPTY_TREE_NODES as TreeNode<T, S>[]))
+      : currentValue
+        ? [currentValue as TreeNode<T, S>]
         : [];
 
     if (selectedNodes.length === 0) return;
@@ -415,7 +446,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
     Promise.all(selectedNodes.map((node) => resolveFn(node.value))).then(
       async (results) => {
-        if (resolveRequestIdRef.current !== requestId) return;
+        if (!isResolveRequestActive(requestId)) return;
 
         const allMatches = results.flatMap((result) => result.matches);
         const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
@@ -447,7 +478,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
               }),
             );
 
-            if (resolveRequestIdRef.current !== requestId) return;
+            if (!isResolveRequestActive(requestId)) return;
 
             setChildrenCache((prev) => {
               let next = prev;
@@ -457,17 +488,15 @@ export const TreeDialogSelect = <T, S extends string | number>({
               return next;
             });
           } finally {
-            if (resolveRequestIdRef.current === requestId) {
-              setLoadingNodes((prev) => {
-                const next = new Set(prev);
-                keys.forEach((key) => next.delete(key));
-                return next;
-              });
-            }
+            setLoadingNodes((prev) => {
+              const next = new Set(prev);
+              keys.forEach((key) => next.delete(key));
+              return next;
+            });
           }
         }
 
-        if (resolveRequestIdRef.current !== requestId) return;
+        if (!isResolveRequestActive(requestId)) return;
 
         if (isMultiple) {
           setPendingMultiple(nodesToMap(selectedNodes));
@@ -478,17 +507,17 @@ export const TreeDialogSelect = <T, S extends string | number>({
         }
       },
     );
-  }, [isOpen, isMultiple, multipleValue, singleValue, debouncedSearch]);
+  }, [isOpen, isMultiple, selectedIdKey, debouncedSearch]);
 
   useLayoutEffect(() => {
     if (!isOpen || scrollTarget == null) return;
 
     const isScrollTargetPending = isMultiple
-      ? pendingMultiple.has(scrollTarget)
-      : pendingSingle?.value === scrollTarget;
+      ? pendingMultipleRef.current.has(scrollTarget)
+      : pendingSingleRef.current?.value === scrollTarget;
 
     if (!isScrollTargetPending) return;
-    if (loadingNodes.size > 0) return;
+    if (loadingCount > 0) return;
 
     const container = treeContainerRef.current;
     if (!container) return;
@@ -535,15 +564,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
       observer.disconnect();
       clearTimeout(timeoutId);
     };
-  }, [
-    isOpen,
-    isMultiple,
-    scrollTarget,
-    pendingSingle,
-    pendingMultiple,
-    childrenCache,
-    loadingNodes,
-  ]);
+  }, [isOpen, isMultiple, scrollTarget, loadingCount]);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -554,6 +575,9 @@ export const TreeDialogSelect = <T, S extends string | number>({
       // Single: do not setPendingSingle(value) on open — races resolveSelectedPath /
       // scroll-into-view and can freeze the UI. Highlight uses isCurrent until click.
       if (!open) {
+        rootRequestIdRef.current += 1;
+        searchRequestIdRef.current += 1;
+        resolveRequestIdRef.current += 1;
         setSearch("");
         setDebouncedSearch("");
         setPendingSingle(null);
@@ -561,6 +585,8 @@ export const TreeDialogSelect = <T, S extends string | number>({
         setSearchMatches(new Set());
         setForcedExpanded(new Set());
         setScrollTarget(null);
+        setLoadingNodes(new Set());
+        setIsSearching(false);
       }
     },
     [isMultiple, multipleValue],
