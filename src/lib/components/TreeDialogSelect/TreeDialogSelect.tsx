@@ -307,6 +307,15 @@ export const TreeDialogSelect = <T, S extends string | number>({
   const searchRequestIdRef = useRef(0);
   const resolveRequestIdRef = useRef(0);
   const treeContainerRef = useRef<HTMLDivElement>(null);
+  const childrenCacheRef = useRef(childrenCache);
+  const loadChildrenRef = useRef(loadChildren);
+  const searchNodesRef = useRef(searchNodes);
+  const resolveSelectedPathRef = useRef(resolveSelectedPath);
+
+  childrenCacheRef.current = childrenCache;
+  loadChildrenRef.current = loadChildren;
+  searchNodesRef.current = searchNodes;
+  resolveSelectedPathRef.current = resolveSelectedPath;
 
   const committedValueSet = useMemo(
     () => new Set(multipleValue.map((node) => node.value)),
@@ -318,7 +327,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   // Загрузка корня при открытии
   useEffect(() => {
     if (!isOpen) return;
-    if (childrenCache.has(ROOT_KEY)) return;
+    if (childrenCacheRef.current.has(ROOT_KEY)) return;
 
     const requestId = rootRequestIdRef.current + 1;
     rootRequestIdRef.current = requestId;
@@ -329,7 +338,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
       return next;
     });
 
-    loadChildren({ parentId: null, search: "" })
+    loadChildrenRef.current({ parentId: null, search: "" })
       .then((result) => {
         if (rootRequestIdRef.current !== requestId) return;
         setChildrenCache((prev) => {
@@ -346,7 +355,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
           return next;
         });
       });
-  }, [isOpen, loadChildren, childrenCache]);
+  }, [isOpen]);
 
   // debounce поиска
   useEffect(() => {
@@ -357,10 +366,11 @@ export const TreeDialogSelect = <T, S extends string | number>({
   // Серверный поиск
   useEffect(() => {
     if (!isOpen) return;
-    if (!searchNodes) return;
+    const searchFn = searchNodesRef.current;
+    if (!searchFn) return;
     if (!debouncedSearch) {
       setSearchMatches(new Set());
-      setForcedExpanded(new Set());
+      // Do not clear forcedExpanded — resolveSelectedPath may have set it for the selected path.
       return;
     }
 
@@ -368,7 +378,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
     searchRequestIdRef.current = requestId;
     setIsSearching(true);
 
-    searchNodes(debouncedSearch)
+    searchFn(debouncedSearch)
       .then((result) => {
         if (searchRequestIdRef.current !== requestId) return;
 
@@ -383,12 +393,13 @@ export const TreeDialogSelect = <T, S extends string | number>({
       .finally(() => {
         if (searchRequestIdRef.current === requestId) setIsSearching(false);
       });
-  }, [debouncedSearch, isOpen, searchNodes]);
+  }, [debouncedSearch, isOpen]);
 
   // Раскрытие дерева до выбранного значения при открытии
   useEffect(() => {
     if (!isOpen) return;
-    if (!resolveSelectedPath) return;
+    const resolveFn = resolveSelectedPathRef.current;
+    if (!resolveFn) return;
     if (debouncedSearch) return;
 
     const selectedNodes = isMultiple
@@ -402,7 +413,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const requestId = resolveRequestIdRef.current + 1;
     resolveRequestIdRef.current = requestId;
 
-    Promise.all(selectedNodes.map((node) => resolveSelectedPath(node.value))).then(
+    Promise.all(selectedNodes.map((node) => resolveFn(node.value))).then(
       async (results) => {
         if (resolveRequestIdRef.current !== requestId) return;
 
@@ -428,7 +439,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
           try {
             const loads = await Promise.all(
               parentIds.map(async (parentId) => {
-                const loadResult = await loadChildren({ parentId, search: "" });
+                const loadResult = await loadChildrenRef.current({ parentId, search: "" });
                 return {
                   key: (parentId ?? ROOT_KEY) as Key<S>,
                   nodes: loadResult.nodes,
@@ -467,15 +478,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
         }
       },
     );
-  }, [
-    isOpen,
-    isMultiple,
-    multipleValue,
-    singleValue,
-    resolveSelectedPath,
-    debouncedSearch,
-    loadChildren,
-  ]);
+  }, [isOpen, isMultiple, multipleValue, singleValue, debouncedSearch]);
 
   useLayoutEffect(() => {
     if (!isOpen || scrollTarget == null) return;
@@ -563,32 +566,29 @@ export const TreeDialogSelect = <T, S extends string | number>({
     [isMultiple, multipleValue],
   );
 
-  const ensureChildrenLoaded = useCallback(
-    (parent: TreeNode<T, S>) => {
-      const key: Key<S> = parent.value;
-      if (childrenCache.has(key)) return;
-      if (loadingNodes.has(key)) return;
+  const ensureChildrenLoaded = useCallback((parent: TreeNode<T, S>) => {
+    const key: Key<S> = parent.value;
+    if (childrenCacheRef.current.has(key)) return;
 
-      setLoadingNodes((prev) => {
-        const next = new Set(prev);
-        next.add(key);
-        return next;
-      });
+    setLoadingNodes((prev) => {
+      if (prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
 
-      loadChildren({ parentId: parent.value, search: "" })
-        .then((result) => {
-          setChildrenCache((prev) => mergeNodesAtKey(prev, key, result.nodes));
-        })
-        .finally(() => {
-          setLoadingNodes((prev) => {
-            const next = new Set(prev);
-            next.delete(key);
-            return next;
-          });
+    loadChildrenRef.current({ parentId: parent.value, search: "" })
+      .then((result) => {
+        setChildrenCache((prev) => mergeNodesAtKey(prev, key, result.nodes));
+      })
+      .finally(() => {
+        setLoadingNodes((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
         });
-    },
-    [childrenCache, loadChildren, loadingNodes],
-  );
+      });
+  }, []);
 
   const toggleExpand = useCallback(
     (node: TreeNode<T, S>) => {
