@@ -496,10 +496,20 @@ export const TreeDialogSelect = <T, S extends string | number>({
     row.scrollIntoView({ block: "nearest" });
 
     let timeoutId = 0;
+    let attempts = 0;
+    const maxAttempts = 5;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && entry.intersectionRatio >= SCROLL_VISIBILITY_THRESHOLD) {
+          setScrollTarget(null);
+          observer.disconnect();
+          clearTimeout(timeoutId);
+          return;
+        }
+
+        attempts += 1;
+        if (attempts >= maxAttempts) {
           setScrollTarget(null);
           observer.disconnect();
           clearTimeout(timeoutId);
@@ -538,9 +548,8 @@ export const TreeDialogSelect = <T, S extends string | number>({
       if (open && isMultiple) {
         setPendingMultiple(nodesToMap(multipleValue));
       }
-      if (open && !isMultiple && singleValue) {
-        setPendingSingle(singleValue);
-      }
+      // Single: do not setPendingSingle(value) on open — races resolveSelectedPath /
+      // scroll-into-view and can freeze the UI. Highlight uses isCurrent until click.
       if (!open) {
         setSearch("");
         setDebouncedSearch("");
@@ -551,7 +560,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
         setScrollTarget(null);
       }
     },
-    [isMultiple, multipleValue, singleValue],
+    [isMultiple, multipleValue],
   );
 
   const ensureChildrenLoaded = useCallback(
