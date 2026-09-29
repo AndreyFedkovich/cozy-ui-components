@@ -165,11 +165,12 @@ function nodesToMap<T, S extends string | number>(
   return new Map(nodes.map((node) => [node.value, node]));
 }
 
-function hasBranchInPending<T, S extends string | number>(
+function hasUnconfirmableInPending<T, S extends string | number>(
   pending: Map<S, TreeNode<T, S>>,
+  canConfirmNode: (node: TreeNode<T, S>) => boolean,
 ): boolean {
   for (const node of pending.values()) {
-    if (node.hasChildren === true) return true;
+    if (!canConfirmNode(node)) return true;
   }
   return false;
 }
@@ -218,6 +219,11 @@ interface TreeDialogSelectShared<T, S extends string | number>
    * {@link TreeNode.hasChildren} is not strictly `true` (confirm leaf nodes only).
    */
   leafConfirmOnly?: boolean;
+  /**
+   * When provided, nodes for which this returns `false` cannot be selected
+   * (or confirmed). Composed with {@link leafConfirmOnly}.
+   */
+  isNodeSelectable?: (node: TreeNode<T, S>) => boolean;
 }
 
 /** Pass either {@link loadNodes} or {@link loadChildren} (deprecated alias). */
@@ -271,6 +277,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
   nodeRender,
   tagRender,
   leafConfirmOnly = false,
+  isNodeSelectable,
   mode = "single",
 }: TreeDialogSelectComponentProps<T, S>) => {
   const isMultiple = mode === "multiple";
@@ -301,6 +308,15 @@ export const TreeDialogSelect = <T, S extends string | number>({
     onValueChange,
     onChange,
   });
+
+  const canConfirmNode = useCallback(
+    (node: TreeNode<T, S>) => {
+      if (leafConfirmOnly && node.hasChildren === true) return false;
+      if (isNodeSelectable && !isNodeSelectable(node)) return false;
+      return true;
+    },
+    [isNodeSelectable, leafConfirmOnly],
+  );
 
   const loadChildren: TreeLoader<T, S> = (loadNodes ?? loadChildrenProp) as TreeLoader<T, S>;
   const [isOpen, setIsOpen] = useState(false);
@@ -638,7 +654,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
 
   const handleToggleNode = useCallback(
     (node: TreeNode<T, S>) => {
-      if (leafConfirmOnly && node.hasChildren === true) return;
+      if (!canConfirmNode(node)) return;
 
       setPendingMultiple((prev) => {
         const next = new Map(prev);
@@ -650,12 +666,12 @@ export const TreeDialogSelect = <T, S extends string | number>({
         return next;
       });
     },
-    [leafConfirmOnly],
+    [canConfirmNode],
   );
 
   const handleConfirm = useCallback(() => {
     if (isMultiple) {
-      if (leafConfirmOnly && hasBranchInPending(pendingMultiple)) {
+      if (hasUnconfirmableInPending(pendingMultiple, canConfirmNode)) {
         return;
       }
 
@@ -677,18 +693,16 @@ export const TreeDialogSelect = <T, S extends string | number>({
       return;
     }
 
-    if (leafConfirmOnly && (!pendingSingle || pendingSingle.hasChildren === true)) {
+    if (!pendingSingle || !canConfirmNode(pendingSingle)) {
       return;
     }
-    if (pendingSingle) {
-      handleValueChange?.(pendingSingle);
-    }
+    handleValueChange?.(pendingSingle);
     handleOpenChange(false);
   }, [
+    canConfirmNode,
     handleOpenChange,
     handleValueChange,
     isMultiple,
-    leafConfirmOnly,
     multipleValue,
     onDelete,
     pendingMultiple,
@@ -721,7 +735,7 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const isNodeExpanded = isExpanded(node.value);
     const isNodeLoading = loadingNodes.has(key);
     const isMatch = searchMatches.has(node.value);
-    const isCheckboxDisabled = leafConfirmOnly && node.hasChildren === true;
+    const isCheckboxDisabled = !canConfirmNode(node);
 
     const isPending = isMultiple
       ? pendingMultiple.has(node.value)
@@ -837,8 +851,8 @@ export const TreeDialogSelect = <T, S extends string | number>({
   );
 
   const isConfirmDisabled = isMultiple
-    ? leafConfirmOnly && hasBranchInPending(pendingMultiple)
-    : !pendingSingle || (leafConfirmOnly && pendingSingle.hasChildren === true);
+    ? hasUnconfirmableInPending(pendingMultiple, canConfirmNode)
+    : !pendingSingle || !canConfirmNode(pendingSingle);
 
   return (
     <div className={cn(css.wrapper, className)}>

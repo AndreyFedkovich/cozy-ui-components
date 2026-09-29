@@ -3,6 +3,10 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/).
 Версии соответствуют [Semantic Versioning](https://semver.org/) и git-тегам `v*`.
 
+## Unreleased
+
+- **feat:** `TreeDialogSelect` — проп `isNodeSelectable` для ограничения выбора узлов предикатом (компонуется с `leafConfirmOnly`).
+
 ## 1.0.8 - 2026-09-14
 
 - **feat:** `TreeDialogSelect` — `mode="multiple"` с независимым выбором узлов через чекбоксы, тегами в триггере и `onDelete`; `resolveSelectedPath` работает для всех выбранных значений.

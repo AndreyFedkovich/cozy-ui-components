@@ -697,6 +697,8 @@ Hierarchical picker with lazy-loaded branches and search.
 | `label`                  | `ReactNode` | Field label above the trigger.                  |
 | `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
+| `leafConfirmOnly`        | `boolean`   | When true, only leaf nodes (`hasChildren !== true`) can be confirmed. |
+| `isNodeSelectable`       | `(node) => boolean` | When provided, nodes for which this returns `false` cannot be selected or confirmed. Composed with `leafConfirmOnly`. |
 | `onDelete`               | `(node) => void` | Multiple mode only — remove a selected node (tag click or uncheck in dialog). |
 | `tagRender`              | `(node) => ReactNode` | Multiple mode only — custom tag render in the trigger. |
 | `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. In multiple mode, called for each selected value. |
@@ -713,11 +715,14 @@ import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
   searchNodes={async (search) => ({ matches: await searchTreeWithPath(search) })}
   resolveSelectedPath={async (value) => ({ matches: await resolveTreePathById(value) })}
   leafConfirmOnly
+  isNodeSelectable={(node) => node.meta?.selectable !== false}
   onValueChange={(node) => console.log(node)}
 />;
 ```
 
 With **`leafConfirmOnly`**, the confirm button in the dialog stays disabled until a row is selected and that node’s `hasChildren` is not strictly `true` (only leaves can be confirmed). Omit the prop to allow confirming any selected node, including branches.
+
+With **`isNodeSelectable`**, you can block arbitrary nodes (e.g. by `meta`). A node is confirmable only when it passes both `leafConfirmOnly` (if set) and the predicate. Non-selectable rows are visually disabled; expanding branches still works.
 
 With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`. In **`mode="multiple"`**, paths for all selected values are resolved in parallel.
 

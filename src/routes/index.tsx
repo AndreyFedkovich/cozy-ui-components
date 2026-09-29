@@ -1284,6 +1284,7 @@ function Index() {
                   loadNodes={loadDeptChildren}
                   searchNodes={searchDepartments}
                   resolveSelectedPath={resolveDepartmentPath}
+                  isNodeSelectable={(node) => node.meta?.kind !== "company"}
                   onValueChange={setDepartment}
                   onClear={() => setDepartment(null)}
                 />
