@@ -118,6 +118,12 @@ export interface CommentFeedProps {
   pageSize?: number;
   title?: string;
   eyebrow?: string;
+  /** Placeholder for the root comment composer. */
+  placeholder?: string;
+  /** Empty-state title when there are no comments. */
+  emptyTitle?: string;
+  /** Empty-state subtitle when there are no comments. */
+  emptySubtitle?: string;
   className?: string;
 }
 
@@ -873,6 +879,9 @@ export const CommentFeed = forwardRef<CommentFeedHandle, CommentFeedProps>(funct
     pageSize = DEFAULT_PAGE_SIZE,
     title = "Комментарии",
     eyebrow = "Discussion",
+    placeholder = "Поделитесь мнением или задайте вопрос...",
+    emptyTitle = "Пока нет комментариев",
+    emptySubtitle = "Будьте первым, кто напишет.",
     className,
   },
   ref,
@@ -1055,7 +1064,7 @@ export const CommentFeed = forwardRef<CommentFeedHandle, CommentFeedProps>(funct
       {canCreate && onCreate && (
         <CommentForm
           mode="root"
-          placeholder="Поделитесь мнением или задайте вопрос..."
+          placeholder={placeholder}
           submitLabel="Опубликовать"
           recipientsSource={recipientsSource}
           onUploadAttachment={onUploadAttachment}
@@ -1095,7 +1104,7 @@ export const CommentFeed = forwardRef<CommentFeedHandle, CommentFeedProps>(funct
 
       {root && root.items.length === 0 && !root.loading && (
         <div className={css.empty}>
-          <EmptyComponent title="Пока нет комментариев" subtitle="Будьте первым, кто напишет." />
+          <EmptyComponent title={emptyTitle} subtitle={emptySubtitle} />
         </div>
       )}
 

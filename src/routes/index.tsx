@@ -168,6 +168,40 @@ const employeeOptions: CustomOption<{ birthDate: string }>[] = Array.from(
 type DeptMeta = { kind: "company" | "department" | "team" };
 type DeptNode = TreeNode<DeptMeta, string> & { children?: DeptNode[] };
 
+const DEMO_EMPLOYEE_KEY = "cozy-demo-employee";
+const DEMO_DEPARTMENT_KEY = "cozy-demo-department";
+
+function readDemoStorage<T>(key: string): T | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function writeDemoStorage(key: string, value: unknown) {
+  try {
+    if (typeof window === "undefined") return;
+    if (value == null) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    }
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+const defaultDepartment: TreeNode<DeptMeta, string> = {
+  value: "team-2",
+  label: "Backend team",
+  hasChildren: false,
+  meta: { kind: "team" },
+};
+
 const deptTree: DeptNode[] = [
   {
     value: "co-1",
@@ -339,13 +373,12 @@ function Index() {
   ]);
   const [cfoSelected, setCfoSelected] = useState<CustomOption<{ code: string }>[]>([]);
   const [cfoSearch, setCfoSearch] = useState("");
-  const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(null);
-  const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>({
-    value: "team-2",
-    label: "Backend team",
-    hasChildren: false,
-    meta: { kind: "team" },
-  });
+  const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(
+    () => readDemoStorage<CustomOption<{ birthDate: string }>>(DEMO_EMPLOYEE_KEY),
+  );
+  const [department, setDepartment] = useState<TreeNode<DeptMeta, string> | null>(
+    () => readDemoStorage<TreeNode<DeptMeta, string>>(DEMO_DEPARTMENT_KEY) ?? defaultDepartment,
+  );
   const [departments, setDepartments] = useState<TreeNode<DeptMeta, string>[]>([
     {
       value: "team-1",
@@ -1262,8 +1295,14 @@ function Index() {
                   placeholder="Enter or pick the candidate's name"
                   value={employee}
                   loadOptions={loadEmployees}
-                  onValueChange={setEmployee}
-                  onClear={() => setEmployee(null)}
+                  onValueChange={(option) => {
+                    setEmployee(option);
+                    writeDemoStorage(DEMO_EMPLOYEE_KEY, option);
+                  }}
+                  onClear={() => {
+                    setEmployee(null);
+                    writeDemoStorage(DEMO_EMPLOYEE_KEY, null);
+                  }}
                   searchPlaceholder="Enter employee name"
                   columns={[
                     { key: "name", title: "Employee name", render: (option) => option.label },
@@ -1273,7 +1312,15 @@ function Index() {
                       render: (option) => option.meta?.birthDate,
                     },
                   ]}
-                  onManualAdd={() => undefined}
+                  onManualAdd={(query) => {
+                    const option: CustomOption<{ birthDate: string }> = {
+                      value: `custom-${Date.now()}`,
+                      label: query || "Custom employee",
+                      meta: { birthDate: "—" },
+                    };
+                    setEmployee(option);
+                    writeDemoStorage(DEMO_EMPLOYEE_KEY, option);
+                  }}
                 />
                 <TreeDialogSelect
                   label="Tree dialog select"
@@ -1285,8 +1332,24 @@ function Index() {
                   searchNodes={searchDepartments}
                   resolveSelectedPath={resolveDepartmentPath}
                   isNodeSelectable={(node) => node.meta?.kind !== "company"}
-                  onValueChange={setDepartment}
-                  onClear={() => setDepartment(null)}
+                  onValueChange={(node) => {
+                    setDepartment(node);
+                    writeDemoStorage(DEMO_DEPARTMENT_KEY, node);
+                  }}
+                  onClear={() => {
+                    setDepartment(null);
+                    writeDemoStorage(DEMO_DEPARTMENT_KEY, null);
+                  }}
+                  onManualAdd={(query) => {
+                    const node: TreeNode<DeptMeta, string> = {
+                      value: `custom-${Date.now()}`,
+                      label: query || "Custom department",
+                      hasChildren: false,
+                      meta: { kind: "team" },
+                    };
+                    setDepartment(node);
+                    writeDemoStorage(DEMO_DEPARTMENT_KEY, node);
+                  }}
                 />
                 <TreeDialogSelect
                   mode="multiple"

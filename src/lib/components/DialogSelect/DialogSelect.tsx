@@ -69,7 +69,11 @@ export interface DialogSelectProps<T, S extends string | number>
   selectButtonText?: string;
   closeButtonText?: string;
   manualButtonText?: string;
-  onManualAdd?: () => void;
+  /**
+   * When provided, shows a manual-add button in the dialog footer.
+   * Receives the trimmed search string. The dialog closes after the callback runs.
+   */
+  onManualAdd?: (search: string) => void;
   pageSize?: number;
   debounceMs?: number;
   disabled?: boolean;
@@ -182,6 +186,14 @@ export const DialogSelect = <T, S extends string | number>({
         setOptions(result.options);
         setTotal(result.total);
         setHasNextPage(result.hasNextPage ?? false);
+      })
+      .catch(() => {
+        if (requestIdRef.current !== requestId) {
+          return;
+        }
+        setOptions([]);
+        setTotal(undefined);
+        setHasNextPage(false);
       })
       .finally(() => {
         if (requestIdRef.current === requestId) {
@@ -363,7 +375,14 @@ export const DialogSelect = <T, S extends string | number>({
             </div>
             <div className={css.footerActions}>
               {onManualAdd && (
-                <Button variant="primary" onClick={onManualAdd}>
+                <Button
+                  variant="primary"
+                  disabled={!search.trim()}
+                  onClick={() => {
+                    onManualAdd(search.trim());
+                    handleOpenChange(false);
+                  }}
+                >
                   {manualButtonText}
                 </Button>
               )}

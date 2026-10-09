@@ -298,6 +298,14 @@
   padding-top: 0;
 }
 
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .dialogFooter button {
   min-height: 36px;
   padding: 7px 14px;
@@ -315,5 +323,9 @@
   .dialogFooter {
     flex-direction: column-reverse;
     align-items: stretch;
+  }
+
+  .footerActions {
+    justify-content: space-between;
   }
 }

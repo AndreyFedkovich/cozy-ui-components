@@ -208,6 +208,14 @@ interface TreeDialogSelectShared<T, S extends string | number>
   selectButtonText?: string;
   closeButtonText?: string;
   confirmButtonText?: string;
+  /** Label for the manual-add action (footer + empty state). Default: `"Добавить вручную"`. */
+  manualButtonText?: string;
+  /**
+   * When provided, shows a manual-add action in the dialog footer and (when search
+   * has no results) in the empty state. Receives the trimmed search string.
+   * The dialog closes after the callback runs.
+   */
+  onManualAdd?: (search: string) => void;
   debounceMs?: number;
   disabled?: boolean;
   className?: string;
@@ -265,6 +273,8 @@ export const TreeDialogSelect = <T, S extends string | number>({
   selectButtonText = "Выбрать",
   closeButtonText = "Закрыть",
   confirmButtonText = "Выбрать",
+  manualButtonText = "Добавить вручную",
+  onManualAdd,
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled,
   error,
@@ -460,69 +470,92 @@ export const TreeDialogSelect = <T, S extends string | number>({
     const requestId = resolveRequestIdRef.current + 1;
     resolveRequestIdRef.current = requestId;
 
-    Promise.all(selectedNodes.map((node) => resolveFn(node.value))).then(
-      async (results) => {
-        if (!isResolveRequestActive(requestId)) return;
+    const applyOrphanFallback = () => {
+      if (!isResolveRequestActive(requestId)) return;
+      if (isMultiple) {
+        setPendingMultiple(nodesToMap(selectedNodes));
+      } else {
+        const orphan = selectedNodes[0] ?? null;
+        if (orphan) setPendingSingle(orphan);
+      }
+      // Do not scroll — orphan ids are not in the tree DOM.
+      setScrollTarget(null);
+    };
 
-        const allMatches = results.flatMap((result) => result.matches);
-        const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
-          buildTreeStateFromMatches(allMatches);
+    Promise.all(
+      selectedNodes.map((node) =>
+        Promise.resolve(resolveFn(node.value)).catch(
+          (): TreeSearchResult<T, S> => ({ matches: [] }),
+        ),
+      ),
+    ).then(async (results) => {
+      if (!isResolveRequestActive(requestId)) return;
 
-        setSearchMatches(searchMatches);
-        setForcedExpanded(ancestorsToExpand);
-        setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
+      const allMatches = results.flatMap((result) => result.matches);
+      if (allMatches.length === 0) {
+        applyOrphanFallback();
+        return;
+      }
 
-        const parentIds = collectParentIdsForSiblingPreload(allMatches, ancestorsToExpand);
+      const { searchMatches, ancestorsToExpand, inferredChildren, resolvedNode } =
+        buildTreeStateFromMatches(allMatches);
 
-        if (parentIds.length > 0) {
-          const keys = parentIds.map((parentId) => (parentId ?? ROOT_KEY) as Key<S>);
+      setSearchMatches(searchMatches);
+      setForcedExpanded(ancestorsToExpand);
+      setChildrenCache((prev) => mergeInferredChildrenIntoCache(prev, inferredChildren));
 
-          setLoadingNodes((prev) => {
-            const next = new Set(prev);
-            keys.forEach((key) => next.add(key));
+      const parentIds = collectParentIdsForSiblingPreload(allMatches, ancestorsToExpand);
+
+      if (parentIds.length > 0) {
+        const keys = parentIds.map((parentId) => (parentId ?? ROOT_KEY) as Key<S>);
+
+        setLoadingNodes((prev) => {
+          const next = new Set(prev);
+          keys.forEach((key) => next.add(key));
+          return next;
+        });
+
+        try {
+          const loads = await Promise.all(
+            parentIds.map(async (parentId) => {
+              const loadResult = await loadChildrenRef.current({ parentId, search: "" });
+              return {
+                key: (parentId ?? ROOT_KEY) as Key<S>,
+                nodes: loadResult.nodes,
+              };
+            }),
+          );
+
+          if (!isResolveRequestActive(requestId)) return;
+
+          setChildrenCache((prev) => {
+            let next = prev;
+            for (const { key, nodes } of loads) {
+              next = mergeNodesAtKey(next, key, nodes);
+            }
             return next;
           });
-
-          try {
-            const loads = await Promise.all(
-              parentIds.map(async (parentId) => {
-                const loadResult = await loadChildrenRef.current({ parentId, search: "" });
-                return {
-                  key: (parentId ?? ROOT_KEY) as Key<S>,
-                  nodes: loadResult.nodes,
-                };
-              }),
-            );
-
-            if (!isResolveRequestActive(requestId)) return;
-
-            setChildrenCache((prev) => {
-              let next = prev;
-              for (const { key, nodes } of loads) {
-                next = mergeNodesAtKey(next, key, nodes);
-              }
-              return next;
-            });
-          } finally {
-            setLoadingNodes((prev) => {
-              const next = new Set(prev);
-              keys.forEach((key) => next.delete(key));
-              return next;
-            });
-          }
+        } finally {
+          setLoadingNodes((prev) => {
+            const next = new Set(prev);
+            keys.forEach((key) => next.delete(key));
+            return next;
+          });
         }
+      }
 
-        if (!isResolveRequestActive(requestId)) return;
+      if (!isResolveRequestActive(requestId)) return;
 
-        if (isMultiple) {
-          setPendingMultiple(nodesToMap(selectedNodes));
-          setScrollTarget(selectedNodes[0]?.value ?? null);
-        } else if (resolvedNode) {
-          setPendingSingle(resolvedNode);
-          setScrollTarget(resolvedNode.value);
-        }
-      },
-    );
+      if (isMultiple) {
+        setPendingMultiple(nodesToMap(selectedNodes));
+        setScrollTarget(selectedNodes[0]?.value ?? null);
+      } else if (resolvedNode) {
+        setPendingSingle(resolvedNode);
+        setScrollTarget(resolvedNode.value);
+      } else {
+        applyOrphanFallback();
+      }
+    });
   }, [isOpen, isMultiple, selectedIdKey, debouncedSearch]);
 
   useLayoutEffect(() => {
@@ -854,6 +887,15 @@ export const TreeDialogSelect = <T, S extends string | number>({
     ? hasUnconfirmableInPending(pendingMultiple, canConfirmNode)
     : !pendingSingle || !canConfirmNode(pendingSingle);
 
+  const handleManualAdd = useCallback(() => {
+    if (!onManualAdd) return;
+    onManualAdd(search.trim());
+    handleOpenChange(false);
+  }, [onManualAdd, search, handleOpenChange]);
+
+  const trimmedSearch = search.trim();
+  const showEmptyManualAdd = Boolean(onManualAdd && trimmedSearch);
+
   return (
     <div className={cn(css.wrapper, className)}>
       {label && (
@@ -951,6 +993,13 @@ export const TreeDialogSelect = <T, S extends string | number>({
                 <EmptyComponent
                   title="Ничего не найдено"
                   subtitle="Попробуйте изменить поисковый запрос"
+                  content={
+                    showEmptyManualAdd ? (
+                      <Button variant="link" onClick={handleManualAdd}>
+                        {manualButtonText}
+                      </Button>
+                    ) : undefined
+                  }
                 />
               </div>
             ) : (
@@ -959,12 +1008,19 @@ export const TreeDialogSelect = <T, S extends string | number>({
           </div>
 
           <DialogFooter className={css.dialogFooter}>
-            <Button variant="secondary" onClick={() => handleOpenChange(false)}>
-              {closeButtonText}
-            </Button>
-            <Button variant="primary" disabled={isConfirmDisabled} onClick={handleConfirm}>
-              {confirmButtonText}
-            </Button>
+            <div className={css.footerActions}>
+              {onManualAdd && (
+                <Button variant="primary" disabled={!trimmedSearch} onClick={handleManualAdd}>
+                  {manualButtonText}
+                </Button>
+              )}
+              <Button variant="secondary" onClick={() => handleOpenChange(false)}>
+                {closeButtonText}
+              </Button>
+              <Button variant="primary" disabled={isConfirmDisabled} onClick={handleConfirm}>
+                {confirmButtonText}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

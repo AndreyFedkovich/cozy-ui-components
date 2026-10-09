@@ -666,6 +666,8 @@ Dialog-based picker for large datasets — search + paginated loading + multi-se
 | `tooltipContent`         | `ReactNode` | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | Extra class for the tooltip popper.             |
 | `excludeIds`             | `string[]`  | IDs to omit from the picker list (passed to `loadOptions`; filtering is done in your callback or API). |
+| `onManualAdd`            | `(search: string) => void` | Footer “Add manually” action. Receives the trimmed search; dialog closes after the callback. Footer button is disabled while search is empty. |
+| `manualButtonText`       | `string`    | Label for the manual-add button. Default: `"Добавить вручную"`. |
 
 ```tsx
 import { DialogSelect } from "@andreyfedkovich/cozy-ui";
@@ -684,8 +686,13 @@ const [reviewers, setReviewers] = useState<{ id: string; name: string }[]>([]);
     return { options: items.map((p) => ({ value: p.id, label: p.name })), total };
   }}
   onValueChange={(opt) => setReviewers((prev) => [...prev, { id: String(opt.value), name: String(opt.label) }])}
+  onManualAdd={(search) => {
+    /* create a custom option from `search` and set it as value */
+  }}
 />;
 ```
+
+Persist the full `CustomOption` object (not only the id) so the trigger still shows the label after a page refresh, even if the option is not in `loadOptions` results.
 
 #### `TreeDialogSelect`
 
@@ -701,7 +708,9 @@ Hierarchical picker with lazy-loaded branches and search.
 | `isNodeSelectable`       | `(node) => boolean` | When provided, nodes for which this returns `false` cannot be selected or confirmed. Composed with `leafConfirmOnly`. |
 | `onDelete`               | `(node) => void` | Multiple mode only — remove a selected node (tag click or uncheck in dialog). |
 | `tagRender`              | `(node) => ReactNode` | Multiple mode only — custom tag render in the trigger. |
-| `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. In multiple mode, called for each selected value. |
+| `resolveSelectedPath`    | `(value) => Promise<TreeSearchResult>` | Resolves the path to the current value when the dialog opens; expands the tree, highlights the row, and scrolls it into view. In multiple mode, called for each selected value. For unknown/custom ids return `{ matches: [] }` (do not throw). |
+| `onManualAdd`            | `(search: string) => void` | Manual-add action in the footer and (when search has no results) in the empty state. Receives the trimmed search; dialog closes after the callback. Footer button is disabled while search is empty. |
+| `manualButtonText`       | `string`    | Label for the manual-add action. Default: `"Добавить вручную"`. |
 
 ```tsx
 import { TreeDialogSelect } from "@andreyfedkovich/cozy-ui";
@@ -724,7 +733,9 @@ With **`leafConfirmOnly`**, the confirm button in the dialog stays disabled unti
 
 With **`isNodeSelectable`**, you can block arbitrary nodes (e.g. by `meta`). A node is confirmable only when it passes both `leafConfirmOnly` (if set) and the predicate. Non-selectable rows are visually disabled; expanding branches still works.
 
-With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`. In **`mode="multiple"`**, paths for all selected values are resolved in parallel.
+With **`resolveSelectedPath`**, reopening the dialog with an existing `value` expands the tree to that node, pre-selects it in the dialog, and scrolls the row into view. Works independently of `searchNodes`. In **`mode="multiple"`**, paths for all selected values are resolved in parallel. If the id is not in the tree (e.g. a manually added custom node), return `{ matches: [] }` — the component keeps the controlled `value` as the pending selection and does not throw.
+
+With **`onManualAdd`**, the consumer typically creates a full `TreeNode` from the search string and sets it as `value`. Persist that object across reloads so the trigger still shows the label after refresh.
 
 ```tsx
 <TreeDialogSelect
@@ -737,6 +748,9 @@ With **`resolveSelectedPath`**, reopening the dialog with an existing `value` ex
   onValueChange={(node) => setSelected((current) => [...current, node])}
   onDelete={(node) => setSelected((current) => current.filter((item) => item.value !== node.value))}
   onClear={() => setSelected([])}
+  onManualAdd={(search) => {
+    /* create a TreeNode from `search` and set it as value */
+  }}
 />
 ```
 
@@ -900,6 +914,29 @@ const [copied, setCopied] = useState(false);
 ---
 
 ### Workflow
+
+#### `CommentFeed`
+
+Threaded comments with lazy per-branch pagination, attachments, and mentions.
+
+| Prop            | Type     | Default | Description |
+| --------------- | -------- | ------- | ----------- |
+| `placeholder`   | `string` | `"Поделитесь мнением или задайте вопрос..."` | Root composer placeholder. |
+| `emptyTitle`    | `string` | `"Пока нет комментариев"` | Empty-state title when there are no comments. |
+| `emptySubtitle` | `string` | `"Будьте первым, кто напишет."` | Empty-state subtitle. |
+| `title`         | `string` | `"Комментарии"` | Header title. |
+| `eyebrow`       | `string` | `"Discussion"` | Small label above the title. |
+
+```tsx
+<CommentFeed
+  currentUser={user}
+  loadComments={loadComments}
+  onCreate={createComment}
+  placeholder="Write a comment…"
+  emptyTitle="No comments yet"
+  emptySubtitle="Start the discussion."
+/>
+```
 
 #### `ApprovalRoute`
 
