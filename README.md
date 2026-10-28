@@ -631,6 +631,9 @@ Powerful, virtualized-friendly select with `single` and `multiple` modes, search
 | `columns`     | `SelectColumn[]`                      | —          | Required when `template="table"`.    |
 | `isLoading`   | `boolean`                             | `false`    | Show loading state in dropdown.      |
 | `error`       | `string \| null`                      | —          | Validation message.                  |
+| `allowCreate` | `boolean`                             | `false`    | Multiple only — free-form tags in the trigger (Enter / comma / blur / «Добавить»). |
+| `createOption`| `(input: string) => CustomOption`     | —          | Map typed text to an option (default: `{ value, label }` from trimmed input). |
+| `showDropdown`| `boolean`                             | `true`     | When `false`, no menu/arrow — tags-only control (use with `allowCreate`). |
 | `label`                  | `ReactNode` | —          | Field label.                                    |
 | `tooltipContent`         | `ReactNode` | —          | Help tooltip on the «?» icon next to the label. |
 | `tooltipPopperClassName` | `string`    | —          | Extra class for the tooltip popper.             |
@@ -653,6 +656,26 @@ const [value, setValue] = useState<CustomOption<unknown, string> | null>(null);
   value={value}
   options={options}
   onValueChange={setValue}
+/>;
+
+// Tags-only (no dropdown)
+const [tags, setTags] = useState<CustomOption<unknown, string>[]>([]);
+
+<Select
+  mode="multiple"
+  allowCreate
+  showDropdown={false}
+  label="Tags"
+  placeholder="Type a tag"
+  value={tags}
+  onValueChange={(option) =>
+    setTags((current) =>
+      current.some((item) => item.value === option.value) ? current : [...current, option],
+    )
+  }
+  onDelete={(option) =>
+    setTags((current) => current.filter((item) => item.value !== option.value))
+  }
 />;
 ```
 

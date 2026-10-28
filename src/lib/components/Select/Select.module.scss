@@ -21,6 +21,10 @@ $dropdown-max-height: 300px;
       padding: 6px 6px 6px 12px;
       cursor: pointer;
 
+      &_creatable {
+        cursor: text;
+      }
+
       &.error {
         border: 1px solid colorsNew.$red02;
       }
@@ -46,6 +50,19 @@ $dropdown-max-height: 300px;
         display: flex;
         gap: 0.25rem;
         flex-wrap: wrap;
+        align-items: center;
+        width: 100%;
+      }
+
+      .inlineInput {
+        flex: 1;
+        min-width: 4.5rem;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 2px 0;
+        @include mixinsNew.text();
+        @include mixinsNew.placeholder();
       }
 
       .selectedOptionContainer {
@@ -53,6 +70,10 @@ $dropdown-max-height: 300px;
         flex: 1;
         min-width: 0;
         text-align: left;
+
+        &_creatable {
+          flex-wrap: wrap;
+        }
 
         .selectedOption {
           min-width: 0;
@@ -76,6 +97,24 @@ $dropdown-max-height: 300px;
         padding: 0 0.3125rem;
         display: flex;
         justify-items: center;
+
+        .addButton {
+          flex-shrink: 0;
+          max-height: 34px;
+          padding: 0 6px;
+          white-space: nowrap;
+          color: colorsNew.$blue03;
+          font-size: 13px;
+          line-height: 18px;
+
+          &:hover:not(:disabled) {
+            color: colorsNew.$blue05;
+          }
+
+          &:disabled {
+            color: colorsNew.$gray04;
+          }
+        }
 
         .deleteIcon {
           z-index: 5;
@@ -218,6 +257,11 @@ $dropdown-max-height: 300px;
       @include mixinsNew.text();
       @include mixinsNew.placeholder();
     }
+  }
+
+  .createOption {
+    color: colorsNew.$blue03;
+    cursor: pointer;
   }
 
   .option {

@@ -73,7 +73,16 @@ type CustomSelectProps<T, S> = ValueFieldCallbacks<CustomOption<T, S>> &
   template?: "list" | "table";
   columns?: SelectColumn<T, S>[];
   total?: number;
+  /** Free-form tag entry in the trigger (multiple mode). */
+  allowCreate?: boolean;
+  /** Map free-form text to an option. Default: `{ value, label }` from trimmed input. */
+  createOption?: (input: string) => CustomOption<T, S>;
+  /** When false, the dropdown is never shown (tags-only control). Default: true. */
+  showDropdown?: boolean;
 } & ModeProps<T, S>;
+
+const matchesDraft = <T, S>(option: CustomOption<T, S>, draft: string) =>
+  String(option.value) === draft || option.label === draft;
 
 const SelectedOptions = <T, S>({
   value,
@@ -97,7 +106,7 @@ const SelectedOptions = <T, S>({
   }
 
   return (
-    <div className={css.tagContainer}>
+    <>
       {value.map((item, index) =>
         tagRender ? (
           <React.Fragment key={index}>{tagRender(item)}</React.Fragment>
@@ -113,7 +122,7 @@ const SelectedOptions = <T, S>({
           </Tag>
         ),
       )}
-    </div>
+    </>
   );
 };
 
@@ -157,6 +166,9 @@ interface DropdownProps<T, S> extends Pick<
 > {
   onChange: (value: CustomOption<T, S>) => void;
   searchValue: string;
+  allowCreate?: boolean;
+  onCreate?: () => void;
+  showCreateOption?: boolean;
 }
 
 const Dropdown = <T, S>({
@@ -170,14 +182,21 @@ const Dropdown = <T, S>({
   isLoading,
   searchValue,
   searchPlaceholder,
+  allowCreate,
+  onCreate,
+  showCreateOption,
 }: DropdownProps<T, S>): React.ReactElement | null => {
   const checkIsActive = (option: CustomOption<T, S>) =>
     Array.isArray(value)
       ? value.some((item) => item.value === option.value)
       : value?.value === option.value;
+
+  const showInlineSearch = !!onSearch && !allowCreate;
+  const hasOptions = options && !!options.length;
+
   return (
     <>
-      {onSearch && (
+      {showInlineSearch && (
         <Search
           onSearch={onSearch}
           searchValue={searchValue}
@@ -186,9 +205,18 @@ const Dropdown = <T, S>({
           placeholder={searchPlaceholder}
         />
       )}
-      {options && !!options.length ? (
-        <ul className={cn({ [css.withSearch]: onSearch })}>
-          {options.map((option, index) => {
+      {hasOptions || showCreateOption ? (
+        <ul className={cn({ [css.withSearch]: showInlineSearch })}>
+          {showCreateOption && (
+            <li
+              className={cn(css.option, css.createOption, optionClassName)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onCreate}
+            >
+              <span className="block min-w-0 truncate">Создать „{searchValue.trim()}“</span>
+            </li>
+          )}
+          {options?.map((option, index) => {
             const isActive = checkIsActive(option);
             const isPrevActive = options[index - 1] && checkIsActive(options[index - 1]);
             const isNextActive = options[index + 1] && checkIsActive(options[index + 1]);
@@ -205,6 +233,7 @@ const Dropdown = <T, S>({
                   },
                   optionClassName,
                 )}
+                onMouseDown={allowCreate ? (e) => e.preventDefault() : undefined}
                 onClick={() => onChange(option)}
               >
                 <span className="block min-w-0 truncate">
@@ -368,6 +397,9 @@ export const Select = <T, S extends string | number>({
   template = "list",
   columns,
   total,
+  allowCreate = false,
+  createOption,
+  showDropdown = true,
 }: CustomSelectProps<T, S>) => {
   const field = useFieldPresentation({
     error,
@@ -381,11 +413,15 @@ export const Select = <T, S extends string | number>({
     onChange,
   });
 
+  const isCreatable = allowCreate && mode === "multiple";
+  const canShowDropdown = showDropdown !== false;
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropDownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
+  const inlineInputRef = useRef<HTMLInputElement>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const resolvedPortalTarget =
@@ -396,15 +432,41 @@ export const Select = <T, S extends string | number>({
   }, []);
 
   const handleSearch = useCallback(
-    (value: string) => {
-      setSearchValue(value);
-      onSearch?.(value);
+    (next: string) => {
+      setSearchValue(next);
+      onSearch?.(next);
     },
     [onSearch],
   );
 
+  const commitCreate = useCallback(
+    (raw: string) => {
+      if (!isCreatable) {
+        return;
+      }
+
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      const option =
+        createOption?.(trimmed) ??
+        ({ value: trimmed as S, label: trimmed } as CustomOption<T, S>);
+
+      if (Array.isArray(value) && value.some((item) => item.value === option.value)) {
+        handleSearch("");
+        return;
+      }
+
+      handleValueChange?.(option);
+      handleSearch("");
+    },
+    [createOption, handleSearch, handleValueChange, isCreatable, value],
+  );
+
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || !canShowDropdown) {
       return;
     }
 
@@ -425,12 +487,12 @@ export const Select = <T, S extends string | number>({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside, true);
     };
-  }, [handleSearch, isOpen, onClose]);
+  }, [canShowDropdown, handleSearch, isOpen, onClose]);
 
   const { refs, floatingStyles, update } = useFloating({
     strategy: "absolute",
     placement: "bottom-start",
-    open: isOpen,
+    open: isOpen && canShowDropdown,
     whileElementsMounted: (reference, floating, updatePosition) =>
       autoUpdate(reference, floating, updatePosition, {
         ancestorScroll: false,
@@ -471,12 +533,12 @@ export const Select = <T, S extends string | number>({
   );
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || !canShowDropdown) {
       return;
     }
 
     update();
-  }, [isOpen, update]);
+  }, [canShowDropdown, isOpen, update]);
 
   const handleChange = useCallback(
     (newValue: CustomOption<T, S>) => {
@@ -492,7 +554,20 @@ export const Select = <T, S extends string | number>({
     [handleSearch, handleValueChange, mode, onClose],
   );
 
+  const draft = searchValue.trim();
+  const showCreateOption =
+    isCreatable &&
+    canShowDropdown &&
+    template === "list" &&
+    !!draft &&
+    !(options?.some((option) => matchesDraft(option, draft)) ?? false) &&
+    !(Array.isArray(value) && value.some((option) => matchesDraft(option, draft)));
+
   const renderDropdown = useCallback(() => {
+    if (!canShowDropdown) {
+      return null;
+    }
+
     const dropdownContent = (
       <div
         ref={setFloating}
@@ -537,11 +612,14 @@ export const Select = <T, S extends string | number>({
                   optionClassName={optionClassName}
                   optionRender={optionRender}
                   onChange={handleChange}
-                  {...(onSearch && { onSearch: handleSearch })}
+                  {...((onSearch || isCreatable) && { onSearch: handleSearch })}
                   searchClassName={searchClassName}
                   isLoading={isLoading}
                   searchValue={searchValue}
                   searchPlaceholder={searchPlaceholder}
+                  allowCreate={isCreatable}
+                  showCreateOption={showCreateOption}
+                  onCreate={() => commitCreate(searchValue)}
                 />
               );
             return dropdownRender ? dropdownRender(menu) : menu;
@@ -556,11 +634,14 @@ export const Select = <T, S extends string | number>({
 
     return dropdownContent;
   }, [
+    canShowDropdown,
+    commitCreate,
     dropDownClassName,
     dropdownRender,
     floatingStyles,
     handleChange,
     handleSearch,
+    isCreatable,
     isLoading,
     isOpen,
     onSearch,
@@ -577,15 +658,71 @@ export const Select = <T, S extends string | number>({
     searchPlaceholder,
     searchValue,
     setFloating,
+    showCreateOption,
     value,
   ]);
 
   const dropdown = useMemo(
-    () => (isMounted ? renderDropdown() : null),
-    [isMounted, renderDropdown],
+    () => (isMounted && canShowDropdown ? renderDropdown() : null),
+    [canShowDropdown, isMounted, renderDropdown],
   );
 
   const hasValue = Array.isArray(value) ? !!value.length : !!value;
+  const showPlaceholder = !hasValue && !searchValue;
+  const canAddDraft = !!searchValue.trim() && !disabled;
+
+  const focusInlineInput = useCallback(() => {
+    inlineInputRef.current?.focus();
+  }, []);
+
+  const handleTriggerClick = () => {
+    if (disabled) {
+      return;
+    }
+
+    if (isCreatable) {
+      focusInlineInput();
+      if (canShowDropdown) {
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    if (!canShowDropdown) {
+      return;
+    }
+
+    if (value) {
+      handleSearch("");
+      onClose?.();
+    }
+    setIsOpen((open) => !open);
+  };
+
+  const handleInlineKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      event.stopPropagation();
+      commitCreate(searchValue);
+      return;
+    }
+
+    if (event.key === "Backspace" && !searchValue && Array.isArray(value) && value.length && onDelete) {
+      event.preventDefault();
+      event.stopPropagation();
+      onDelete(value[value.length - 1]);
+      return;
+    }
+
+    if (event.key === "Escape" && canShowDropdown && isOpen) {
+      event.stopPropagation();
+      setIsOpen(false);
+      handleSearch("");
+      onClose?.();
+    }
+  };
+
+  const showArrow = canShowDropdown;
 
   return (
     <div className={css.wrapper}>
@@ -603,42 +740,100 @@ export const Select = <T, S extends string | number>({
         <div
           role="button"
           id={field.controlId}
-          tabIndex={disabled ? -1 : 0}
+          tabIndex={isCreatable || disabled ? -1 : 0}
           ref={setReference}
           aria-invalid={field.ariaInvalid}
           aria-describedby={field.ariaDescribedBy}
           className={cn(
             css.input,
-            { [css.disabled]: disabled },
+            { [css.disabled]: disabled, [css.input_creatable]: isCreatable },
             field.showError && css.error,
             inputClassName,
           )}
           onBlur={onBlur}
           onFocus={onFocus}
-          onClick={() => {
-            if (disabled) {
-              return;
-            }
-            if (value) {
-              handleSearch("");
-              onClose?.();
-            }
-            setIsOpen((value) => !value);
-          }}
+          onClick={handleTriggerClick}
         >
-          <div className={css.selectedOptionContainer}>
-            {hasValue ? (
-              <SelectedOptions
-                value={value}
-                selectedOptionRender={selectedOptionRender}
-                tagRender={tagRender}
-                onDelete={onDelete}
-              />
+          <div
+            className={cn(css.selectedOptionContainer, {
+              [css.selectedOptionContainer_creatable]: isCreatable,
+            })}
+          >
+            {isCreatable ? (
+              <div className={css.tagContainer}>
+                <SelectedOptions
+                  value={value}
+                  selectedOptionRender={selectedOptionRender}
+                  tagRender={tagRender}
+                  onDelete={onDelete}
+                />
+                <input
+                  ref={inlineInputRef}
+                  className={css.inlineInput}
+                  value={searchValue}
+                  disabled={disabled}
+                  placeholder={showPlaceholder ? placeholder : undefined}
+                  onChange={(e) => {
+                    handleSearch(e.target.value);
+                    if (canShowDropdown && !isOpen) {
+                      setIsOpen(true);
+                    }
+                  }}
+                  onKeyDown={handleInlineKeyDown}
+                  onBlur={() => commitCreate(searchValue)}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={() => {
+                    if (canShowDropdown) {
+                      setIsOpen(true);
+                    }
+                  }}
+                />
+              </div>
+            ) : hasValue ? (
+              Array.isArray(value) ? (
+                <div className={css.tagContainer}>
+                  <SelectedOptions
+                    value={value}
+                    selectedOptionRender={selectedOptionRender}
+                    tagRender={tagRender}
+                    onDelete={onDelete}
+                  />
+                </div>
+              ) : (
+                <SelectedOptions
+                  value={value}
+                  selectedOptionRender={selectedOptionRender}
+                  tagRender={tagRender}
+                  onDelete={onDelete}
+                />
+              )
             ) : (
               <span className={cn(css.placeHolder, "truncate")}>{placeholder}</span>
             )}
           </div>
           <div className={css.iconContainer}>
+            {isCreatable && (
+              <>
+                <Button
+                  variant="text"
+                  className={css.addButton}
+                  disabled={!canAddDraft}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    commitCreate(searchValue);
+                  }}
+                >
+                  Добавить
+                </Button>
+                {(onClear && hasValue) || showArrow ? (
+                  <div className={css.divider}>
+                    <div />
+                  </div>
+                ) : null}
+              </>
+            )}
+
             {onClear && hasValue && (
               <>
                 <Button
@@ -653,22 +848,25 @@ export const Select = <T, S extends string | number>({
                     <CrossIcon />
                   </span>
                 </Button>
-                <div className={css.divider}>
-                  <div />
-                </div>
+                {showArrow && (
+                  <div className={css.divider}>
+                    <div />
+                  </div>
+                )}
               </>
             )}
 
-            {dropdownIcon || (
-              <Button
-                variant="text"
-                className={cn(css.arrowIcon, {
-                  [css.arrowIconExpanded]: isOpen,
-                })}
-              >
-                <ArrowDownIcon />
-              </Button>
-            )}
+            {showArrow &&
+              (dropdownIcon || (
+                <Button
+                  variant="text"
+                  className={cn(css.arrowIcon, {
+                    [css.arrowIconExpanded]: isOpen,
+                  })}
+                >
+                  <ArrowDownIcon />
+                </Button>
+              ))}
           </div>
         </div>
         {dropdown}

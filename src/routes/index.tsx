@@ -371,6 +371,12 @@ function Index() {
     selectOptions[0],
     selectOptions[2],
   ]);
+  const [creatableSelected, setCreatableSelected] = useState<CustomOption<{ group: string }>[]>([
+    selectOptions[1],
+  ]);
+  const [tagsOnly, setTagsOnly] = useState<CustomOption<unknown, string>[]>([
+    { value: "urgent", label: "urgent" },
+  ]);
   const [cfoSelected, setCfoSelected] = useState<CustomOption<{ code: string }>[]>([]);
   const [cfoSearch, setCfoSearch] = useState("");
   const [employee, setEmployee] = useState<CustomOption<{ birthDate: string }> | null>(
@@ -1214,7 +1220,7 @@ function Index() {
 
             <DemoSection
               title="Basic selects"
-              description="Single and multiple selection."
+              description="Single, multiple, creatable, and tags-only."
               className="lg:col-span-2"
             >
               <div className="grid gap-5">
@@ -1246,6 +1252,48 @@ function Index() {
                     )
                   }
                   onClear={() => setMultiSelected([])}
+                />
+                <Select
+                  mode="multiple"
+                  allowCreate
+                  label="Creatable select"
+                  placeholder="Pick or type a new tag"
+                  options={selectOptions}
+                  value={creatableSelected}
+                  onValueChange={(option) =>
+                    setCreatableSelected((current) =>
+                      current.some((item) => item.value === option.value)
+                        ? current
+                        : [...current, option],
+                    )
+                  }
+                  onDelete={(option) =>
+                    setCreatableSelected((current) =>
+                      current.filter((item) => item.value !== option.value),
+                    )
+                  }
+                  onClear={() => setCreatableSelected([])}
+                />
+                <Select
+                  mode="multiple"
+                  allowCreate
+                  showDropdown={false}
+                  label="Tags only"
+                  placeholder="Type and press Enter"
+                  value={tagsOnly}
+                  onValueChange={(option) =>
+                    setTagsOnly((current) =>
+                      current.some((item) => item.value === option.value)
+                        ? current
+                        : [...current, option],
+                    )
+                  }
+                  onDelete={(option) =>
+                    setTagsOnly((current) =>
+                      current.filter((item) => item.value !== option.value),
+                    )
+                  }
+                  onClear={() => setTagsOnly([])}
                 />
               </div>
             </DemoSection>
